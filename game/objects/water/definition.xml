@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<block>
+	<graphic alpha="1">
+		<top image="image.png"> </top>
+		<bottom image="image.png"> </bottom>
+		<front image="image.png"> </front>
+		<back image="image.png"> </back>
+		<left image="image.png"> </left>
+		<right image="image.png"> </right>
+	</graphic>
+</block>
