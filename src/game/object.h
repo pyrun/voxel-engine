@@ -4,6 +4,7 @@
 #include "../graphic/graphic.h"
 #include "../graphic/tiny_obj_loader.h"
 #include "../graphic/texture.h"
+#include "objectcreator.h"
 
 class Object {
     public:
@@ -15,123 +16,142 @@ class Object {
             std::vector<unsigned int> indices;
             std::vector< glm::vec2 > texcoords;
 
-
             float i_width = 0.5f;
             float i_hight = 1.0f;
             float i_depth = 1.0f;
 
-            // x -
+            ObjectCreator Obj;
+
+            Obj.addXPlate();
+
+//            Obj.addXPlate( glm::vec3( 0, 1 ,0), glm::vec3( 0.5, 0.5 ,0.5), glm::vec4( 0, 0, 0.5, 0.5));
+            Obj.addXPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1));
+            Obj.addXPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), true);
+            Obj.addZPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), true);
+            Obj.addZPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), false);
+            Obj.addYPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), true);
+            Obj.addYPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), false);
+
+
+
+
+
+            vertices = Obj.getVertices();
+            indices = Obj.getIndices();
+            texcoords = Obj.getTexcoords();
+/*            // x -
             vertices.push_back( glm::vec3( 0.0f, 0.0f, 0.0f) ); // 0
             vertices.push_back( glm::vec3( 0.0f, i_hight, 0.0f) ); // 1
             vertices.push_back( glm::vec3( i_width, i_hight, 0.0f) ); // 2
             vertices.push_back( glm::vec3( i_width, 0.0f, 0.0f) ); // 3
-
             texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
             texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
             texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
             texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
-
             indices.push_back( 0 );
             indices.push_back( 1 );
             indices.push_back( 2 );
-
             indices.push_back( 0 );
             indices.push_back( 2 );
             indices.push_back( 3 );
-
-
-
-
-
-
-
-
-            // v+
-            /*vertices.push_back( glm::vec3( 0.0f, 0.0f, i_depth) );
-            vertices.push_back( glm::vec3( i_width, i_hight, i_depth) );
-            vertices.push_back( glm::vec3( 0.0f, i_hight, i_depth) );
-            vertices.push_back( glm::vec3( i_width, 0.0f, i_depth) );
-            vertices.push_back( glm::vec3( i_width, i_hight, i_depth) );
-            vertices.push_back( glm::vec3( 0.0f, 0.0f, i_depth) );
+            // x +
+            vertices.push_back( glm::vec3( 0.0f, 0.0f, i_depth) ); // 4
+            vertices.push_back( glm::vec3( 0.0f, i_hight, i_depth) ); // 5
+            vertices.push_back( glm::vec3( i_width, i_hight, i_depth) ); // 6
+            vertices.push_back( glm::vec3( i_width, 0.0f, i_depth) ); // 7
+            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
+            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
+            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
+            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
+            indices.push_back( 6 ); 2
+            indices.push_back( 5 );1
+            indices.push_back( 4 );0
+            indices.push_back( 7 );3
+            indices.push_back( 6 );2
+            indices.push_back( 4 );0
+            // y -
+            vertices.push_back( glm::vec3( 0.0f, 0.0f, i_depth) ); // 8
+            vertices.push_back( glm::vec3( 0.0f, i_hight, i_depth) ); // 9
+            vertices.push_back( glm::vec3( 0.0f, i_hight, 0.0f) ); // 10
+            vertices.push_back( glm::vec3( 0.0f, 0.0f, 0.0f) ); // 11
+            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
+            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
+            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
+            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
+            indices.push_back( 8 ); 0
+            indices.push_back( 9 );1
+            indices.push_back( 10 );2
+            indices.push_back( 8 ); 0
+            indices.push_back( 10 );2
+            indices.push_back( 11 );3
+            // y +
+            vertices.push_back( glm::vec3( i_width, 0.0f, i_depth) ); // 12
+            vertices.push_back( glm::vec3( i_width, i_hight, i_depth) ); // 13
+            vertices.push_back( glm::vec3( i_width, i_hight, 0.0f) ); // 14
+            vertices.push_back( glm::vec3( i_width, 0.0f, 0.0f) ); // 15
+            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
+            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
+            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
+            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
+            indices.push_back( 14 );
+            indices.push_back( 13 );
+            indices.push_back( 12 );
+            indices.push_back( 15 );
+            indices.push_back( 14 );
+            indices.push_back( 12 );
             // z -
-            vertices.push_back( glm::vec3( 0.0f, 0.0f, 0.0f) );
-            vertices.push_back( glm::vec3( 0.0f, i_hight, i_depth) );
-            vertices.push_back( glm::vec3( 0.0f, i_hight, 0.0f) );
-            vertices.push_back( glm::vec3( 0.0f, i_hight, i_depth) );
-            vertices.push_back( glm::vec3( 0.0f, 0.0f, 0.0f) );
-            vertices.push_back( glm::vec3( 0.0f, 0.0f, i_depth) );
-            // x -
+            vertices.push_back( glm::vec3( 0.0f, 0.0f, i_depth) ); // 16
+            vertices.push_back( glm::vec3( i_width, 0.0f, i_depth) ); // 17
+            vertices.push_back( glm::vec3( i_width, 0.0f, 0.0f) ); // 18
+            vertices.push_back( glm::vec3( 0.0f, 0.0f, 0.0f) ); // 19
+            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
+            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
+            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
+            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
+            indices.push_back( 18 );
+            indices.push_back( 17 );
+            indices.push_back( 16 );
+            indices.push_back( 19 );
+            indices.push_back( 18 );
+            indices.push_back( 16 );
+            // z +
+            vertices.push_back( glm::vec3( 0.0f, i_hight, i_depth) ); // 20
+            vertices.push_back( glm::vec3( i_width, i_hight, i_depth) ); // 21
+            vertices.push_back( glm::vec3( i_width, i_hight, 0.0f) ); // 22
+            vertices.push_back( glm::vec3( 0.0f, i_hight, 0.0f) ); // 23
             texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
             texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
             texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
             texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
-            // x-
-            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
-            // z -
-            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );*/
+            indices.push_back( 20 );
+            indices.push_back( 21 );
+            indices.push_back( 22 );
+            indices.push_back( 20 );
+            indices.push_back( 22 );
+            indices.push_back( 23 );*/
 
-            /*texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );
-            texcoords.push_back( glm::vec2( 1.0f, 1.0f) );
+            /*indices.push_back( 4 );
+            indices.push_back( 5 );
+            indices.push_back( 0 );
+            indices.push_back( 5 );
+            indices.push_back( 1 );
+            indices.push_back( 0 );
+            // y +
+            indices.push_back( 6 );
+            indices.push_back( 7 );
+            indices.push_back( 3 );
+            indices.push_back( 3 );
+            indices.push_back( 2 );
+            indices.push_back( 6 );*/
 
-            texcoords.push_back( glm::vec2( 1.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 0.0f) );
-            texcoords.push_back( glm::vec2( 0.0f, 1.0f) );*/
+
+
+
+
 
 
             //vertices.push_back( glm::vec3( 0.0f, 1.0f, 0.0f) );
             m_texture = new Texture( "cube.bmp");
-
-            //vertices.push_back( glm:vec3 v( 0, 1, 1) );
-
-            /*
-            // Read our .obj file
-            std::vector< glm::vec3 > vertices;
-            std::vector< glm::vec2 > uvs;
-            std::vector< glm::vec3 > normals; // Won't be used at the moment.
-
-            //bool res = loadOBJ("untitled.obj", vertices, uvs, normals);
-            std::vector<tinyobj::shape_t> shapes;
-            std::vector<tinyobj::material_t> materials;
-            std::string test;
-            tinyobj::LoadObj( shapes, materials, test, "cube.obj", NULL, true);
-            m_texture = new Texture( "cube.png");*/
-
-
-            /*for (size_t i = 0; i < shapes.size(); i++) {
-              printf("shape[%ld].name = %s\n", i, shapes[i].name.c_str());
-              printf("Size of shape[%ld].indices: %ld\n", i, shapes[i].mesh.indices.size());
-              printf("Size of shape[%ld].material_ids: %ld\n", i, shapes[i].mesh.material_ids.size());
-              assert((shapes[i].mesh.indices.size() % 3) == 0);
-              for (size_t f = 0; f < shapes[i].mesh.indices.size() / 3; f++) {
-                printf("  idx[%ld] = %d, %d, %d. mat_id = %d\n", f, shapes[i].mesh.indices[3*f+0], shapes[i].mesh.indices[3*f+1], shapes[i].mesh.indices[3*f+2], shapes[i].mesh.material_ids[f]);
-              }
-
-              printf("shape[%ld].vertices: %ld\n", i, shapes[i].mesh.positions.size());
-              assert((shapes[i].mesh.positions.size() % 3) == 0);
-              for (size_t v = 0; v < shapes[i].mesh.positions.size() / 3; v++) {
-                printf("  v[%ld] = (%f, %f, %f)\n", v,
-                  shapes[i].mesh.positions[3*v+0],
-                  shapes[i].mesh.positions[3*v+1],
-                  shapes[i].mesh.positions[3*v+2]);
-              }
-            }*/
-
-
-
-
 
             glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof( glm::vec3 ), &vertices[0], GL_STATIC_DRAW);

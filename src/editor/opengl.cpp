@@ -11,11 +11,32 @@ Opengl::~Opengl()
     delete m_camera;
 }
 
+void Opengl::wheelEvent(QWheelEvent *event)
+{
+    int numDegrees = event->delta() / 8;
+    int numSteps = numDegrees / 15;
+
+    if (event->orientation() == Qt::Horizontal) {
+        //scrollHorizontally(numSteps);
+        //m_camera->MoveForward( +(float)numSteps*2);
+
+        printf("test2");
+    } else {
+        //m_camera->MoveForward( -(float)numSteps*2);
+        m_camera->GetPos().x += numSteps*0.5;
+    }
+    event->accept();
+}
+
 void Opengl::timerEvent(QTimerEvent *)
 {
     update();
     //m_camera->GetPos().z = -1;
     //m_camera->MoveForward( -0.01);
+
+    float l_cos = -0.5;
+
+    //m_camera->GetPos().x = l_cos;
 }
 
 void Opengl::paintGL() {

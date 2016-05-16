@@ -7,6 +7,7 @@
 
 #include <QtWidgets/QOpenGLWidget>
 #include <QtCore/QBasicTimer.h>
+#include <QtGui/QWheelEvent>
 
 #define graphic_fov 1.0f
 #define graphic_znear 0.01f
@@ -16,6 +17,8 @@ class Opengl : public QOpenGLWidget {
     public:
         Opengl( QWidget *parent = NULL );
         virtual ~Opengl();
+        void wheelEvent(QWheelEvent *event);
+
 
         void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
         void paintGL() Q_DECL_OVERRIDE;

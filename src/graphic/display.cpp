@@ -23,9 +23,10 @@ Display::Display(int width, int height, const std::string& title) {
         fprintf(stderr, "Could not init SDL");
         return;
     }
-	// benötigt opengl 3.3
+	// benötigt opengl 4.0
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
+
     // bit grße der Farben
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 3);
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 3);
@@ -34,7 +35,8 @@ Display::Display(int width, int height, const std::string& title) {
     // Tiefenbuffergröße
     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 1);
     // Doublebuffer
-    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 16);
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 2);
+
     // SDL Init
     // Erstelle Fenster
 	m_window = SDL_CreateWindow( title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Width, Height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);

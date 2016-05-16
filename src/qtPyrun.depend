@@ -5446,3 +5446,370 @@
 1457010278 \\thelightalex_pc\users\thelightalex\documents\projekte 2015\qt5\include\qtgui\qfont
 	"qfont.h"
 
+1463250716 source:c:\users\pyrun\documents\projekte 2015\selur\src\editor\editor.cpp
+	<QtGui/QStandardItemModel>
+	<QtWidgets/QLabel>
+	<QtWidgets/QTextEdit>
+	<QtWidgets/QFrame>
+	<QtWidgets/QSplitter>
+	<QtWidgets/QHBoxLayout>
+	<QtWidgets/QTreeView>
+	"editor.h"
+
+1457010277 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qstandarditemmodel
+	"qstandarditemmodel.h"
+
+1457010277 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qstandarditemmodel.h
+	<QtCore/qabstractitemmodel.h>
+	<QtGui/qbrush.h>
+	<QtGui/qfont.h>
+	<QtGui/qicon.h>
+	<QtCore/qdatastream.h>
+
+1457010275 c:\users\pyrun\documents\projekte 2015\qt5\include\qtcore\qabstractitemmodel.h
+	<QtCore/qvariant.h>
+	<QtCore/qobject.h>
+	<QtCore/qhash.h>
+	<QtCore/qvector.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qlabel
+	"qlabel.h"
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qlabel.h
+	<QtWidgets/qframe.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qframe
+	"qframe.h"
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qsplitter
+	"qsplitter.h"
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qsplitter.h
+	<QtWidgets/qframe.h>
+	<QtWidgets/qsizepolicy.h>
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qhboxlayout
+	"qboxlayout.h"
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qtreeview
+	"qtreeview.h"
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qtreeview.h
+	<QtWidgets/qabstractitemview.h>
+
+1457010287 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qabstractitemview.h
+	<QtWidgets/qabstractscrollarea.h>
+	<QtCore/qabstractitemmodel.h>
+	<QtCore/qitemselectionmodel.h>
+	<QtWidgets/qabstractitemdelegate.h>
+
+1457010275 c:\users\pyrun\documents\projekte 2015\qt5\include\qtcore\qitemselectionmodel.h
+	<QtCore/qset.h>
+	<QtCore/qvector.h>
+	<QtCore/qlist.h>
+	<QtCore/qabstractitemmodel.h>
+
+1457010287 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qabstractitemdelegate.h
+	<QtCore/qobject.h>
+	<QtWidgets/qstyleoption.h>
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qstyleoption.h
+	<QtCore/qvariant.h>
+	<QtWidgets/qabstractspinbox.h>
+	<QtGui/qicon.h>
+	<QtGui/qmatrix.h>
+	<QtWidgets/qslider.h>
+	<QtWidgets/qstyle.h>
+	<QtWidgets/qtabbar.h>
+	<QtWidgets/qtabwidget.h>
+	<QtWidgets/qrubberband.h>
+	<QtWidgets/qframe.h>
+	<QtCore/qabstractitemmodel.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qabstractspinbox.h
+	<QtWidgets/qwidget.h>
+	<QtGui/qvalidator.h>
+
+1457010279 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qvalidator.h
+	<QtCore/qobject.h>
+	<QtCore/qstring.h>
+	<QtCore/qregexp.h>
+	<QtCore/qregularexpression.h>
+	<QtCore/qlocale.h>
+
+1457010276 c:\users\pyrun\documents\projekte 2015\qt5\include\qtcore\qregularexpression.h
+	<QtCore/qglobal.h>
+	<QtCore/qstring.h>
+	<QtCore/qstringlist.h>
+	<QtCore/qshareddata.h>
+	<QtCore/qvariant.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qslider.h
+	<QtWidgets/qabstractslider.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qabstractslider.h
+	<QtWidgets/qwidget.h>
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qstyle.h
+	<QtCore/qobject.h>
+	<QtCore/qrect.h>
+	<QtCore/qsize.h>
+	<QtGui/qicon.h>
+	<QtGui/qpixmap.h>
+	<QtGui/qpalette.h>
+	<QtWidgets/qsizepolicy.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qtabbar.h
+	<QtWidgets/qwidget.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qtabwidget.h
+	<QtWidgets/qwidget.h>
+	<QtGui/qicon.h>
+
+1457010289 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qrubberband.h
+	<QtWidgets/qwidget.h>
+
+1463253957 c:\users\pyrun\documents\projekte 2015\selur\src\editor\editor.h
+	<QtWidgets/QWidget>
+	<QtGui/QStandardItemModel>
+	"highlighter.h"
+	"opengl.h"
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qwidget
+	"qwidget.h"
+
+1463249185 c:\users\pyrun\documents\projekte 2015\selur\src\editor\highlighter.h
+	<QtGui/QSyntaxHighlighter.h>
+	<QtGui/QTextDocument.h>
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qsyntaxhighlighter.h
+	<QtCore/qglobal.h>
+	<QtCore/qobject.h>
+	<QtGui/qtextobject.h>
+
+1457010279 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qtextobject.h
+	<QtCore/qobject.h>
+	<QtGui/qtextformat.h>
+	<QtGui/qtextlayout.h>
+	<QtGui/qglyphrun.h>
+
+1457010279 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qtextlayout.h
+	<QtCore/qstring.h>
+	<QtCore/qnamespace.h>
+	<QtCore/qrect.h>
+	<QtCore/qvector.h>
+	<QtGui/qcolor.h>
+	<QtCore/qobject.h>
+	<QtGui/qevent.h>
+	<QtGui/qtextformat.h>
+	<QtGui/qglyphrun.h>
+	<QtGui/qtextcursor.h>
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qglyphrun.h
+	<QtCore/qsharedpointer.h>
+	<QtCore/qvector.h>
+	<QtCore/qpoint.h>
+	<QtGui/qrawfont.h>
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qrawfont.h
+	<QtCore/qstring.h>
+	<QtCore/qiodevice.h>
+	<QtCore/qglobal.h>
+	<QtCore/qobject.h>
+	<QtCore/qpoint.h>
+	<QtGui/qfont.h>
+	<QtGui/qtransform.h>
+	<QtGui/qfontdatabase.h>
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qfontdatabase.h
+	<QtGui/qwindowdefs.h>
+	<QtCore/qstring.h>
+	<QtGui/qfont.h>
+
+1463341369 c:\users\pyrun\documents\projekte 2015\selur\src\editor\opengl.h
+	"../graphic/shader.h"
+	"../graphic/camera.h"
+	"../game/object.h"
+	<QtWidgets/QOpenGLWidget>
+	<QtCore/QBasicTimer.h>
+	<QtGui/QWheelEvent>
+
+1463253819 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\shader.h
+	<string>
+	<glew.h>
+	"transform.h"
+
+1426425512 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\transform.h
+	<glm/glm.hpp>
+	<glm/gtx/transform.hpp>
+	"camera.h"
+
+1462142563 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\camera.h
+	<stdio.h>
+	<glm/glm.hpp>
+	<glm/gtx/transform.hpp>
+
+1463342498 c:\users\pyrun\documents\projekte 2015\selur\src\game\object.h
+	"../graphic/graphic.h"
+	"../graphic/tiny_obj_loader.h"
+	"../graphic/texture.h"
+
+1462668624 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\graphic.h
+	"display.h"
+	"shader.h"
+	"texture.h"
+
+1462713913 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\display.h
+	<string>
+	<SDL2\SDL.h>
+
+1422617136 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\texture.h
+	<string>
+	<glew.h>
+
+1461961461 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\tiny_obj_loader.h
+	<string>
+	<vector>
+	<map>
+	<cstdlib>
+	<cstring>
+	<cassert>
+	<cmath>
+	<cstddef>
+	<cctype>
+	<fstream>
+	<sstream>
+	"tiny_obj_loader.h"
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qopenglwidget
+	"qopenglwidget.h"
+
+1457010288 c:\users\pyrun\documents\projekte 2015\qt5\include\qtwidgets\qopenglwidget.h
+	<QtCore/qglobal.h>
+	<QtWidgets/QWidget>
+	<QtGui/QSurfaceFormat>
+	<QtGui/qopengl.h>
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qsurfaceformat
+	"qsurfaceformat.h"
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qsurfaceformat.h
+	<QtCore/qglobal.h>
+	<QtCore/qpair.h>
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qopengl.h
+	<QtCore/qglobal.h>
+	<QtCore/qt_windows.h>
+	<OpenGLES/ES3/gl.h>
+	<OpenGLES/ES3/glext.h>
+	<OpenGLES/ES2/gl.h>
+	<OpenGLES/ES2/glext.h>
+	<GLES3/gl31.h>
+	<GLES3/gl3.h>
+	<GLES2/gl2.h>
+	<QtGui/qopengles2ext.h>
+	<OpenGL/gl.h>
+	<OpenGL/gl3.h>
+	<OpenGL/glext.h>
+	<GL/gl.h>
+	<QtGui/qopenglext.h>
+	<stddef.h>
+	<inttypes.h>
+	<inttypes.h>
+	<inttypes.h>
+	<stdint.h>
+	<stdint.h>
+	<inttypes.h>
+
+1457010275 c:\users\pyrun\documents\projekte 2015\qt5\include\qtcore\qt_windows.h
+	<windows.h>
+	<ceconfig.h>
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qopengles2ext.h
+
+1457010278 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qopenglext.h
+	<windows.h>
+	<stddef.h>
+	<inttypes.h>
+	<inttypes.h>
+	<inttypes.h>
+	<stdint.h>
+	<stdint.h>
+	<inttypes.h>
+
+1457010275 c:\users\pyrun\documents\projekte 2015\qt5\include\qtcore\qbasictimer.h
+	<QtCore/qglobal.h>
+	<QtCore/qnamespace.h>
+
+1463263142 source:c:\users\pyrun\documents\projekte 2015\selur\src\editor\event.cpp
+	"event.h"
+
+1463262739 c:\users\pyrun\documents\projekte 2015\selur\src\editor\event.h
+	<QtCore/QObject.h>
+	<QtCore/QEvent>
+	<QtGui/QKeyEvent>
+
+1457010275 c:\users\pyrun\documents\projekte 2015\qt5\include\qtcore\qevent
+	"qcoreevent.h"
+
+1457010277 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qkeyevent
+	"qevent.h"
+
+1463249185 source:c:\users\pyrun\documents\projekte 2015\selur\src\editor\highlighter.cpp
+	"highlighter.h"
+
+1463341827 source:c:\users\pyrun\documents\projekte 2015\selur\src\editor\opengl.cpp
+	"opengl.h"
+
+1461973867 source:c:\users\pyrun\documents\projekte 2015\selur\src\game\object.cpp
+	"object.h"
+
+1462144081 source:c:\users\pyrun\documents\projekte 2015\selur\src\graphic\camera.cpp
+	"camera.h"
+
+1462824870 source:c:\users\pyrun\documents\projekte 2015\selur\src\graphic\glerror.cpp
+	"glerror.h"
+	<glew.h>
+	<OpenGL/gl3.h>
+	<GL3/gl3.h>
+	<string>
+	<iostream>
+	<fstream>
+
+1422661555 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\glerror.h
+
+1463254167 source:c:\users\pyrun\documents\projekte 2015\selur\src\graphic\shader.cpp
+	"shader.h"
+	<iostream>
+	<fstream>
+
+1422617272 source:c:\users\pyrun\documents\projekte 2015\selur\src\graphic\stb_image.cpp
+	"stb_image.h"
+	<math.h>
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<memory.h>
+	<assert.h>
+	<stdarg.h>
+
+1422617274 c:\users\pyrun\documents\projekte 2015\selur\src\graphic\stb_image.h
+	<stdio.h>
+
+1451710589 source:c:\users\pyrun\documents\projekte 2015\selur\src\graphic\texture.cpp
+	"texture.h"
+	"stb_image.h"
+	<iostream>
+
+1463254025 source:c:\users\pyrun\documents\projekte 2015\selur\src\main_qt.cpp
+	<QtWidgets/QApplication>
+	<QtWidgets/QPushButton>
+	<QtWidgets/QTextEdit>
+	<QtWidgets/QFormLayout>
+	<QtGui/QFont>
+	"SDL2/SDL.h"
+	"editor/editor.h"
+
+1457010277 c:\users\pyrun\documents\projekte 2015\qt5\include\qtgui\qwheelevent
+	"qevent.h"
+

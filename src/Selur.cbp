@@ -70,6 +70,7 @@
 					<Add directory="../../SDL2_64/include" />
 					<Add directory="../../OpenGL/GL" />
 					<Add directory="../../glm" />
+					<Add directory="src/game/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32 -lSDL2main -lSDL2  -lSDL2_image" />
@@ -109,6 +110,8 @@
 		<Unit filename="game/landscape_generator.h" />
 		<Unit filename="game/object.cpp" />
 		<Unit filename="game/object.h" />
+		<Unit filename="game/objectcreator.cpp" />
+		<Unit filename="game/objectcreator.h" />
 		<Unit filename="game/sun.cpp" />
 		<Unit filename="game/sun.h" />
 		<Unit filename="game/world.cpp" />
