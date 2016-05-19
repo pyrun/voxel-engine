@@ -1,50 +1,74 @@
 #include "camera.h"
 
 Camera::Camera(const glm::vec3& pos, float fov, float aspect, float zNear, float zFar, float ortho_size) {
-    this->pos = pos;
-    this->forward = glm::vec3(0.1f, 0.0f, 0.1f);
-    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->projection = glm::perspective(fov, aspect, zNear, zFar);
-    this->projectionortho = glm::ortho<float>(-ortho_size, ortho_size,-ortho_size,ortho_size, zNear, zFar);
+    // set camera
+    m_position = pos;
+    m_fov = fov;
+    m_aspect = aspect;
+    m_zNear = zNear;
+    m_zFar = zFar;
+
+    // calc zoom
+    zoom( 0);
+
+    this->projectionortho = glm::ortho<float>(-ortho_size, ortho_size,-ortho_size,ortho_size, m_zNear, m_zFar);
+
+    // calc
+    calcOrientation();
 }
 
 void Camera::MoveForward(float amt) {
-    pos += forward * amt;
+    m_position += m_direction * amt;
 }
 
 void Camera::MoveForwardCross( float amt) {
     glm::vec3 tup(0.0f, 1.0f, 0.0f);
     //static const glm::vec3 UP(0.0f, 0.0f, 0.0f);
    // pos += tforward * amt;
-    pos += glm::cross( glm::normalize(glm::cross(up, forward)), tup)*amt;
+    m_position += glm::cross( glm::normalize(glm::cross(m_up, m_direction)), tup)*amt;
 }
 
 void Camera::MoveUp( float amt) {
-        pos.y += amt;
+    m_position.y += amt;
 }
 
 void Camera::MoveRight(float amt) {
-    pos += glm::cross(up, forward) * amt;
+    m_position += glm::cross(m_up, m_direction) * amt;
 }
 
-void Camera::Pitch(float angle, float push) {
-    glm::vec3 right = glm::normalize(glm::cross(up, forward));
-    glm::vec3 temp_forward = glm::vec3(glm::normalize(glm::rotate(angle, right) * glm::vec4(forward, 0.0)));
+void Camera::calcOrientation() {
+    // directions
+    m_direction = glm::vec3( cos( m_verticalAngle) * sin(m_horizontalAngle), sin(m_verticalAngle) , cos(m_verticalAngle) * cos(m_horizontalAngle) );
 
-    if( temp_forward.y < -0.99f || temp_forward.y > 0.99f ) // Schutz vor überdrehung
-        if( push) {
-        } else {
-            return;
-        }
-    forward = temp_forward; // Temp wert setzten
-    up = glm::normalize(glm::cross(forward, right));
+    // Right vector
+    glm::vec3 right = glm::vec3(
+        sin(m_horizontalAngle - 3.14f/2.0f),
+        0,
+        cos(m_horizontalAngle - 3.14f/2.0f)
+    );
+    // up vector
+    m_up = glm::cross( right, m_direction );
 }
 
-void Camera::RotateY(float angle, bool push) {
-    static const glm::vec3 UP(0.0f, 1.0f, 0.0f);
+void Camera::verticalAngle(float angle, float push) {
+    m_verticalAngle -= angle;
+    if( m_verticalAngle > 1.5)
+        m_verticalAngle = 1.5;
+    if( m_verticalAngle < -1.5)
+        m_verticalAngle = -1.5;
+    calcOrientation();
+}
 
-    glm::mat4 rotation = glm::rotate(angle, UP);
+void Camera::horizontalAngle(float angle, bool push) {
+    m_horizontalAngle += angle;
+    calcOrientation();
+    if( m_horizontalAngle < 0)
+        m_horizontalAngle += 3.14*2;
+    if( m_horizontalAngle > 3.14*2)
+        m_horizontalAngle -= 3.14*2;
+}
 
-    forward = glm::vec3(glm::normalize(rotation * glm::vec4(forward, 0.0)));
-    up = glm::vec3(glm::normalize(rotation * glm::vec4(up, 0.0)));
+void Camera::zoom( float change) {
+    m_fov += change;
+    m_projection = glm::perspective(m_fov, m_aspect, m_zNear, m_zFar);
 }

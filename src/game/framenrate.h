@@ -41,6 +41,7 @@ public:
     float getFramenrate();
     double getFrameratePrecisely() { return m_fps; }
     double getMSframe() { return m_msframe; }
+    int getLimit() { return m_rate; }
 protected:
 private:
     int m_start;

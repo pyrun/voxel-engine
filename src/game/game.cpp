@@ -180,10 +180,12 @@ void Game::Start() {
         m_input.Reset();
         m_isRunnig = m_input.Handle( m_graphic->GetWidth(), m_graphic->GetHeight(), m_graphic->GetWindow());
         // Input einsehen
+//        float Speed = 0.1f * framenrate.getMSframe() *framenrate.getLimit()/ 1000.0f;
         float Speed = 0.1f;
+        //printf( "%f %f \n", Speed, framenrate.getMSframe());
         Camera *cam = m_graphic->GetCamera();
-        cam->RotateY( -m_input.Map.MousePos.x * 2);
-        cam->Pitch( m_input.Map.MousePos.y * 2);
+        cam->horizontalAngle ( -m_input.Map.MousePos.x * 2);
+        cam->verticalAngle  ( m_input.Map.MousePos.y * 2);
 
         if( m_input.Map.Up )
             cam->MoveForwardCross( Speed);
@@ -265,6 +267,7 @@ void Game::Start() {
         // Titel setzten
         //Title = "FPS: " + NumberToString( (double)(int)framenrate.GetFramenrate());
         Title = "FPS_" + NumberToString( framenrate.getFrameratePrecisely() );
+        Title = Title + " ms_" + NumberToString( framenrate.getMSframe());
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
 //      Title = Title + "Tile X " + NumberToString( (float)x) + " Y " + NumberToString(  (float)y) + " Z " + NumberToString(  (float)z );
         Title = Title + " Chunks_" + NumberToString( (double)m_world->GetAmountChunks());
