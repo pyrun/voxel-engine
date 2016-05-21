@@ -34,6 +34,7 @@ void Framenrate::CalcDelay() {
          m_fps = 1.0/(1000.f/double( m_nbFrames))*1000;
          m_msframe = 1000.f/ double( m_nbFrames);
          m_nbFrames = 0;
+
          m_lastTime += 1000;
         }
     // Falls counter kein ende hat einen setzten

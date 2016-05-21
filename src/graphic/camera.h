@@ -16,14 +16,11 @@ public:
 
 	void verticalAngle (float angle, float push = false);
 	void horizontalAngle (float angle, bool push = false);
-	void zoom( float change);
+	void resize( float aspect);
+	void zoom( float change = 0.0f);
 
-    glm::mat4 GetViewProjection() const{
-		return m_projection * glm::lookAt(m_position, m_position + m_direction, m_up);
-	}
-	inline glm::mat4 GetViewProjectionOrtho() const{
-		return projectionortho * glm::lookAt(m_position, m_position+m_direction, m_up); //glm::lookAt( t_pos, t_pos+ppos, glm::vec3( 0.0f, 1.0f, 0.0f));
-	}
+    glm::mat4 GetViewProjection() const{ return m_projection * glm::lookAt(m_position, m_position + m_direction, m_up); }
+	inline glm::mat4 GetViewProjectionOrtho() const{ return projectionortho * glm::lookAt(m_position, m_position+m_direction, m_up); }
 
 	inline glm::vec3& GetPos() { return m_position; }
 	inline glm::vec3& GetForward() { return m_direction; }
@@ -40,13 +37,13 @@ private:
 	glm::vec3 m_direction;
 	glm::vec3 m_up;
 
-	float m_fov = 45.0f;
-    float m_horizontalAngle = 0.0f;
-    float m_verticalAngle = 0.0f;
+	float m_fov;
+    float m_horizontalAngle;
+    float m_verticalAngle;
 
-    float m_aspect = 0;
-    float m_zNear = 0;
-    float m_zFar = 0;
+    float m_aspect;
+    float m_zNear;
+    float m_zFar;
 };
 
 #endif

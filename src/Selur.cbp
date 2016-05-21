@@ -83,6 +83,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../../opensys/opensys.h" />
 		<Unit filename="../res/shader/object.fs" />
 		<Unit filename="../res/shader/object.vs" />
 		<Unit filename="../res/shader/shadow.fs" />

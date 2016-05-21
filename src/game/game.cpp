@@ -199,10 +199,8 @@ void Game::Start() {
             cam->MoveUp( Speed);
         if( m_input.Map.Shift )
             cam->MoveUp( -Speed);
-        if( m_input.Map.Place);
-        if( m_input.Map.Destory && !m_input.MapOld.Destory);
         if( m_input.Map.Inventory && !m_input.MapOld.Inventory) {
-            if( m_config.GetSupersampling()) {
+            /*if( m_config.GetSupersampling()) {
 
                 m_config.SetSupersampling( false);
 
@@ -210,8 +208,15 @@ void Game::Start() {
             } else {
                 printf( "Game::Start Supersampling active\n");
                 m_config.SetSupersampling( true);
-            }
+            }*/
+            cam->zoom( -1.5);
         }
+        if( !m_input.Map.Inventory && m_input.MapOld.Inventory) {
+            cam->zoom( 1.5);
+        }
+
+        if( m_input.getResize())
+            m_graphic->ResizeWindow( m_input.getResizeW(), m_input.getResizeH());
         //cos_i++;
         // Framenrate anfangen zu zählen
         framenrate.StartCount();
@@ -252,9 +257,6 @@ void Game::Start() {
         // Swap die Buffer um keine Renderfehler zu bekommen
         m_graphic->GetDisplay()->SwapBuffers();
 
-        if( m_timer.GetTicks() != 0)
-        ;//    printf( "Timer %d \n", m_timer.GetTicks());
-
         // fehler anzeigen -> schleife eine meldung bedeutet ich habe verkackt
         GLenum error =  glGetError();
         if(error) {
@@ -276,8 +278,7 @@ void Game::Start() {
         //m_graphic->GetDisplay()->SetTitle( Title);
 
         // Measure speed
-
-        printf("%s\n", Title.c_str());
+        //printf("%s\n", Title.c_str());
         // http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2005.html
 
     }

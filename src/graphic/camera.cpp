@@ -8,6 +8,9 @@ Camera::Camera(const glm::vec3& pos, float fov, float aspect, float zNear, float
     m_zNear = zNear;
     m_zFar = zFar;
 
+    m_horizontalAngle = 0;
+    m_verticalAngle = 0;
+
     // calc zoom
     zoom( 0);
 
@@ -66,6 +69,11 @@ void Camera::horizontalAngle(float angle, bool push) {
         m_horizontalAngle += 3.14*2;
     if( m_horizontalAngle > 3.14*2)
         m_horizontalAngle -= 3.14*2;
+}
+
+void Camera::resize( float aspect) {
+    m_aspect = aspect;
+    zoom();
 }
 
 void Camera::zoom( float change) {

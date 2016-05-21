@@ -36,7 +36,7 @@ void Graphic::ResizeWindow( int screen_width, int screen_height) {
     printf( "%d %d resize\n", screen_width, screen_height);
     m_display->SetSize( screen_width, screen_height);
     // resize
-    m_camera->GetProjection() = glm::perspective( graphic_fov, (float)screen_width/(float)screen_height, graphic_znear, graphic_zfar);
+    m_camera->resize( (float)screen_width/(float)screen_height);
 }
 
 SDL_Surface* Graphic::LoadSurface(std::string File) {
