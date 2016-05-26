@@ -15,6 +15,8 @@ class ObjectCreator {
 
         void addIndices( int l_vertices_end, bool l_flip = false);
 
+        void addCube( glm::vec3 l_pos, glm::vec3 l_size, glm::vec4 l_texture);
+
         void addXPlate( glm::vec3 l_pos = glm::vec3( 0, 0, 0), glm::vec3 l_size = glm::vec3( 1, 1, 1), glm::vec4 l_texture = glm::vec4( 0, 0, 1, 1), bool flip = false);
         void addYPlate( glm::vec3 l_pos = glm::vec3( 0, 0, 0), glm::vec3 l_size = glm::vec3( 1, 1, 1), glm::vec4 l_texture = glm::vec4( 0, 0, 1, 1), bool flip = false);
         void addZPlate( glm::vec3 l_pos = glm::vec3( 0, 0, 0), glm::vec3 l_size = glm::vec3( 1, 1, 1), glm::vec4 l_texture = glm::vec4( 0, 0, 1, 1), bool flip = false);

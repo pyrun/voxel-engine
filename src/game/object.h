@@ -22,17 +22,19 @@ class Object {
 
             ObjectCreator Obj;
 
-            Obj.addXPlate();
+            //Obj.addXPlate();
 
 //            Obj.addXPlate( glm::vec3( 0, 1 ,0), glm::vec3( 0.5, 0.5 ,0.5), glm::vec4( 0, 0, 0.5, 0.5));
-            Obj.addXPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1));
+
+            /*Obj.addXPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1));
             Obj.addXPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), true);
             Obj.addZPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), true);
             Obj.addZPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), false);
             Obj.addYPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), true);
-            Obj.addYPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), false);
+            Obj.addYPlate( glm::vec3( 0, 0 ,0), glm::vec3( 1, 1 ,1), glm::vec4( 0, 0, 1, 1), false);*/
 
-
+            Obj.addCube( glm::vec3( 0, 2, 0), glm::vec3( 1, 2 ,1), glm::vec4( 0, 0, 1, 1));
+            Obj.addCube( glm::vec3( 0, 0, 0), glm::vec3( 1, 1.5,1), glm::vec4( 0, 0, 1, 1));
 
 
 
@@ -145,12 +147,7 @@ class Object {
             indices.push_back( 6 );*/
 
 
-
-
-
-
-
-            //vertices.push_back( glm::vec3( 0.0f, 1.0f, 0.0f) );
+            //vertices.push_back( glm::vec3( 0.0f, 1.0f, 0.0f) );0
             m_texture = new Texture( "cube.bmp");
 
             glBindBuffer(GL_ARRAY_BUFFER, m_vbo);

@@ -46,11 +46,19 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     this->x = X;
     this->y = Y;
     this->z = Z;
-    m_tile = new Tile*[ CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH];
+    m_tile = NULL;
+    m_tile = new (std::nothrow) Tile*[ CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH];
+    if (m_tile == nullptr) {
+      // error assigning memory. Take measures.
+      printf( "Chunk::Chunk error\n");
+      return;
+    }
     for (int cz = 0; cz < CHUNK_DEPTH; cz++)
         for (int cx = 0; cx < CHUNK_WIDTH; cx++)
-            for(int cy = 0; cy < CHUNK_HEIGHT; cy++)
-                m_tile[ cz*CHUNK_HEIGHT*CHUNK_DEPTH + cx*CHUNK_DEPTH + cy] = NULL;
+            for(int cy = 0; cy < CHUNK_HEIGHT; cy++) {
+                int index = TILE_REGISTER( cx, cy, cz);
+                m_tile[ index ] = NULL;
+            }
 
 
     // http://www.blitzbasic.com/Community/posts.php?topic=93982
@@ -78,13 +86,13 @@ Chunk::~Chunk() {
                 }
     delete[] m_tile;
 
-    printf( "~Chunk(): remove m_tile in %dms\n", timer.GetTicks());
+    //printf( "~Chunk(): remove m_tile in %dms\n", timer.GetTicks());
     timer.Start();
     // vbo daten löschen
     m_data.clear();
     m_vertex.clear();
     //m_normal.clear();
-    printf( "~Chunk(): remove vbo data in %dms\n", timer.GetTicks());
+    //printf( "~Chunk(): remove vbo data in %dms\n", timer.GetTicks());
 }
 
 void Chunk::CreateTile( int X, int Y, int Z, int ID) {
@@ -140,7 +148,6 @@ unsigned char ConvertChar(float value) {
   value = (value + 1.0f) * 0.5f;
   return (unsigned char)(value*255.0f);
 }
-
 
 //Pack 3 values into 1 float
 float PackToFloat(unsigned char x, unsigned char y, unsigned char z)
@@ -509,7 +516,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
         return;
     }
     m_arraychange = true;
-    printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), m_elements, m_vertex.size(), m_data.size());
+    //printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), m_elements, m_vertex.size(), m_data.size());
 }
 
 
@@ -560,7 +567,7 @@ void Chunk::UpdateVbo() {
     glBindBuffer(GL_ARRAY_BUFFER, m_vboData);
     glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(ChunkVboDataStruct), &m_data[0], GL_STATIC_DRAW);
     m_updatevbo = false;
-    printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(ChunkVboDataStruct), m_vertex.size(), m_vertex.size() * sizeof(ChunkVboDataStruct));
+    //printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(ChunkVboDataStruct), m_vertex.size(), m_vertex.size() * sizeof(ChunkVboDataStruct));
 }
 
 void Chunk::Draw( Graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa) {

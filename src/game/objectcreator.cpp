@@ -11,6 +11,7 @@ ObjectCreator::~ObjectCreator() {
 /*void ObjectCreator::addTexture( glm::vec2 l_start, glm::vec2 l_end, int flip) {
 }*/
 
+
 void ObjectCreator::addIndices( int l_vertices_end, bool l_flip) {
     // indices
     if( l_flip == false ) {
@@ -28,6 +29,15 @@ void ObjectCreator::addIndices( int l_vertices_end, bool l_flip) {
         m_indices.push_back( l_vertices_end + 2 );
         m_indices.push_back( l_vertices_end + 0 );
     }
+}
+
+void ObjectCreator::addCube( glm::vec3 l_pos, glm::vec3 l_size, glm::vec4 l_texture) {
+    addXPlate( l_pos, l_size, l_texture);
+    addXPlate( l_pos, l_size, l_texture, true);
+    addZPlate( l_pos, l_size, l_texture, true);
+    addZPlate( l_pos, l_size, l_texture);
+    addYPlate( l_pos, l_size, l_texture, true);
+    addYPlate( l_pos, l_size, l_texture);
 }
 
 void ObjectCreator::addXPlate( glm::vec3 l_pos, glm::vec3 l_size, glm::vec4 l_texture, bool flip) {

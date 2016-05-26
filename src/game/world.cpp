@@ -188,8 +188,9 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
     node = new Chunk( pos_x, pos_y, pos_z, 102457, m_blocklist);
 
     // Landscape erstellen
+
     Landscape_Generator( node, m_blocklist);
-    printf( "Create Chunk %dms %dkb\n", timer.GetTicks(), CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH*sizeof( Tile)/1024);
+    //printf( "Create Chunk %dms %dkb\n", timer.GetTicks(), CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH*sizeof( Tile)/1024);
 
     // seiten finden
     Chunk *snode;
@@ -224,7 +225,7 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
         node->left = snode;
     }
     //printf( "Add Chunk %d %d %d %d\n", m_chunk_amount+1, node.chunk->GetX(), node.chunk->GetY(), node.chunk->GetZ());
-    printf( "Add Chunk %d: %d %d %d\n", m_chunk_amount+1, node->GetX(), node->GetY(), node->GetZ());
+    //printf( "Add Chunk %d: %d %d %d\n", m_chunk_amount+1, node->GetX(), node->GetY(), node->GetZ());
     m_chunk_amount++; // Chunks mitzählen
 
     Chunk *tmp = Chunks;
