@@ -5,10 +5,9 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_WIDTH 16
-#define CHUNK_HEIGHT 16
-#define CHUNK_DEPTH 16
-
+#define CHUNK_WIDTH 128
+#define CHUNK_HEIGHT 128
+#define CHUNK_DEPTH 128
 
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_WIDTH * (posY + CHUNK_DEPTH * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 

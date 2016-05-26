@@ -10,7 +10,7 @@
 
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
 
-#define WORLD_TEST_FACTOR 2
+#define WORLD_TEST_FACTOR 0
 
 Uint32 thrend_WorldGenerator( Uint32 interval, void *Paramenter);
 

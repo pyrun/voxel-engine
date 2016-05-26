@@ -47,20 +47,26 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     this->y = Y;
     this->z = Z;
     m_tile = NULL;
-    m_tile = new (std::nothrow) Tile*[ CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH];
+
+
+
+    m_tile = (Tile**)malloc(sizeof(Tile*) * CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH); //new (std::nothrow) Tile*[ CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH];
+
     if (m_tile == nullptr) {
       // error assigning memory. Take measures.
       printf( "Chunk::Chunk error\n");
       return;
     }
+
+    int t = SDL_GetTicks();
     for (int cz = 0; cz < CHUNK_DEPTH; cz++)
         for (int cx = 0; cx < CHUNK_WIDTH; cx++)
             for(int cy = 0; cy < CHUNK_HEIGHT; cy++) {
                 int index = TILE_REGISTER( cx, cy, cz);
                 m_tile[ index ] = NULL;
+                //CreateTile( cx, cy, cz, 0);
             }
-
-
+    printf( "Chunk::chunk %d\n", SDL_GetTicks()-t);
     // http://www.blitzbasic.com/Community/posts.php?topic=93982
 }
 
