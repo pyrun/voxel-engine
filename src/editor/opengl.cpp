@@ -1,6 +1,6 @@
 #include "opengl.h"
 
-Opengl::Opengl( QWidget *parent ) : QOpenGLWidget( parent )
+Opengl::Opengl( QWidget *parent ) : QGLWidget( parent )
 {
 
 }
@@ -17,10 +17,7 @@ void Opengl::wheelEvent(QWheelEvent *event)
     int numSteps = numDegrees / 15;
 
     if (event->orientation() == Qt::Horizontal) {
-        //scrollHorizontally(numSteps);
-        //m_camera->MoveForward( +(float)numSteps*2);
 
-        printf("test2");
     } else {
         //m_camera->MoveForward( -(float)numSteps*2);
         m_camera->GetPos().x += numSteps*0.5;

@@ -6,6 +6,7 @@
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QTreeView>
+#include <QtGui/QSurfaceFormat>
 #include "editor.h"
 
 Editor::Editor(QWidget *parent) : QWidget(parent)
@@ -14,7 +15,7 @@ Editor::Editor(QWidget *parent) : QWidget(parent)
 
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
-    QSurfaceFormat::setDefaultFormat(format);
+    //QSurfaceFormat::setDefaultFormat(format);
     m_opengl = new Opengl;
 
     // font set
