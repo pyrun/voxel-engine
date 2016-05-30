@@ -8178,3 +8178,259 @@
 	<stddef.h>
 	<cstddef>
 
+1455230206 source:/home/pyrun/projects/selur/src/game/block.cpp
+	"block.h"
+
+1455230206 /home/pyrun/projects/selur/src/game/block.h
+	<stdio.h>
+	<stdlib.h>
+	<stdarg.h>
+	<string.h>
+	<dirent.h>
+	<fstream>
+	<sstream>
+	<vector>
+	<time.h>
+	<math.h>
+	"../graphic/graphic.h"
+	"../system/tinyxml2.h"
+
+1455230206 /home/pyrun/projects/selur/src/graphic/graphic.h
+	"display.h"
+	"shader.h"
+	"texture.h"
+
+1464587350 /home/pyrun/projects/selur/src/graphic/display.h
+	<string>
+	<SDL2/SDL.h>
+
+1464587445 /home/pyrun/projects/selur/src/graphic/shader.h
+	<string>
+	<GL/glew.h>
+	"transform.h"
+
+1455230206 /home/pyrun/projects/selur/src/graphic/transform.h
+	<glm/glm.hpp>
+	<glm/gtx/transform.hpp>
+	"camera.h"
+
+1455230206 /home/pyrun/projects/selur/src/graphic/camera.h
+	<stdio.h>
+	<glm/glm.hpp>
+	<glm/gtx/transform.hpp>
+
+1464587454 /home/pyrun/projects/selur/src/graphic/texture.h
+	<string>
+	<GL/glew.h>
+
+1455230206 /home/pyrun/projects/selur/src/system/tinyxml2.h
+	<ctype.h>
+	<limits.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdarg.h>
+	<cctype>
+	<climits>
+	<cstdio>
+	<cstdlib>
+	<cstring>
+	<cstdarg>
+	<android/log.h>
+	<assert.h>
+
+1455230206 source:/home/pyrun/projects/selur/src/game/chunk.cpp
+	"chunk.h"
+	"../system/timer.h"
+	<stdio.h>
+
+1455230206 /home/pyrun/projects/selur/src/game/chunk.h
+	<vector>
+	"../graphic/graphic.h"
+	"block.h"
+
+1464587460 /home/pyrun/projects/selur/src/system/timer.h
+	<SDL2/SDL.h>
+	<vector>
+
+1455230206 source:/home/pyrun/projects/selur/src/game/config.cpp
+	"config.h"
+
+1455230206 /home/pyrun/projects/selur/src/game/config.h
+
+1455230206 source:/home/pyrun/projects/selur/src/game/framenrate.cpp
+	"framenrate.h"
+	<stdio.h>
+
+1464587465 /home/pyrun/projects/selur/src/game/framenrate.h
+	<SDL2/SDL.h>
+	<vector>
+
+1455230206 source:/home/pyrun/projects/selur/src/game/game.cpp
+	"game.h"
+	"../graphic/glerror.h"
+	"../system/timer.h"
+	<stdio.h>
+
+1464587470 /home/pyrun/projects/selur/src/game/game.h
+	<SDL2/SDL.h>
+	<string>
+	<iostream>
+	<cstdlib>
+	<sstream>
+	"../graphic/graphic.h"
+	"block.h"
+	"input.h"
+	"framenrate.h"
+	"world.h"
+	"config.h"
+	"gui.h"
+	"sun.h"
+	"object.h"
+
+1464587474 /home/pyrun/projects/selur/src/game/input.h
+	<SDL2/SDL.h>
+	<glm/glm.hpp>
+	"../graphic/graphic.h"
+
+1455230206 /home/pyrun/projects/selur/src/game/world.h
+	"../graphic/graphic.h"
+	"chunk.h"
+	"block.h"
+	"landscape_generator.h"
+	"config.h"
+
+1455230206 /home/pyrun/projects/selur/src/game/landscape_generator.h
+	"block.h"
+	"chunk.h"
+
+1464587629 /home/pyrun/projects/selur/src/game/gui.h
+	"../graphic/graphic.h"
+
+1455230206 /home/pyrun/projects/selur/src/game/sun.h
+	"../graphic/graphic.h"
+	"../system/timer.h"
+
+1455230206 /home/pyrun/projects/selur/src/game/object.h
+	"../graphic/graphic.h"
+	"../graphic/tiny_obj_loader.h"
+	"../graphic/texture.h"
+	"objectcreator.h"
+
+1455230206 /home/pyrun/projects/selur/src/graphic/tiny_obj_loader.h
+	<string>
+	<vector>
+	<map>
+	<cstdlib>
+	<cstring>
+	<cassert>
+	<cmath>
+	<cstddef>
+	<cctype>
+	<fstream>
+	<sstream>
+	"tiny_obj_loader.h"
+
+1455230206 /home/pyrun/projects/selur/src/game/objectcreator.h
+	<vector>
+	<glm/glm.hpp>
+
+1455230206 /home/pyrun/projects/selur/src/graphic/glerror.h
+
+1455230206 source:/home/pyrun/projects/selur/src/game/gui.cpp
+	"gui.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/game/input.cpp
+	"input.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/game/landscape_generator.cpp
+	"landscape_generator.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/game/object.cpp
+	"object.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/game/objectcreator.cpp
+	"objectcreator.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/game/sun.cpp
+	"sun.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/game/world.cpp
+	"world.h"
+	<time.h>
+	"../system/timer.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/graphic/camera.cpp
+	"camera.h"
+
+1464587644 source:/home/pyrun/projects/selur/src/graphic/display.cpp
+	"display.h"
+	<GL/glew.h>
+	<stdio.h>
+
+1464587656 source:/home/pyrun/projects/selur/src/graphic/glerror.cpp
+	"glerror.h"
+	<GL/glew.h>
+	<OpenGL/gl3.h>
+	<GL3/gl3.h>
+	<string>
+	<iostream>
+	<fstream>
+
+1455230206 source:/home/pyrun/projects/selur/src/graphic/graphic.cpp
+	"graphic.h"
+	<SDL2/SDL_image.h>
+
+1455230206 source:/home/pyrun/projects/selur/src/graphic/shader.cpp
+	"shader.h"
+	<iostream>
+	<fstream>
+
+1455230206 source:/home/pyrun/projects/selur/src/graphic/shadowmap.cpp
+	<stdio.h>
+	"shadowmap.h"
+
+1464587663 /home/pyrun/projects/selur/src/graphic/shadowmap.h
+	<GL/glew.h>
+	"camera.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/graphic/stb_image.cpp
+	"stb_image.h"
+	<math.h>
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<memory.h>
+	<assert.h>
+	<stdarg.h>
+
+1455230206 /home/pyrun/projects/selur/src/graphic/stb_image.h
+	<stdio.h>
+
+1455230206 source:/home/pyrun/projects/selur/src/graphic/texture.cpp
+	"texture.h"
+	"stb_image.h"
+	<iostream>
+
+1455230206 source:/home/pyrun/projects/selur/src/graphic/transform.cpp
+	"transform.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/main.cpp
+	"game/game.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/physic/collision.cpp
+	"collision.h"
+
+1455230206 /home/pyrun/projects/selur/src/physic/collision.h
+	<assert.h>
+	<math.h>
+
+1455230206 source:/home/pyrun/projects/selur/src/system/timer.cpp
+	"timer.h"
+
+1455230206 source:/home/pyrun/projects/selur/src/system/tinyxml2.cpp
+	"tinyxml2.h"
+	<new>
+	<stddef.h>
+	<cstddef>
+

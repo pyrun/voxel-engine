@@ -2,7 +2,7 @@
 #define DISPLAY_H
 
 #include <string>
-#include <SDL2\SDL.h>
+#include <SDL2/SDL.h>
 
 #define TILESET_WIDTH 256
 #define TILESET_HEIGHT 256

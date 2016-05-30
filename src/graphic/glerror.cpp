@@ -4,7 +4,7 @@
 
 
 #ifdef WIN32
-#include <glew.h>
+#include <GL/glew.h>
 #elif __APPLE__
 #  include <OpenGL/gl3.h>
 #else

@@ -1,7 +1,7 @@
 #ifndef SHADOWMAP_H
 #define SHADOWMAP_H
 
-#include <glew.h>
+#include <GL/glew.h>
 
 #include "camera.h"
 

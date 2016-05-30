@@ -1,7 +1,7 @@
 #ifndef FRAMENRATE_H
 #define FRAMENRATE_H
 
-#include <SDL2\SDL.h>
+#include <SDL2/SDL.h>
 #include <vector>
 
 class Framenrate_List {
