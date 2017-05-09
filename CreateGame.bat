@@ -2,7 +2,7 @@
 echo             Selur-Skript
 echo             =============
 echo.
-echo   [1] Windows64 Debug
+echo   [1] Windows32 Debug
 echo   [2] Windows64 Release
 echo   [3] Linux64 Debug
 echo   [4] Linux64 Release
@@ -22,7 +22,7 @@ goto END
 
 :WIN64D
 del "game" /s /q
-xcopy "bin/win/debug64" "game" /I
+xcopy "bin/win/debug32" "game" /I
 xcopy "res" "game" /E /C /Q /I /Y
 goto END
 

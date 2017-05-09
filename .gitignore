@@ -2,6 +2,10 @@
 Thumbs.db
 ehthumbs.db
 
+#code blocks private files delete
+*.layout
+*.depend
+
 # Folder config file
 Desktop.ini
 

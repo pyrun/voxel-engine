@@ -25,8 +25,9 @@
 					<Add directory="src/physic/" />
 				</Compiler>
 				<Linker>
-					<Add option="-lmingw32 -lSDL2main -lSDL2  -lSDL2_image" />
+					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
 					<Add option="-lopengl32 -lglew32" />
+					<Add option="-static -static-libgcc -static-libstdc++" />
 					<Add directory="../../SDL2_64/lib64" />
 					<Add directory="../../OpenGL/lib64" />
 				</Linker>
@@ -75,6 +76,7 @@
 				<Linker>
 					<Add option="-lmingw32 -lSDL2main -lSDL2  -lSDL2_image" />
 					<Add option="-lopengl32 -lglew32" />
+					<Add option="-static-libstdc++" />
 					<Add directory="../../SDL2_64/lib" />
 					<Add directory="../../OpenGL/lib" />
 				</Linker>

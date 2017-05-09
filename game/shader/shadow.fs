@@ -1,12 +1,7 @@
-#version 440
+#version 400
 
-in vec4 texcoord;
-in vec4 texnormal;
-in vec4 blockdata;
-in vec2 size;
-
-layout(location = 0) out float fragmentdepth;
+layout(location = 0) out float fragColor;
 
 void main() {
-    fragmentdepth = gl_FragCoord.z;
+    fragColor= gl_FragCoord.z;
 }
