@@ -1,7 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <SDL2\SDL.h>
+#include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include "../graphic/graphic.h"
 

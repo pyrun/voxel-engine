@@ -41,7 +41,7 @@ public:
         float m_width = graphic->GetWidth();
         float m_hight = graphic->GetHeight();
 
-        glm::mat4 one = glm::ortho( (double)-(m_width/2.0f), m_width/2.0, (double)-(m_hight/2.0f), m_hight/2.0);
+        glm::mat4 one = glm::ortho( (float)-(m_width/2.0f), m_width/2.0f, (float)-(m_hight/2.0f), m_hight/2.0f);
         graphic->GetVertexShader()->BindArray( m_vbo, 0, GL_FLOAT);
         graphic->GetVertexShader()->Bind();// Shader
         graphic->GetVertexShader()->EnableVertexArray( 0);

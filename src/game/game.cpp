@@ -116,10 +116,10 @@ void Game::ViewCurrentBlock( int view_width) {
                 if( tmp)
                     m_world->SetTile( tmp, mX, mY, mZ, m_blocklist->GetBlockID( "water")->getID());
                 else
-                    printf( "Game::ViewCurrentBlock Chunk nicht vorhanden");
+                    printf( "Game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
 
-            printf( "Set: %d %d %d %d\n", mx, my, mz, tile->ID);
+            printf( "Game::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile->ID);
             break;
         }
         if( tile->ID && m_input.Map.Destory && !m_input.MapOld.Destory) {
@@ -127,7 +127,7 @@ void Game::ViewCurrentBlock( int view_width) {
             if( tmp)
                 m_world->SetTile( tmp, mx, my, mz, 0 );
             else
-                printf( "Game::ViewCurrentBlock Chunk nicht vorhanden");
+                printf( "Game::ViewCurrentBlock Chunk nicht vorhanden\n");
         }
 
         // tile

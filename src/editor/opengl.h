@@ -4,16 +4,18 @@
 #include "../graphic/shader.h"
 #include "../graphic/camera.h"
 #include "../game/object.h"
-
-#include <QtWidgets/QOpenGLWidget>
-#include <QtCore/QBasicTimer.h>
+//
+#include <QtOpenGL/QGLWidget>
+//#include <QtOpenGL/QGLWidget>
+//#include <QtOpen
+#include <QtCore/QBasicTimer>
 #include <QtGui/QWheelEvent>
 
 #define graphic_fov 1.0f
 #define graphic_znear 0.01f
 #define graphic_zfar 100.0f
 
-class Opengl : public QOpenGLWidget {
+class Opengl : public QGLWidget {
     public:
         Opengl( QWidget *parent = NULL );
         virtual ~Opengl();

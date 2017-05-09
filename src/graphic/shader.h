@@ -2,7 +2,7 @@
 #define SHADER_INCLUDED_H
 
 #include <string>
-#include <glew.h>
+#include <GL/glew.h>
 
 #include "transform.h"
 

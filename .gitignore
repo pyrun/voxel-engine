@@ -6,6 +6,9 @@ ehthumbs.db
 *.layout
 *.depend
 
+# archiv
+archiv/
+
 # Folder config file
 Desktop.ini
 

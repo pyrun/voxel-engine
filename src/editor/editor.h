@@ -1,7 +1,9 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QTextEdit>
 #include <QtGui/QStandardItemModel>
 
 #include "highlighter.h"

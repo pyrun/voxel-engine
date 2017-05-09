@@ -1,7 +1,7 @@
 //#define GLEW_STATIC 1
 
 #include "display.h"
-#include <glew.h>
+#include <GL/glew.h>
 #include <stdio.h>
 
 Display::Display(int width, int height, const std::string& title) {

@@ -1,7 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include <QtCore/QObject.h>
+#include <QtCore/QObject>
 #include <QtCore/QEvent>
 #include <QtGui/QKeyEvent>
 

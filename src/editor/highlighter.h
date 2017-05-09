@@ -1,8 +1,8 @@
 #ifndef HIGHLIGHTER_H
 #define HIGHLIGHTER_H
 
-#include <QtGui/QSyntaxHighlighter.h>
-#include <QtGui/QTextDocument.h>
+#include <QtGui/QSyntaxHighlighter>
+#include <QtGui/QTextDocument>
 
 class Highlighter : public QSyntaxHighlighter
 {

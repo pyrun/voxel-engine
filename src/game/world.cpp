@@ -127,12 +127,13 @@ void World::Process() {
         int factor = WORLD_TEST_FACTOR;
         for( int cx = -factor; cx <= factor; cx++)
             for( int cz = -factor; cz <= factor; cz++)
-                for( int cy = -factor; cy <= factor; cy++) {
+                for( int cy = 0; cy <= 0; cy++) {
             int tmp_x = cx;
             int tmp_y = cy;
             int tmp_z = cz;
             CreateChunk( tmp_x, tmp_y-1, tmp_z);
         }
+        printf( "World::Process %d Chunks\n", GetAmountChunks());
     }
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = Chunks;
@@ -188,8 +189,9 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
     node = new Chunk( pos_x, pos_y, pos_z, 102457, m_blocklist);
 
     // Landscape erstellen
+
     Landscape_Generator( node, m_blocklist);
-    printf( "Create Chunk %dms %dkb\n", timer.GetTicks(), CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH*sizeof( Tile)/1024);
+    //printf( "Create Chunk %dms %dkb\n", timer.GetTicks(), CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH*sizeof( Tile)/1024);
 
     // seiten finden
     Chunk *snode;
@@ -224,7 +226,7 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
         node->left = snode;
     }
     //printf( "Add Chunk %d %d %d %d\n", m_chunk_amount+1, node.chunk->GetX(), node.chunk->GetY(), node.chunk->GetZ());
-    printf( "Add Chunk %d: %d %d %d\n", m_chunk_amount+1, node->GetX(), node->GetY(), node->GetZ());
+    //printf( "Add Chunk %d: %d %d %d\n", m_chunk_amount+1, node->GetX(), node->GetY(), node->GetZ());
     m_chunk_amount++; // Chunks mitzählen
 
     Chunk *tmp = Chunks;
