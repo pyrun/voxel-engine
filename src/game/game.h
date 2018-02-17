@@ -23,7 +23,7 @@ class Game {
 public:
     Game();
     virtual ~Game();
-    void ViewCurrentBlock( int view_width);
+    void viewCurrentBlock( int view_width);
     void ViewCross();
     void Start();
 protected:
@@ -32,7 +32,7 @@ private:
     bool p_isRunnig;
     Input p_input;
     BlockList* p_blocklist;
-    Graphic* p_graphic;
+    graphic* p_graphic;
     Framenrate framenrate;
     Config p_config;
     Gui *p_gui;

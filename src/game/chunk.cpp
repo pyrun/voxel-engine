@@ -2,6 +2,8 @@
 #include "../system/timer.h"
 #include <stdio.h>
 
+#define printf if
+
 Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     // node reset
     next = NULL;
@@ -28,6 +30,7 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     this->x = X;
     this->y = Y;
     this->z = Z;
+
     p_tile = NULL;
 
     int t = SDL_GetTicks();
@@ -40,7 +43,6 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
       return;
     }
 
-
     for (int cz = 0; cz < CHUNK_DEPTH; cz++)
         for (int cx = 0; cx < CHUNK_WIDTH; cx++)
             for(int cy = 0; cy < CHUNK_HEIGHT; cy++) {
@@ -49,6 +51,12 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
                 //p_tile[ index ].;
                 //CreateTile( cx, cy, cz, 0);
             }
+
+    /*p_vertex.reserve( 1);
+    p_data.reserve( 1);*/
+    //p_vertex.reserve( CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6 );
+    //p_data.reserve( CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6 );
+
     printf( "Chunk::chunk %dms\n", SDL_GetTicks()-t);
     // http://www.blitzbasic.com/Community/posts.php?topic=93982
 }
@@ -198,6 +206,9 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 0);
 
+                    p_vertex.resize( p_vertex.size() + 6);
+                    p_data.resize( p_data.size() + 6);
+
                     p_data[i] = block_data( 0.f, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
                     p_vertex[i++] = block_vertex(x, y, z, 0);
 
@@ -246,6 +257,9 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     p_vertex[i - 3] = block_vertex(x +1, y+1, z, 0);
                     p_vertex[i - 2] = block_vertex(x +1, y+1, z+1, 0);
                 } else {
+                    p_vertex.resize( p_vertex.size() + 6);
+                    p_data.resize( p_data.size() + 6);
+
                     Side_Textur_Pos = List->GetTexturByType( type, 1);
 
                     p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
@@ -298,6 +312,9 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 5);
 
+                    p_vertex.resize( p_vertex.size() + 6);
+                    p_data.resize( p_data.size() + 6);
+
                     p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
                     p_vertex[i++] = block_vertex(x, y, z, 0);
 
@@ -345,6 +362,9 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     p_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 4);
+
+                    p_vertex.resize( p_vertex.size() + 6);
+                    p_data.resize( p_data.size() + 6);
 
                     p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
                     p_vertex[i++] = block_vertex(x, y + 1, z, 0);
@@ -394,6 +414,9 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 2);
 
+                    p_vertex.resize( p_vertex.size() + 6);
+                    p_data.resize( p_data.size() + 6);
+
                     p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
                     p_vertex[i++] = block_vertex(x, y, z, 0);
 
@@ -442,6 +465,9 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     p_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 3);
+
+                    p_vertex.resize( p_vertex.size() + 6);
+                    p_data.resize( p_data.size() + 6);
 
                     p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
                     p_vertex[i++] = block_vertex(x, y, z + 1, 0);
@@ -500,7 +526,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
         return;
     }
     p_arraychange = true;
-    printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, GetAmount());
+    printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
 }
 
 void Chunk::DestoryVbo() {
@@ -543,14 +569,16 @@ void Chunk::UpdateVbo() {
     p_updatevbo = true;
     // vbo updaten
     glBindBuffer(GL_ARRAY_BUFFER, p_vboVertex);
-    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof *p_vertex, p_vertex, GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_vertex), p_vertex, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_vertex), &p_vertex[0], GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, p_vboData);
-    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof *p_data, p_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_data), &p_data[0], GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_data), p_data, GL_STATIC_DRAW);
     p_updatevbo = false;
-    printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(block_vertex), GetAmount(), GetAmount() * sizeof(block_data));
+    printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(block_vertex), getAmount(), getAmount() * sizeof(block_data));
 }
 
-void Chunk::Draw( Graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa) {
+void Chunk::Draw( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa) {
     // Position errechnen
     Transform f_form;
     f_form.GetPos().x = x*CHUNK_WIDTH;
@@ -575,7 +603,6 @@ void Chunk::Draw( Graphic* graphic, Shader* shader, Camera* camera, Camera* shad
     shader->BindArray( p_vboData, 1);
 
     // Dreiecke zeichnen
-    // Debug GL_LINES, GL_TRIANGLES
     glDrawArrays( GL_TRIANGLES, 0, (int)p_elements);
 
     // Update war erfolgreich

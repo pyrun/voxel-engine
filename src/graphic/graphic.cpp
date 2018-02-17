@@ -3,9 +3,9 @@
 
 #include <SDL2/SDL_image.h>
 
-Graphic::Graphic( int Width, int Height) {
+graphic::graphic( int Width, int Height) {
     //
-    p_display = new Display( Width, Height, "Selur");
+    p_display = new display( Width, Height, "Selur");
 
     // Shader laden
     p_voxel = new Shader( "shader/voxels");
@@ -23,7 +23,7 @@ Graphic::Graphic( int Width, int Height) {
     p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)Width/(float)Height, graphic_znear, graphic_zfar);
 }
 
-Graphic::~Graphic() {
+graphic::~graphic() {
     delete p_camera;
     delete p_shadow;
     delete p_voxel;
@@ -31,15 +31,15 @@ Graphic::~Graphic() {
     delete p_display;
 }
 
-void Graphic::ResizeWindow( int screen_width, int screen_height) {
+void graphic::resizeWindow( int screen_width, int screen_height) {
     glViewport(0, 0, screen_width, screen_height);
     printf( "%d %d resize\n", screen_width, screen_height);
-    p_display->SetSize( screen_width, screen_height);
+    p_display->setSize( screen_width, screen_height);
     // resize
     p_camera->resize( (float)screen_width/(float)screen_height);
 }
 
-SDL_Surface* Graphic::LoadSurface(std::string File) {
+SDL_Surface* graphic::loadSurface(std::string File) {
     // Laden der Datei
     SDL_Surface* loaded = IMG_Load(File.c_str());
 	if( loaded == NULL ) {
@@ -53,7 +53,7 @@ SDL_Surface* Graphic::LoadSurface(std::string File) {
     return loaded;
 }
 
-void Graphic::Draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip) {
+void graphic::draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip) {
     SDL_Rect destination;
     destination.x = (int)X;
     destination.y = (int)Y;
@@ -66,18 +66,16 @@ void Graphic::Draw( SDL_Surface* Image, double X, double Y, int W, int H, int Sp
     source.h = H;
     if( Image == NULL )
         printf( "Image dont load...\n");
-    if( p_display->GetSurface() == NULL )
+    if( p_display->getSurface() == NULL )
         printf( "Screen dont load...\n");
-    SDL_BlitSurface( Image, &source, p_display->GetSurface(), &destination);
+    SDL_BlitSurface( Image, &source, p_display->getSurface(), &destination);
 }
 
-void Graphic::SaveImageBMP( std::string File) {
+void graphic::saveImageBMP( std::string File) {
     // Save Image
     File = File + ".png";
-    /*SDL_RWops *file = SDL_RWFromFile( File.c_str(), "wb");
-    SDL_SaveBMP_RW( p_display->GetSurface(), file, 0);
-    file->close(file);*/
-    if( IMG_SavePNG( p_display->GetSurface(), File.c_str())) {
+    // Image save
+    if( IMG_SavePNG( p_display->getSurface(), File.c_str())) {
         printf("Unable to save png -- %s\n", SDL_GetError());
     }
 }

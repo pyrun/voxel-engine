@@ -14,7 +14,7 @@ std::string NumberToString( double Number) {
 }
 
 Game::Game() {
-    p_graphic = new Graphic( 1024, 800);
+    p_graphic = new graphic( 1024, 800);
 
     // Runnig
     p_isRunnig = true;
@@ -41,27 +41,25 @@ Game::~Game() {
     delete p_graphic;
 }
 
-void Game::ViewCurrentBlock( int view_width) {
+void Game::viewCurrentBlock( int view_width) {
     float depth;
 
     // Voxel Anzeigen
-    glReadPixels( p_graphic->GetWidth() / 2, p_graphic->GetHeight() / 2, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+    glReadPixels( p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
 
-    glm::vec4 viewport = glm::vec4(0, 0, p_graphic->GetWidth(), p_graphic->GetHeight());
-    glm::vec3 wincoord = glm::vec3(p_graphic->GetWidth() / 2, p_graphic->GetHeight() / 2, depth);
-    glm::vec3 objcoord = glm::unProject(wincoord, p_graphic->GetCamera()->GetView(), p_graphic->GetCamera()->GetProjection(), viewport);
+    glm::vec4 viewport = glm::vec4(0, 0, p_graphic->getWidth(), p_graphic->getHeight());
+    glm::vec3 wincoord = glm::vec3(p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, depth);
+    glm::vec3 objcoord = glm::unProject(wincoord, p_graphic->getCamera()->GetView(), p_graphic->getCamera()->GetProjection(), viewport);
 
-    glm::vec3 testpos = p_graphic->GetCamera()->GetPos();
-    glm::vec3 prevpos = p_graphic->GetCamera()->GetPos();
-
-    Chunk* chunk = p_world->GetChunk( 0, 0, 0);
+    glm::vec3 testpos = p_graphic->getCamera()->GetPos();
+    glm::vec3 prevpos = p_graphic->getCamera()->GetPos();
 
     // wo hin man sieht den block finden
     int mx, my, mz;
     for(int i = 0; i < view_width/2; i++) {
         // Advance from our currect position to the direction we are looking at, in small steps
         prevpos = testpos;
-        testpos += p_graphic->GetCamera()->GetForward() * 0.02f;
+        testpos += p_graphic->getCamera()->GetForward() * 0.02f;
 
         // hack die komma zahl ab z.B. 13,4 -> 13,0
         mx = floorf(testpos.x);
@@ -112,7 +110,7 @@ void Game::ViewCurrentBlock( int view_width) {
                 mZ--;
 
             if( !p_world->GetTile( mX, mY, mZ)) {
-                Chunk *tmp = p_world->GetChunkWithPos( mX, mY, mZ);
+                Chunk *tmp = p_world->getChunkWithPos( mX, mY, mZ);
                 if( tmp)
                     p_world->SetTile( tmp, mX, mY, mZ, p_blocklist->GetBlockID( "water")->getID());
                 else
@@ -123,7 +121,7 @@ void Game::ViewCurrentBlock( int view_width) {
             break;
         }
         if( tile->ID && p_input.Map.Destory && !p_input.MapOld.Destory) {
-            Chunk *tmp = p_world->GetChunkWithPos( mx, my, mz);
+            Chunk *tmp = p_world->getChunkWithPos( mx, my, mz);
             if( tmp)
                 p_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
             else
@@ -148,15 +146,15 @@ void Game::ViewCross() {
             };
 
     glm::mat4 one(1);
-    p_graphic->GetVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT);
-    p_graphic->GetVertexShader()->Bind();// Shader
-    p_graphic->GetVertexShader()->EnableVertexArray( 0);
+    p_graphic->getVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT);
+    p_graphic->getVertexShader()->Bind();// Shader
+    p_graphic->getVertexShader()->EnableVertexArray( 0);
     Transform f_form;
 
-    //p_graphic->GetVertexShader()->Update( f_form, p_graphic->GetCamera(), p_graphic->GetCamera());
-    p_graphic->GetVertexShader()->UpdateWithout( one, p_graphic->GetCamera());
+    //p_graphic->getVertexShader()->Update( f_form, p_graphic->getCamera(), p_graphic->getCamera());
+    p_graphic->getVertexShader()->UpdateWithout( one, p_graphic->getCamera());
 
-    //p_graphic->GetVoxelShader()->UpdateWithout( one, p_graphic->GetCamera());
+    //p_graphic->GetVoxelShader()->UpdateWithout( one, p_graphic->getCamera());
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);
     glBufferData(GL_ARRAY_BUFFER, sizeof cross, cross, GL_DYNAMIC_DRAW);
 
@@ -177,16 +175,26 @@ void Game::Start() {
     Object *obj = new Object;
     obj->Init();
 
-    while( p_isRunnig) { // Runnig
+    for( int i = 0; i < 10; i++)
+        for( int x = 0; x < 10; x++)
+            for( int z = -10; z < 10; z++)
+                p_world->addChunk( glm::tvec3<int>( i, z, x) );
+
+    int number = 0;
+    while( p_isRunnig) { // Runniz
         p_input.Reset();
-        p_isRunnig = p_input.Handle( p_graphic->GetWidth(), p_graphic->GetHeight(), p_graphic->GetWindow());
+        p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
         // Input einsehen
 //        float Speed = 0.1f * framenrate.getMSframe() *framenrate.getLimit()/ 1000.0f;
         float Speed = 0.1f;
         //printf( "%f %f \n", Speed, framenrate.getMSframe());
-        Camera *cam = p_graphic->GetCamera();
+        Camera *cam = p_graphic->getCamera();
         cam->horizontalAngle ( -p_input.Map.MousePos.x * 2);
         cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
+
+        if( p_input.Map.Inventory ) {
+            p_world->addChunk( { number++, -1, 0});
+        }
 
         if( p_input.Map.Up )
             cam->MoveForwardCross( Speed);
@@ -217,13 +225,13 @@ void Game::Start() {
         }
 
         if( p_input.getResize())
-            p_graphic->ResizeWindow( p_input.getResizeW(), p_input.getResizeH());
+            p_graphic->resizeWindow( p_input.getResizeW(), p_input.getResizeH());
         //cos_i++;
         // Framenrate anfangen zu zählen
         framenrate.StartCount();
 
         // Zeichen oberfläche aufräumen
-        p_sun->Process( p_graphic->GetVoxelShader(), p_graphic);
+        p_sun->Process( p_graphic->getVoxelShader(), p_graphic);
 
 
 
@@ -232,12 +240,12 @@ void Game::Start() {
         p_timer.Start();
         p_sun->SetDay();
 
-        p_graphic->GetDisplay()->Clear();
+        p_graphic->getDisplay()->clear();
 
         // chunks zeichnen
         p_world->Draw( p_graphic, &p_config);
 
-        obj->draw( p_graphic->GetObjectShader(), p_graphic->GetCamera());
+        obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
 
 		// View Cross
@@ -248,13 +256,13 @@ void Game::Start() {
 
         //p_gui->Draw( p_graphic);
         // Block anzeigen was in der Sichtweite ist
-        ViewCurrentBlock( 275); // 275 = 2,75Meter
+        viewCurrentBlock( 275); // 275 = 2,75Meter
 
 		// World process
-        p_world->Process();
+        p_world->process();
 
         // Swap die Buffer um keine Renderfehler zu bekommen
-        p_graphic->GetDisplay()->SwapBuffers();
+        p_graphic->getDisplay()->swapBuffers();
 
         // fehler anzeigen -> schleife eine meldung bedeutet ich habe verkackt
         GLenum error =  glGetError();
@@ -274,7 +282,7 @@ void Game::Start() {
         Title = Title + " Chunks_" + NumberToString( (double)p_world->GetAmountChunks());
 //        if( p_world->GetWorldTree() != NULL)
 //            p_world->GetWorldTree()->SetTile( cam->GetPos().x, cam->GetPos().y, cam->GetPos().z, 1);
-        p_graphic->GetDisplay()->SetTitle( Title);
+        p_graphic->getDisplay()->setTitle( Title);
 
         // Measure speed
         //printf("%s\n", Title.c_str());
@@ -324,10 +332,10 @@ void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
     f_form.GetPos().z = bz;
 
     // Shader einstellen
-    p_graphic->GetVertexShader()->BindArray( p_vboCursor, 0);
-    p_graphic->GetVertexShader()->Bind();// Shader
-    p_graphic->GetVertexShader()->EnableVertexArray( 0);
-    p_graphic->GetVertexShader()->Update( f_form, p_graphic->GetCamera(), p_graphic->GetCamera());
+    p_graphic->getVertexShader()->BindArray( p_vboCursor, 0);
+    p_graphic->getVertexShader()->Bind();// Shader
+    p_graphic->getVertexShader()->EnableVertexArray( 0);
+    p_graphic->getVertexShader()->Update( f_form, p_graphic->getCamera(), p_graphic->getCamera());
 
     // Vbo übertragen
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);

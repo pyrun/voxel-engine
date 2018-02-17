@@ -70,7 +70,7 @@ public:
     inline bool GetUpdateOnce() { return p_updateonce; }
     inline bool GetVbo() { return p_createvbo; }
     inline bool GetArrayChange() { return p_arraychange; }
-    inline int GetAmount() { return (sizeof(p_vertex)/sizeof(*p_vertex)); }
+    inline int getAmount() { return /*sizeof(p_vertex)/sizeof(*p_vertex);*/p_vertex.size(); }
     inline bool GetUpdateVboOnce() { return p_updatevboonce; }
     inline int GetTimeIdle() { return p_time_idle; }
     void ResetTimeIdle() { p_time_idle = SDL_GetTicks(); }
@@ -83,7 +83,7 @@ public:
     void UpdateArray( BlockList *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
     void UpdateVbo();
-    void Draw( Graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa = glm::mat4(1));
+    void Draw( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa = glm::mat4(1));
 protected:
 private:
     int x;
@@ -104,8 +104,9 @@ private:
     Tile* p_tile;
     int p_seed;
 
-    block_vertex p_vertex[ CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6];
-    block_data p_data[ CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6];
+    std::vector<block_vertex> p_vertex;
+    std::vector<block_data> p_data;
+    //block_data p_data[ CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6];
 
     /*std::vector<ChunkVboVertexStruct> p_vertex;
     std::vector<ChunkVboDataStruct> p_data;*/

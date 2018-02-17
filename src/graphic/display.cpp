@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <stdio.h>
 
-Display::Display(int width, int height, const std::string& title) {
+display::display(int width, int height, const std::string& title) {
     Width = width;
     Height = height;
     Uint32 rmask, gmask, bmask, amask;
@@ -19,6 +19,9 @@ Display::Display(int width, int height, const std::string& title) {
     bmask = 0x00ff0000;
     amask = 0xff000000;
 #endif
+    // This line is only needed, if you want debug the program
+    SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
+
     if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         fprintf(stderr, "Could not init SDL");
         return;
@@ -33,9 +36,9 @@ Display::Display(int width, int height, const std::string& title) {
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 2);
     SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 1);
     // Tiefenbuffergröße
-    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 1);
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16);
     // Doublebuffer
-    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 2);
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
 
     // SDL Init
     // Erstelle Fenster
@@ -45,7 +48,7 @@ Display::Display(int width, int height, const std::string& title) {
 	p_glContext = SDL_GL_CreateContext(p_window);
 	if( p_glContext == NULL)
         printf( "error\n");
-    p_surface = SDL_CreateRGBSurface( 0, GetTilesetWidth(), GetTilesetHeight(), 32, rmask, gmask, bmask, amask);
+    p_surface = SDL_CreateRGBSurface( 0, getTilesetWidth(), getTilesetHeight(), 32, rmask, gmask, bmask, amask);
     if( p_surface == NULL) {
         printf( "Display: Surface cant create %s\n", SDL_GetError());
     }
@@ -76,26 +79,26 @@ Display::Display(int width, int height, const std::string& title) {
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// background color
-	SetBackgroundColor();
+	setBackgroundColor();
 }
 
-Display::~Display() {
+display::~display() {
     SDL_GL_DeleteContext( p_glContext);
 	SDL_DestroyWindow( p_window);
 	SDL_FreeSurface( p_surface);
 	SDL_Quit();
 }
 
-void Display::Clear() {
+void display::clear() {
     // setzte background color und clear BUFFER
     glClearColor( p_red, p_green, p_blue, p_alpha);
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
 }
 
-void Display::SwapBuffers() {
+void display::swapBuffers() {
 	SDL_GL_SwapWindow( p_window);
 }
 
-void Display::SetTitle( std::string& title) {
+void display::setTitle( std::string& title) {
     SDL_SetWindowTitle( p_window, title.c_str());
 }

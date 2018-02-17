@@ -3886,7 +3886,7 @@ static uint8 *stbi_gif_load_next(stbi *s, stbi_gif *g, int *comp, int req_comp)
          case 0x21: // Comment Extension.
          {
             int len;
-            if (get8(s) == 0xF9) { // Graphic Control Extension.
+            if (get8(s) == 0xF9) { // graphic Control Extension.
                len = get8(s);
                if (len == 4) {
                   g->eflags = get8(s);

@@ -13,10 +13,10 @@ BlockImage::~BlockImage() {
         SDL_FreeSurface( p_surface);
 }
 
-void BlockImage::LoadImage( Graphic* graphic) {
+void BlockImage::LoadImage( graphic* graphic) {
     // Lade Image
     //printf( "%s loaded\n", p_imagename.c_str());
-    p_surface = graphic->LoadSurface( p_imagename);
+    p_surface = graphic->loadSurface( p_imagename);
 }
 
 void BlockImage::SetImageName( std::string name) {
@@ -33,7 +33,7 @@ Block::~Block() {
 
 }
 
-void Block::LoadImage( Graphic* t_graphic) {
+void Block::LoadImage( graphic* t_graphic) {
     // Lade die Seiten
     image_front.LoadImage( t_graphic);
     image_back.LoadImage( t_graphic);
@@ -78,7 +78,7 @@ BlockList::~BlockList() {
     List.clear();
 }
 
-void BlockList::Draw( Graphic* graphic) {
+void BlockList::Draw( graphic* graphic) {
     int t_x = 0;
     int t_y = 0;
     const int t_maxwidth = TILESET_WIDTH/BLOCK_SIZE;
@@ -104,14 +104,14 @@ void BlockList::Draw( Graphic* graphic) {
                 t_x = 0;
                 t_y++;
             }
-            graphic->Draw( side->getSurface(), BLOCK_SIZE*t_x, BLOCK_SIZE*t_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
+            graphic->draw( side->getSurface(), BLOCK_SIZE*t_x, BLOCK_SIZE*t_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
             side->getPosX() = t_x;
             side->getPosY() = t_y;
             t_x++;
         }
     }
     // Bild speichern damit man es später nochmal laden kann(+ bild von texturen erhalten für andere anwendungen)
-    graphic->SaveImageBMP( "tileset");
+    graphic->saveImageBMP( "tileset");
 }
 
 glm::vec2 BlockList::GetTexturByType( int Type, int Side) {
@@ -195,24 +195,24 @@ void BlockList::LoadBlock (std::string Path, std::string Name) {
     // Root verzeichnis wählen
     pRoot = doc.FirstChildElement( "block");
 
-    tinyxml2::XMLElement *pGraphic;
-    pGraphic = pRoot->FirstChildElement( "graphic");
+    tinyxml2::XMLElement *pgraphic;
+    pgraphic = pRoot->FirstChildElement( "graphic");
     //i_id = atoi( pRoot->Attribute( "id" ));
     // Image dateiname herrauslesen
 
     bool Alpha = false;
 
-    Alpha = atoi(pGraphic->Attribute("alpha"));
+    Alpha = atoi(pgraphic->Attribute("alpha"));
 
     printf( "LoadBlock: %d %d %s\n", (int)List.size(), i_id, Name.c_str());
     // Block erstellen
     Block p_id;
-    p_id.SetFile( Path + pGraphic->FirstChildElement( "front")->Attribute("image"),
-                  Path + pGraphic->FirstChildElement( "back")->Attribute("image"),
-                  Path + pGraphic->FirstChildElement( "left")->Attribute("image"),
-                  Path + pGraphic->FirstChildElement( "right")->Attribute("image"),
-                  Path + pGraphic->FirstChildElement( "top")->Attribute("image"),
-                  Path + pGraphic->FirstChildElement( "bottom")->Attribute("image"));
+    p_id.SetFile( Path + pgraphic->FirstChildElement( "front")->Attribute("image"),
+                  Path + pgraphic->FirstChildElement( "back")->Attribute("image"),
+                  Path + pgraphic->FirstChildElement( "left")->Attribute("image"),
+                  Path + pgraphic->FirstChildElement( "right")->Attribute("image"),
+                  Path + pgraphic->FirstChildElement( "top")->Attribute("image"),
+                  Path + pgraphic->FirstChildElement( "bottom")->Attribute("image"));
     p_id.SetName( Name);
     p_id.SetAlpha( Alpha);
     p_id.SetID( (int)List.size()+1);

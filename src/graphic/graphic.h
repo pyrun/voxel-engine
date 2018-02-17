@@ -1,5 +1,5 @@
-#ifndef GRAPHIC_H
-#define GRAPHIC_H
+#ifndef graphic_H
+#define graphic_H
 
 #include "display.h"
 #include "shader.h"
@@ -9,37 +9,37 @@
 #define graphic_znear 0.01f
 #define graphic_zfar 1000.0f
 
-class Graphic {
+class graphic {
 public:
-    Graphic( int Width = 640, int Height = 400);
-    virtual ~Graphic();
+    graphic( int Width = 640, int Height = 400);
+    virtual ~graphic();
 
-    void ResizeWindow( int screen_width, int screen_height);
+    void resizeWindow( int screen_width, int screen_height);
 
-    SDL_Surface* LoadSurface(std::string File);
-    void Draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip);
-    void SaveImageBMP( std::string File);
+    SDL_Surface* loadSurface(std::string File);
+    void draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip);
+    void saveImageBMP( std::string File);
 
-    int GetWidth() { return p_display->GetWidth(); }
-    int GetHeight() { return p_display->GetHeight(); }
+    int getWidth() { return p_display->getWidth(); }
+    int getHeight() { return p_display->getHeight(); }
 
-    SDL_Window* GetWindow() { if(p_display->GetWindow() == NULL) printf( "Graphic::GetWindow dont exist\n"); return p_display->GetWindow(); }
+    SDL_Window* getWindow() { if(p_display->getWindow() == NULL) printf( "graphic::GetWindow dont exist\n"); return p_display->getWindow(); }
 
-    Display * GetDisplay() { if(p_display == NULL) printf( "Graphic::GetDisplay dont exist\n"); return p_display; }
+    display * getDisplay() { if(p_display == NULL) printf( "graphic::GetDisplay dont exist\n"); return p_display; }
 
-    inline Shader *GetVoxelShader() { if(p_voxel == NULL) printf( "Graphic::GetVoxelShader dont exist\n"); return p_voxel; }
-    inline Shader *GetVertexShader() { if(p_vertex== NULL) printf( "Graphic::GetVertexShader dont exist\n"); return p_vertex; }
-    inline Shader *GetShadowShader() { if(p_shadow== NULL) printf( "Graphic::GetShadowShader dont exist\n"); return p_shadow; }
-    inline Shader *GetObjectShader() { if(p_object== NULL) printf( "Graphic::GetObjectShader dont exist\n"); return p_object; }
-    inline Camera *GetCamera() { if(p_camera == NULL) printf( "Graphic::GetCamera dont exist\n"); return p_camera; }
+    inline Shader *getVoxelShader() { if(p_voxel == NULL) printf( "graphic::GetVoxelShader dont exist\n"); return p_voxel; }
+    inline Shader *getVertexShader() { if(p_vertex== NULL) printf( "graphic::getVertexShader dont exist\n"); return p_vertex; }
+    inline Shader *getShadowShader() { if(p_shadow== NULL) printf( "graphic::GetShadowShader dont exist\n"); return p_shadow; }
+    inline Shader *getObjectShader() { if(p_object== NULL) printf( "graphic::GetObjectShader dont exist\n"); return p_object; }
+    inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
 protected:
 private:
     Camera *p_camera;
-    Display* p_display;
+    display* p_display;
     Shader* p_voxel;
     Shader* p_vertex;
     Shader *p_shadow;
     Shader *p_object;
 };
 
-#endif // GRAPHIC_H
+#endif // graphic_H

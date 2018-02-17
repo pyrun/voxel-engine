@@ -10,7 +10,7 @@ class Sun {
 public:
     Sun();
     virtual ~Sun();
-    void Process( Shader *t_shader, Graphic *t_graphic) {
+    void Process( Shader *t_shader, graphic *t_graphic) {
         // Shader Sonne
         t_shader->Bind();
         t_shader->SetBackgroundcolor( p_red, p_green, p_blue, 1);
@@ -18,7 +18,7 @@ public:
         t_shader->SetSun( p_red, p_green, p_blue, 1);
 
         // Hintergrundfarbe setzten
-        t_graphic->GetDisplay()->SetBackgroundColor( p_red, p_green, p_blue, 1);
+        t_graphic->getDisplay()->setBackgroundColor( p_red, p_green, p_blue, 1);
 
         double pi = acos(-1);
 

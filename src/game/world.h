@@ -44,24 +44,32 @@ public:
     virtual ~World();
 
     Tile *GetTile( int x, int y, int z);
-    Chunk *GetChunkWithPos( int x, int y, int z);
+    Chunk *getChunkWithPos( int x, int y, int z);
     void SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID);
-    void Process();
-    void DeleteChunks( Chunk* chunk);
-    inline int GetAmountChunks() const { return p_chunk_amount; }
-    inline bool GetUpdate() const { return (int)CreateChunkList.size() != 0;}
-    void AddChunk( int X, int Y, int Z);
-    void DeletingChunk( int pos_x, int pos_y, int pos_z);
-    void CreateChunk( int pos_x, int pos_y, int pos_z);
-    void DestoryChunk( int pos_x, int pos_y, int pos_z);
+
+    void process_thrend();
+    void process();
+
+    void deleteChunks( Chunk* chunk);
+    void deleteChunk( Chunk* node);
+
+
+
+
+    Chunk *createChunk( int pos_x, int pos_y, int pos_z);
+    void destoryChunk( int pos_x, int pos_y, int pos_z);
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
-    Chunk* GetChunk( int X, int Y, int Z);
-    void Draw( Graphic *graphic, Config *config) ;
-    void DrawTransparency( Graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
-    void DrawNode( Graphic* graphic, Shader* shader, Camera* camera,  Camera* shadow,  glm::mat4 aa =  glm::mat4(1));
+    Chunk* getChunk( int X, int Y, int Z);
+    void addChunk( glm::tvec3<int> pos );
+    void addDeleteChunk( glm::tvec3<int> pos );
+    void Draw( graphic *graphic, Config *config) ;
+    void DrawTransparency( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
+    void DrawNode( graphic* graphic, Shader* shader, Camera* camera,  Camera* shadow,  glm::mat4 aa =  glm::mat4(1));
     void UpdateArray();
     void UpdateArrayNode();
-    int GetDeletingObjects() { return DeletingChunkList.size(); }
+
+    bool getDestory() { return p_destroy; }
+    inline int GetAmountChunks() const { return p_chunk_amount; }
 protected:
 private:
     int Seed;
@@ -69,10 +77,15 @@ private:
     bool p_world_tree_empty;
     int p_chunk_amount;
     Texture *Tilemap;
-    std::vector<World_Position> CreateChunkList;
-    std::vector<World_Position> DeletingChunkList;
     Chunk* Chunks;
     BlockList *p_blocklist;
+    bool p_destroy;
+
+    SDL_Thread *p_thread;
+
+    std::vector<glm::tvec3<int>> p_creatingList;
+    std::vector<glm::tvec3<int>> p_deletingList;
+    std::vector<Chunk*> p_updateNodeList;
 
     //ShadowMap Shadow;
 };

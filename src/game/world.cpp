@@ -2,6 +2,22 @@
 #include <time.h>
 #include "../system/timer.h"
 
+static int world_thread(void *data)
+{
+    int cnt;
+
+    for ( ;; ) {
+        World *l_world = (World*)data;
+        l_world->process_thrend();
+
+        if( l_world->getDestory() )
+            break;
+        SDL_Delay(100);
+    }
+
+    return 0;
+}
+
 World::World( std::string Tileset, BlockList* B_List) {
     Seed = (int)time(NULL); // Seed
     p_buysvector = false;
@@ -12,11 +28,18 @@ World::World( std::string Tileset, BlockList* B_List) {
     p_world_tree_empty = true;
     // Blocklist link erstellen
     p_blocklist = B_List;
+
+    p_destroy = false;
+    p_thread = SDL_CreateThread(world_thread, "TestThread", (void *)this);
 }
 
 World::~World() {
+    int l_return;
+    p_destroy = true;
+    SDL_WaitThread( p_thread, &l_return);
+
     // Löschen der Welt
-    DeleteChunks( Chunks);
+    deleteChunks( Chunks);
     while( p_chunk_amount != 0) {
         SDL_Delay(1);
     }
@@ -68,7 +91,7 @@ Tile* World::GetTile( int x, int y, int z) {
     return NULL;
 }
 
-Chunk* World::GetChunkWithPos( int x, int y, int z) {
+Chunk* World::getChunkWithPos( int x, int y, int z) {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
@@ -123,11 +146,32 @@ void World::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
     chunk->set( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
 }
 
-void World::Process() {
+void World::process_thrend() {
+    for( int i = 0; i < (int)p_creatingList.size(); i++)
+    {
+        Chunk *l_node = getChunk( p_creatingList[i].x, p_creatingList[i].y, p_creatingList[i].z);
+        if( l_node == NULL) {
+            l_node = createChunk( p_creatingList[i].x, p_creatingList[i].y, p_creatingList[i].z);
+            p_updateNodeList.push_back( l_node);
+            p_creatingList.erase( p_creatingList.begin()+ i);
+            break;
+        }
+    }
+
+    for( auto l_pos:p_deletingList)
+    {
+        Chunk *l_node = getChunk( l_pos.x, l_pos.y, l_pos.z);
+        if( l_node != NULL)
+            deleteChunk( l_node);
+    }
+    p_deletingList.clear();
+}
+
+void World::process() {
     // be änderung Updaten
     UpdateArray();
     // chunks erstellen
-    if( CheckChunk( 0, -1, 0) == false) {
+    /*if( CheckChunk( 0, -1, 0) == false) {
         int factor = WORLD_TEST_FACTOR;
         for( int cx = -factor; cx <= factor; cx++)
             for( int cz = -factor; cz <= factor; cz++)
@@ -135,10 +179,20 @@ void World::Process() {
             int tmp_x = cx;
             int tmp_y = cy;
             int tmp_z = cz;
-            CreateChunk( tmp_x, tmp_y-1, tmp_z);
+            createChunk( tmp_x, tmp_y-1, tmp_z);
         }
         printf( "World::Process %d Chunks\n", GetAmountChunks());
+    }*/
+
+    int i = 0;
+    for( auto l_node:p_updateNodeList)
+    {
+        l_node->UpdateArray( p_blocklist, l_node->back, l_node->front, l_node->left, l_node->right, l_node->up, l_node->down);
+        l_node->UpdateVbo();
     }
+    p_updateNodeList.clear();
+
+
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = Chunks;
     for( ;; ) {
@@ -149,42 +203,25 @@ void World::Process() {
     }
 }
 
-void World::DeleteChunks( Chunk* chunk) {
+void World::deleteChunks( Chunk* chunk) {
     if( chunk == NULL )
         return;
     if( chunk->next )
-        DeleteChunks( chunk->next );
-    DeletingChunk( chunk->GetX(), chunk->GetY(), chunk->GetZ());
+        deleteChunks( chunk->next );
+    deleteChunk( chunk);
 }
 
-void World::AddChunk( int X, int Y, int Z) {
-    World_Position Vector;
-    Vector.x = X;
-    Vector.y = Y;
-    Vector.z = Z;
-    if( p_buysvector == true)
-        return;
-    CreateChunkList.push_back( Vector);
-}
-
-void World::DeletingChunk( int pos_x, int pos_y, int pos_z) {
-    World_Position Vector;
-    Vector.x = pos_x;
-    Vector.y = pos_y;
-    Vector.z = pos_z;
-    //while( p_buysvector == true);
-    Chunk* node = GetChunk( pos_x, pos_y, pos_z);
-
+void World::deleteChunk( Chunk* node) {
     if( node == NULL)
         return;
     if( node->GetVbo() )
         node->DestoryVbo();
     // löschen des chunks
-    DestoryChunk( pos_x, pos_y, pos_z);
+    destoryChunk( node->GetX(), node->GetY(), node->GetZ());
     //DeletingChunkList.push_back( Vector);
 }
 
-void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
+Chunk *World::createChunk( int pos_x, int pos_y, int pos_z) {
     Chunk *node;
 
     // Chunk erstellen
@@ -200,32 +237,32 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
     // seiten finden
     Chunk *snode;
     if( CheckChunk( pos_x+1, pos_y, pos_z)) {
-        snode = GetChunk( pos_x+1, pos_y, pos_z);
+        snode = getChunk( pos_x+1, pos_y, pos_z);
         snode->back = node;
         node->front = snode;
     }
     if( CheckChunk( pos_x-1, pos_y, pos_z)) {
-        snode = GetChunk( pos_x-1, pos_y, pos_z);
+        snode = getChunk( pos_x-1, pos_y, pos_z);
         snode->front = node;
         node->back = snode;
     }
     if( CheckChunk( pos_x, pos_y+1, pos_z)) {
-        snode = GetChunk( pos_x, pos_y+1, pos_z);
+        snode = getChunk( pos_x, pos_y+1, pos_z);
         snode->down = node;
         node->up = snode;
     }
     if( CheckChunk( pos_x, pos_y-1, pos_z)) {
-        snode = GetChunk( pos_x, pos_y-1, pos_z);
+        snode = getChunk( pos_x, pos_y-1, pos_z);
         snode->up = node;
         node->down = snode;
     }
     if( CheckChunk( pos_x, pos_y, pos_z+1)) {
-        snode = GetChunk( pos_x, pos_y, pos_z+1);
+        snode = getChunk( pos_x, pos_y, pos_z+1);
         snode->left = node;
         node->right = snode;
     }
     if( CheckChunk( pos_x, pos_y, pos_z-1)) {
-        snode = GetChunk( pos_x, pos_y, pos_z-1);
+        snode = getChunk( pos_x, pos_y, pos_z-1);
         snode->right = node;
         node->left = snode;
     }
@@ -245,11 +282,10 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
         }
         tmp->next = node;
     }
-    node->UpdateArray( p_blocklist, node->back, node->front, node->left, node->right, node->up, node->down);
-    node->UpdateVbo();
+    return node;
 }
 
-void World::DestoryChunk( int pos_x, int pos_y, int pos_z) {
+void World::destoryChunk( int pos_x, int pos_y, int pos_z) {
     Timer timer;
     timer.Start();
     Chunk *tmp = Chunks;
@@ -267,27 +303,27 @@ void World::DestoryChunk( int pos_x, int pos_y, int pos_z) {
             // chunk seiten löschen
             Chunk *snode;
             if( CheckChunk( pos_x+1, pos_y, pos_z)) {
-                snode = GetChunk( pos_x+1, pos_y, pos_z);
+                snode = getChunk( pos_x+1, pos_y, pos_z);
                 snode->back = NULL;
             }
             if( CheckChunk( pos_x-1, pos_y, pos_z)) {
-                snode = GetChunk( pos_x-1, pos_y, pos_z);
+                snode = getChunk( pos_x-1, pos_y, pos_z);
                 snode->front = NULL;
             }
             if( CheckChunk( pos_x, pos_y+1, pos_z)) {
-                snode = GetChunk( pos_x, pos_y+1, pos_z);
+                snode = getChunk( pos_x, pos_y+1, pos_z);
                 snode->down = NULL;
             }
             if( CheckChunk( pos_x, pos_y-1, pos_z)) {
-                snode = GetChunk( pos_x, pos_y-1, pos_z);
+                snode = getChunk( pos_x, pos_y-1, pos_z);
                 snode->up = NULL;
             }
             if( CheckChunk( pos_x, pos_y, pos_z+1)) {
-                snode = GetChunk( pos_x, pos_y, pos_z+1);
+                snode = getChunk( pos_x, pos_y, pos_z+1);
                 snode->left = NULL;
             }
             if( CheckChunk( pos_x, pos_y, pos_z-1)) {
-                snode = GetChunk( pos_x, pos_y, pos_z-1);
+                snode = getChunk( pos_x, pos_y, pos_z-1);
                 snode->right = NULL;
             }
             // löschen
@@ -317,7 +353,7 @@ bool World::CheckChunk( int X, int Y, int Z) {
 
 
 
-Chunk* World::GetChunk( int X, int Y, int Z) {
+Chunk* World::getChunk( int X, int Y, int Z) {
     Chunk *tmp = Chunks;
     for( ;; ) {
         if( tmp == NULL)
@@ -331,6 +367,13 @@ Chunk* World::GetChunk( int X, int Y, int Z) {
     return NULL;
 }
 
+void World::addChunk( glm::tvec3<int> pos ) {
+    p_creatingList.push_back( pos);
+}
+void World::addDeleteChunk( glm::tvec3<int> pos ) {
+    p_deletingList.push_back( pos);
+}
+
 float p = 0.0f;
 bool b = true;
 
@@ -338,19 +381,19 @@ Camera *cam;
 
 #define ota_size 200.0f
 
-void World::Draw( Graphic *graphic, Config *config) {
+void World::Draw( graphic *graphic, Config *config) {
     /*if( !Shadow.IsStarted()) {
         int w = graphic->GetWidth();
         int h = graphic->GetHeight();
         Shadow.Init( w, h );
         cam =  new Camera(glm::vec3( 0.0f, 0.0f, 0.0f), 1.0f, w/h, -850.0f, 20.0f, ota_size);
-        //cam->GetPos() = graphic->GetCamera()->GetPos();
+        //cam->GetPos() = graphic->getCamera()->GetPos();
         cam->Pitch( +0.5);
         cam->RotateY( 0.1);
     }
-    //cam->GetForward() = graphic->GetCamera()->GetForward();
-    //cam->GetUp() = graphic->GetCamera()->GetUp();
-    cam->GetPos() = graphic->GetCamera()->GetPos();
+    //cam->GetForward() = graphic->getCamera()->GetForward();
+    //cam->GetUp() = graphic->getCamera()->GetUp();
+    cam->GetPos() = graphic->getCamera()->GetPos();
     cam->GetPos().x += ota_size/2;
     cam->GetPos().z += ota_size/2;
     cam->GetPos().x = (int)(cam->GetPos().x);
@@ -377,7 +420,7 @@ void World::Draw( Graphic *graphic, Config *config) {
         Shadow.BindForReading( GL_TEXTURE1);
 
         if( p_world_tree != NULL && p_world_tree_empty == false )
-            DrawNode(p_world_tree, graphic, graphic->GetVoxelShader(), graphic->GetCamera(), cam);
+            DrawNode(p_world_tree, graphic, graphic->GetVoxelShader(), graphic->getCamera(), cam);
     }*/
 
     /*if( 0) {
@@ -389,20 +432,20 @@ void World::Draw( Graphic *graphic, Config *config) {
         //glActiveTexture(GL_TEXTURE1);
         Shadow.BindForReading(GL_TEXTURE0);
         if(p_world_tree != NULL && p_world_tree_empty == false)
-            DrawNode(p_world_tree, graphic, graphic->GetShadowShader(), graphic->GetCamera());
+            DrawNode(p_world_tree, graphic, graphic->GetShadowShader(), graphic->getCamera());
     }*/
 
-    int g_width = graphic->GetWidth();
-    int g_height = graphic->GetHeight();
+    int g_width = graphic->getWidth();
+    int g_height = graphic->getHeight();
 
     //glClear(GL_ACCUp_BUFFER_BIT);
 
     // get shader
-    Shader* l_shader = graphic->GetVoxelShader();
+    Shader* l_shader = graphic->getVoxelShader();
 
     // einstellung des shaders
     l_shader->Bind();
-    l_shader->SetSize( (graphic->GetDisplay()->GetTilesetHeight()/16), ( graphic->GetDisplay()->GetTilesetWidth()/16) );
+    l_shader->SetSize( (graphic->getDisplay()->getTilesetHeight()/16), ( graphic->getDisplay()->getTilesetWidth()/16) );
 
     // enable vertex array 0&1
     l_shader->EnableVertexArray( 0);
@@ -419,7 +462,7 @@ void World::Draw( Graphic *graphic, Config *config) {
                 glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
 
                 // Zeichnen
-                DrawTransparency(  graphic, l_shader, graphic->GetCamera(), graphic->GetCamera(), alpha_cut == 1 ? false : true, aa);
+                DrawTransparency(  graphic, l_shader, graphic->getCamera(), graphic->getCamera(), alpha_cut == 1 ? false : true, aa);
                 glAccum(i ? GL_ACCUM : GL_LOAD, 0.25f);
             }
             // zusammenrechnen
@@ -427,23 +470,23 @@ void World::Draw( Graphic *graphic, Config *config) {
         }
         // Zeichne Transperenz wenn gewünscht
         if( config->GetTransparency())
-            DrawTransparency(  graphic, l_shader, graphic->GetCamera(), graphic->GetCamera(), false);
+            DrawTransparency(  graphic, l_shader, graphic->getCamera(), graphic->getCamera(), false);
     } else {
         if( config->GetTransparency() ) {
             // Transparent zeichnen
-            DrawTransparency( graphic, l_shader, graphic->GetCamera(), graphic->GetCamera(), true);
-            DrawTransparency( graphic, l_shader, graphic->GetCamera(), graphic->GetCamera(), false);
+            DrawTransparency( graphic, l_shader, graphic->getCamera(), graphic->getCamera(), true);
+            DrawTransparency( graphic, l_shader, graphic->getCamera(), graphic->getCamera(), false);
         } else {
             // Ohne Transperenz -> Sehr schnell
-            graphic->GetVoxelShader()->SetAlpha_cutoff( 0.0f);
+            graphic->getVoxelShader()->SetAlpha_cutoff( 0.0f);
             glDisable( GL_BLEND);
-            DrawNode( graphic, l_shader, graphic->GetCamera(), graphic->GetCamera());
+            DrawNode( graphic, l_shader, graphic->getCamera(), graphic->getCamera());
             glEnable( GL_BLEND);
         }
     }
 }
 
-void World::DrawTransparency( Graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, bool alpha_cutoff, glm::mat4 aa) {
+void World::DrawTransparency( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, bool alpha_cutoff, glm::mat4 aa) {
     // shader einstellen
     if( alpha_cutoff) {
         glDepthMask(true);
@@ -457,7 +500,7 @@ void World::DrawTransparency( Graphic* graphic, Shader* shader, Camera* camera, 
     glDepthMask(true);
 }
 
-void World::DrawNode( Graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa) {
+void World::DrawNode( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa) {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
@@ -466,9 +509,9 @@ void World::DrawNode( Graphic* graphic, Shader* shader, Camera* camera, Camera* 
         if( node->GetArrayChange()) {
             node->UpdateVbo();
         }
-        if( node->GetUpdateOnce() && node->GetAmount() != 0 && node->GetUpdateVboOnce()) {
+        if( node->GetUpdateOnce() && node->getAmount() != 0 && node->GetUpdateVboOnce()) {
             if( SDL_GetTicks() - node->GetTimeIdle() > WORLD_TILE_IDLE_TIME ) {
-                DeletingChunk( node->GetX(), node->GetY(), node->GetZ() );
+                deleteChunk( node );
             } else {
                 node->Draw( graphic, shader, camera, shadow, aa);
             }
@@ -487,7 +530,7 @@ void World::UpdateArrayNode() {
             break;
         // Update Chunk if Change
         if( (node->GetChanged() || !node->GetUpdateOnce() ) && node->IsDrawable()) {// Update Chunk -> es hat sich was verändert
-            node->UpdateArray( p_blocklist, node->back, node->front, node->left, node->right, node->up, node->down);
+            node->UpdateArray( p_blocklist); //, node->back, node->front, node->left, node->right, node->up, node->down);
         }
         node = node->next;
     }

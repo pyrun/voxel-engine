@@ -22,7 +22,7 @@ class BlockImage  {
 public:
     BlockImage();
     ~BlockImage();
-    void LoadImage( Graphic* graphic);
+    void LoadImage( graphic* graphic);
     void SetImageName( std::string name);
     int &getPosX() { return p_posx; }
     int &getPosY() { return p_posy; }
@@ -40,7 +40,7 @@ public:
     Block();
     ~Block();
 
-    void LoadImage( Graphic* t_graphic);
+    void LoadImage( graphic* t_graphic);
     void SetID( int id) { i_id = id; }
     void SetName( std::string name) { n_name = name; }
     void SetAlpha( bool flag) { p_alpha = flag; }
@@ -81,7 +81,7 @@ class BlockList {
 public:
     BlockList( std::string Path);
     ~BlockList();
-    void Draw( Graphic* graphic);
+    void Draw( graphic* graphic);
     // Umrechnen wo welche textur liegt
     glm::vec2 GetTexturByType( int Type, int Side);
     Block* GetBlock( int ID);

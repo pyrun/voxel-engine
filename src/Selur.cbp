@@ -8,21 +8,21 @@
 		<Build>
 			<Target title="win_debug_32">
 				<Option platforms="Windows;" />
-				<Option output="../bin/win/debug32/Selur2" prefix_auto="1" extension_auto="1" />
+				<Option output="../bin/win/debug32/Selur" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="../res" />
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-std=c++1y" />
 					<Add option="-g" />
 					<Add directory="../../SDL2_64/include" />
 					<Add directory="../../OpenGL" />
-					<Add directory="../../glm" />
+					<Add directory="../../glm/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
-					<Add option="-lopengl32 -lglew32" />
+					<Add option="-lopengl32" />
+					<Add option="-lglew32" />
 					<Add directory="../../SDL2_64/lib" />
 					<Add directory="../../OpenGL/lib" />
 				</Linker>
@@ -45,7 +45,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-std=c++11" />
+			<Add option="-std=c++1z" />
 		</Compiler>
 		<Unit filename="../res/shader/object.fs" />
 		<Unit filename="../res/shader/object.vs" />
@@ -88,7 +88,6 @@
 		<Unit filename="graphic/glerror.h" />
 		<Unit filename="graphic/graphic.cpp" />
 		<Unit filename="graphic/graphic.h" />
-		<Unit filename="graphic/savepng.h" />
 		<Unit filename="graphic/shader.cpp" />
 		<Unit filename="graphic/shader.h" />
 		<Unit filename="graphic/shadowmap.cpp" />
