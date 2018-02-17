@@ -6,17 +6,17 @@ class Config {
 public:
     Config();
     virtual ~Config();
-    void SetSupersampling( bool Set) { m_supersampling = Set; }
-    void SetTransparency( bool Set) { m_transparency = Set; }
+    void SetSupersampling( bool Set) { p_supersampling = Set; }
+    void SetTransparency( bool Set) { p_transparency = Set; }
 
-    bool GetSupersampling() { return m_supersampling; }
-    bool GetTransparency() { return m_transparency; }
+    bool GetSupersampling() { return p_supersampling; }
+    bool GetTransparency() { return p_transparency; }
 
 protected:
 private:
-    bool m_supersampling;
-    bool m_transparency;
-    bool m_fullscreen;
+    bool p_supersampling;
+    bool p_transparency;
+    bool p_fullscreen;
 };
 
 #endif // CONFIG_H

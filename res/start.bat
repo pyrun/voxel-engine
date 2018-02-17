@@ -1,0 +1,1 @@
+../bin/win/debug32/Selur.exe

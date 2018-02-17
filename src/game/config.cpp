@@ -1,9 +1,9 @@
 #include "config.h"
 
 Config::Config() {
-    m_supersampling = false;
-    m_transparency = false;
-    m_fullscreen = false;
+    p_supersampling = false;
+    p_transparency = false;
+    p_fullscreen = false;
 }
 
 Config::~Config()

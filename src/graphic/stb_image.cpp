@@ -139,7 +139,7 @@ typedef struct
    stbi_io_callbacks io;
    void *io_user_data;
 
-   int read_from_callbacks;
+   int read_frop_callbacks;
    int buflen;
    uint8 buffer_start[128];
 
@@ -154,7 +154,7 @@ static void refill_buffer(stbi *s);
 static void start_mem(stbi *s, uint8 const *buffer, int len)
 {
    s->io.read = NULL;
-   s->read_from_callbacks = 0;
+   s->read_frop_callbacks = 0;
    s->img_buffer = s->img_buffer_original = (uint8 *) buffer;
    s->img_buffer_end = (uint8 *) buffer+len;
 }
@@ -165,7 +165,7 @@ static void start_callbacks(stbi *s, stbi_io_callbacks *c, void *user)
    s->io = *c;
    s->io_user_data = user;
    s->buflen = sizeof(s->buffer_start);
-   s->read_from_callbacks = 1;
+   s->read_frop_callbacks = 1;
    s->img_buffer_original = s->buffer_start;
    refill_buffer(s);
 }
@@ -262,9 +262,9 @@ static int e(const char *str)
 #define epf(x,y)   ((float *) (e(x,y)?NULL:NULL))
 #define epuc(x,y)  ((unsigned char *) (e(x,y)?NULL:NULL))
 
-void stbi_image_free(void *retval_from_stbi_load)
+void stbi_image_free(void *retval_frop_stbi_load)
 {
-   free(retval_from_stbi_load);
+   free(retval_frop_stbi_load);
 }
 
 #ifndef STBI_NO_HDR
@@ -300,12 +300,12 @@ unsigned char *stbi_load(char const *filename, int *x, int *y, int *comp, int re
    FILE *f = fopen(filename, "rb");
    unsigned char *result;
    if (!f) return epuc("can't fopen", "Unable to open file");
-   result = stbi_load_from_file(f,x,y,comp,req_comp);
+   result = stbi_load_frop_file(f,x,y,comp,req_comp);
    fclose(f);
    return result;
 }
 
-unsigned char *stbi_load_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)
+unsigned char *stbi_load_frop_file(FILE *f, int *x, int *y, int *comp, int req_comp)
 {
    stbi s;
    start_file(&s,f);
@@ -313,14 +313,14 @@ unsigned char *stbi_load_from_file(FILE *f, int *x, int *y, int *comp, int req_c
 }
 #endif //!STBI_NO_STDIO
 
-unsigned char *stbi_load_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
+unsigned char *stbi_load_frop_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
 {
    stbi s;
    start_mem(&s,buffer,len);
    return stbi_load_main(&s,x,y,comp,req_comp);
 }
 
-unsigned char *stbi_load_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)
+unsigned char *stbi_load_frop_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)
 {
    stbi s;
    start_callbacks(&s, (stbi_io_callbacks *) clbk, user);
@@ -342,14 +342,14 @@ float *stbi_loadf_main(stbi *s, int *x, int *y, int *comp, int req_comp)
    return epf("unknown image type", "Image not of any known type, or corrupt");
 }
 
-float *stbi_loadf_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
+float *stbi_loadf_frop_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
 {
    stbi s;
    start_mem(&s,buffer,len);
    return stbi_loadf_main(&s,x,y,comp,req_comp);
 }
 
-float *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)
+float *stbi_loadf_frop_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)
 {
    stbi s;
    start_callbacks(&s, (stbi_io_callbacks *) clbk, user);
@@ -362,12 +362,12 @@ float *stbi_loadf(char const *filename, int *x, int *y, int *comp, int req_comp)
    FILE *f = fopen(filename, "rb");
    float *result;
    if (!f) return epf("can't fopen", "Unable to open file");
-   result = stbi_loadf_from_file(f,x,y,comp,req_comp);
+   result = stbi_loadf_frop_file(f,x,y,comp,req_comp);
    fclose(f);
    return result;
 }
 
-float *stbi_loadf_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)
+float *stbi_loadf_frop_file(FILE *f, int *x, int *y, int *comp, int req_comp)
 {
    stbi s;
    start_file(&s,f);
@@ -381,7 +381,7 @@ float *stbi_loadf_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)
 // defined, for API simplicity; if STBI_NO_HDR is defined, it always
 // reports false!
 
-int stbi_is_hdr_from_memory(stbi_uc const *buffer, int len)
+int stbi_is_hdr_frop_memory(stbi_uc const *buffer, int len)
 {
    #ifndef STBI_NO_HDR
    stbi s;
@@ -400,13 +400,13 @@ extern int      stbi_is_hdr          (char const *filename)
    FILE *f = fopen(filename, "rb");
    int result=0;
    if (f) {
-      result = stbi_is_hdr_from_file(f);
+      result = stbi_is_hdr_frop_file(f);
       fclose(f);
    }
    return result;
 }
 
-extern int      stbi_is_hdr_from_file(FILE *f)
+extern int      stbi_is_hdr_frop_file(FILE *f)
 {
    #ifndef STBI_NO_HDR
    stbi s;
@@ -418,7 +418,7 @@ extern int      stbi_is_hdr_from_file(FILE *f)
 }
 #endif // !STBI_NO_STDIO
 
-extern int      stbi_is_hdr_from_callbacks(stbi_io_callbacks const *clbk, void *user)
+extern int      stbi_is_hdr_frop_callbacks(stbi_io_callbacks const *clbk, void *user)
 {
    #ifndef STBI_NO_HDR
    stbi s;
@@ -458,7 +458,7 @@ static void refill_buffer(stbi *s)
    int n = (s->io.read)(s->io_user_data,(char*)s->buffer_start,s->buflen);
    if (n == 0) {
       // at end of file, treat same as if from memory
-      s->read_from_callbacks = 0;
+      s->read_frop_callbacks = 0;
       s->img_buffer = s->img_buffer_end-1;
       *s->img_buffer = 0;
    } else {
@@ -471,7 +471,7 @@ stbi_inline static int get8(stbi *s)
 {
    if (s->img_buffer < s->img_buffer_end)
       return *s->img_buffer++;
-   if (s->read_from_callbacks) {
+   if (s->read_frop_callbacks) {
       refill_buffer(s);
       return *s->img_buffer++;
    }
@@ -484,7 +484,7 @@ stbi_inline static int at_eof(stbi *s)
       if (!(s->io.eof)(s->io_user_data)) return 0;
       // if feof() is true, check if buffer = end
       // special case: we've only got the special 0 character at the end
-      if (s->read_from_callbacks == 0) return 1;
+      if (s->read_frop_callbacks == 0) return 1;
    }
 
    return s->img_buffer >= s->img_buffer_end;
@@ -1776,7 +1776,7 @@ static int zbuild_huffman(zhuffman *z, uint8 *sizelist, int num)
 typedef struct
 {
    uint8 *zbuffer, *zbuffer_end;
-   int num_bits;
+   int nup_bits;
    uint32 code_buffer;
 
    char *zout;
@@ -1796,31 +1796,31 @@ stbi_inline static int zget8(zbuf *z)
 static void fill_bits(zbuf *z)
 {
    do {
-      assert(z->code_buffer < (1U << z->num_bits));
-      z->code_buffer |= zget8(z) << z->num_bits;
-      z->num_bits += 8;
-   } while (z->num_bits <= 24);
+      assert(z->code_buffer < (1U << z->nup_bits));
+      z->code_buffer |= zget8(z) << z->nup_bits;
+      z->nup_bits += 8;
+   } while (z->nup_bits <= 24);
 }
 
 stbi_inline static unsigned int zreceive(zbuf *z, int n)
 {
    unsigned int k;
-   if (z->num_bits < n) fill_bits(z);
+   if (z->nup_bits < n) fill_bits(z);
    k = z->code_buffer & ((1 << n) - 1);
    z->code_buffer >>= n;
-   z->num_bits -= n;
+   z->nup_bits -= n;
    return k;
 }
 
 stbi_inline static int zhuffman_decode(zbuf *a, zhuffman *z)
 {
    int b,s,k;
-   if (a->num_bits < 16) fill_bits(a);
+   if (a->nup_bits < 16) fill_bits(a);
    b = z->fast[a->code_buffer & ZFAST_MASK];
    if (b < 0xffff) {
       s = z->size[b];
       a->code_buffer >>= s;
-      a->num_bits -= s;
+      a->nup_bits -= s;
       return z->value[b];
    }
 
@@ -1835,7 +1835,7 @@ stbi_inline static int zhuffman_decode(zbuf *a, zhuffman *z)
    b = (k >> (16-s)) - z->firstcode[s] + z->firstsymbol[s];
    assert(z->size[b] == s);
    a->code_buffer >>= s;
-   a->num_bits -= s;
+   a->nup_bits -= s;
    return z->value[b];
 }
 
@@ -1948,16 +1948,16 @@ static int parse_uncompressed_block(zbuf *a)
 {
    uint8 header[4];
    int len,nlen,k;
-   if (a->num_bits & 7)
-      zreceive(a, a->num_bits & 7); // discard
+   if (a->nup_bits & 7)
+      zreceive(a, a->nup_bits & 7); // discard
    // drain the bit-packed data into header
    k = 0;
-   while (a->num_bits > 0) {
+   while (a->nup_bits > 0) {
       header[k++] = (uint8) (a->code_buffer & 255); // wtf this warns?
       a->code_buffer >>= 8;
-      a->num_bits -= 8;
+      a->nup_bits -= 8;
    }
-   assert(a->num_bits == 0);
+   assert(a->nup_bits == 0);
    // now fill header the normal way
    while (k < 4)
       header[k++] = (uint8) zget8(a);
@@ -2005,7 +2005,7 @@ static int parse_zlib(zbuf *a, int parse_header)
    int final, type;
    if (parse_header)
       if (!parse_zlib_header(a)) return 0;
-   a->num_bits = 0;
+   a->nup_bits = 0;
    a->code_buffer = 0;
    do {
       final = zreceive(a,1);
@@ -3436,7 +3436,7 @@ static void pic_copyval(int channel,stbi_uc *dest,const stbi_uc *src)
 
 static stbi_uc *pic_load2(stbi *s,int width,int height,int *comp, stbi_uc *result)
 {
-   int act_comp=0,num_packets=0,y,chained;
+   int act_comp=0,nup_packets=0,y,chained;
    pic_packet_t packets[10];
 
    // this will (should...) cater for even some bizarre stuff like having data
@@ -3444,10 +3444,10 @@ static stbi_uc *pic_load2(stbi *s,int width,int height,int *comp, stbi_uc *resul
    do {
       pic_packet_t *packet;
 
-      if (num_packets==sizeof(packets)/sizeof(packets[0]))
+      if (nup_packets==sizeof(packets)/sizeof(packets[0]))
          return epuc("bad format","too many packets");
 
-      packet = &packets[num_packets++];
+      packet = &packets[nup_packets++];
 
       chained = get8(s);
       packet->size    = get8u(s);
@@ -3465,7 +3465,7 @@ static stbi_uc *pic_load2(stbi *s,int width,int height,int *comp, stbi_uc *resul
    for(y=0; y<height; ++y) {
       int packet_idx;
 
-      for(packet_idx=0; packet_idx < num_packets; ++packet_idx) {
+      for(packet_idx=0; packet_idx < nup_packets; ++packet_idx) {
          pic_packet_t *packet = &packets[packet_idx];
          stbi_uc *dest = result+y*width*4;
 
@@ -3632,10 +3632,10 @@ static int stbi_gif_test(stbi *s)
    return r;
 }
 
-static void stbi_gif_parse_colortable(stbi *s, uint8 pal[256][4], int num_entries, int transp)
+static void stbi_gif_parse_colortable(stbi *s, uint8 pal[256][4], int nup_entries, int transp)
 {
    int i;
-   for (i=0; i < num_entries; ++i) {
+   for (i=0; i < nup_entries; ++i) {
       pal[i][2] = get8u(s);
       pal[i][1] = get8u(s);
       pal[i][0] = get8u(s);
@@ -4220,7 +4220,7 @@ static int stbi_psd_info(stbi *s, int *x, int *y, int *comp)
 
 static int stbi_pic_info(stbi *s, int *x, int *y, int *comp)
 {
-   int act_comp=0,num_packets=0,chained;
+   int act_comp=0,nup_packets=0,chained;
    pic_packet_t packets[10];
 
    skip(s, 92);
@@ -4238,10 +4238,10 @@ static int stbi_pic_info(stbi *s, int *x, int *y, int *comp)
    do {
       pic_packet_t *packet;
 
-      if (num_packets==sizeof(packets)/sizeof(packets[0]))
+      if (nup_packets==sizeof(packets)/sizeof(packets[0]))
          return 0;
 
-      packet = &packets[num_packets++];
+      packet = &packets[nup_packets++];
       chained = get8(s);
       packet->size    = get8u(s);
       packet->type    = get8u(s);
@@ -4293,12 +4293,12 @@ int stbi_info(char const *filename, int *x, int *y, int *comp)
     FILE *f = fopen(filename, "rb");
     int result;
     if (!f) return e("can't fopen", "Unable to open file");
-    result = stbi_info_from_file(f, x, y, comp);
+    result = stbi_info_frop_file(f, x, y, comp);
     fclose(f);
     return result;
 }
 
-int stbi_info_from_file(FILE *f, int *x, int *y, int *comp)
+int stbi_info_frop_file(FILE *f, int *x, int *y, int *comp)
 {
    int r;
    stbi s;
@@ -4310,14 +4310,14 @@ int stbi_info_from_file(FILE *f, int *x, int *y, int *comp)
 }
 #endif // !STBI_NO_STDIO
 
-int stbi_info_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp)
+int stbi_info_frop_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp)
 {
    stbi s;
    start_mem(&s,buffer,len);
    return stbi_info_main(&s,x,y,comp);
 }
 
-int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int *x, int *y, int *comp)
+int stbi_info_frop_callbacks(stbi_io_callbacks const *c, void *user, int *x, int *y, int *comp)
 {
    stbi s;
    start_callbacks(&s, (stbi_io_callbacks *) c, user);

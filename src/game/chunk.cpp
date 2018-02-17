@@ -2,24 +2,6 @@
 #include "../system/timer.h"
 #include <stdio.h>
 
-/*ChunkVboDataStruct block_data( GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
-    ChunkVboDataStruct New;
-    New.x = x;
-    New.y = y;
-    New.z = z;
-    New.w = w;
-    return New;
-}
-
-ChunkVboVertexStruct block_vertex( GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
-    ChunkVboVertexStruct New;
-    New.x = x;
-    New.y = y;
-    New.z = z;
-    New.w = w;
-    return New;
-}*/
-
 Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     // node reset
     next = NULL;
@@ -30,29 +12,29 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     left = NULL;
     up = NULL;
     down = NULL;
-    m_time_idle = SDL_GetTicks();
+    p_time_idle = SDL_GetTicks();
     // falgs
-    m_nomorevbo = false;
-    m_updateonce = false;
-    m_changed = false;
-    m_elements = 0;
-    m_createvbo = false;
-    m_arraychange = false;
-    m_updatevboonce = false;
-    m_updatevbo = false;
-    m_deleting = false;
-    m_seed = Seed;
+    p_nomorevbo = false;
+    p_updateonce = false;
+    p_changed = false;
+    p_elements = 0;
+    p_createvbo = false;
+    p_arraychange = false;
+    p_updatevboonce = false;
+    p_updatevbo = false;
+    p_deleting = false;
+    p_seed = Seed;
     // Set Position
     this->x = X;
     this->y = Y;
     this->z = Z;
-    m_tile = NULL;
+    p_tile = NULL;
 
     int t = SDL_GetTicks();
 
-    m_tile = (Tile *)malloc(sizeof(Tile) * CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH); //new (std::nothrow) Tile*[ CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH]
+    p_tile = (Tile *)malloc(sizeof(Tile) * CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH); //new (std::nothrow) Tile*[ CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH]
 
-    if (m_tile == nullptr) {
+    if (p_tile == nullptr) {
       // error assigning memory. Take measures.
       printf( "Chunk::Chunk error\n");
       return;
@@ -63,8 +45,8 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
         for (int cx = 0; cx < CHUNK_WIDTH; cx++)
             for(int cy = 0; cy < CHUNK_HEIGHT; cy++) {
                 int index = TILE_REGISTER( cx, cy, cz);
-                m_tile[ index ].ID = EMPTY_BLOCK_ID;
-                //m_tile[ index ].;
+                p_tile[ index ].ID = EMPTY_BLOCK_ID;
+                //p_tile[ index ].;
                 //CreateTile( cx, cy, cz, 0);
             }
     printf( "Chunk::chunk %dms\n", SDL_GetTicks()-t);
@@ -83,22 +65,22 @@ Chunk::~Chunk() {
     left = NULL;
     up = NULL;
     down = NULL;
-    // Löschen m_tile
+    // Löschen p_tile
     for (int cz = 0; cz < CHUNK_DEPTH; cz++)
         for (int cx = 0; cx < CHUNK_WIDTH; cx++)
             for(int cy = 0; cy < CHUNK_HEIGHT; cy++) {
                     int Register = TILE_REGISTER( cx, cy, cz);
-//                    delete m_tile[ Register];
-//                    m_tile[ Register] = NULL;
+//                    delete p_tile[ Register];
+//                    p_tile[ Register] = NULL;
                 }
-    delete[] m_tile;
+    delete[] p_tile;
 
-    //printf( "~Chunk(): remove m_tile in %dms\n", timer.GetTicks());
+    //printf( "~Chunk(): remove p_tile in %dms\n", timer.GetTicks());
     timer.Start();
     // vbo daten löschen
-/*    m_data.clear();
-    m_vertex.clear();*/
-    //m_normal.clear();
+/*    p_data.clear();
+    p_vertex.clear();*/
+    //p_normal.clear();
     printf( "~Chunk(): remove vbo data in %dms\n", timer.GetTicks());
 }
 
@@ -107,9 +89,9 @@ void Chunk::CreateTile( int X, int Y, int Z, int ID) {
     tile = GetTile( X, Y, Z);
     if( ID == 0) {
         if( tile != NULL) {
-            m_changed = true;
-//            delete m_tile[ TILE_REGISTER( X, Y, Z)];
-//            m_tile[ TILE_REGISTER( X, Y, Z)] = NULL;
+            p_changed = true;
+//            delete p_tile[ TILE_REGISTER( X, Y, Z)];
+//            p_tile[ TILE_REGISTER( X, Y, Z)] = NULL;
         }
         return;
     }
@@ -117,7 +99,7 @@ void Chunk::CreateTile( int X, int Y, int Z, int ID) {
     // tile nehmen
     tile->ID = ID;
     // welt hat sich verändert
-    m_changed = true;
+    p_changed = true;
 }
 
 void Chunk::set( int X, int Y, int Z, int ID) {
@@ -129,7 +111,7 @@ void Chunk::set( int X, int Y, int Z, int ID) {
     // tile nehmen
     l_tile->ID = ID;
     // welt hat sich verändert
-    m_changed = true;
+    p_changed = true;
 }
 
 Tile *Chunk::GetTile( int X, int Y, int Z) {
@@ -141,12 +123,12 @@ Tile *Chunk::GetTile( int X, int Y, int Z) {
         return NULL;
     // X Y Z
     // Z X Y -> https://www.youtube.com/watch?v=B4DuT61lIPU
-    Tile *l_tile = &m_tile[ TILE_REGISTER( X, Y, Z)];
+    Tile *l_tile = &p_tile[ TILE_REGISTER( X, Y, Z)];
     return l_tile;
 }
 
 bool Chunk::CheckTile( int X, int Y, int Z) {
-    if( m_tile[ TILE_REGISTER( X, Y, Z)].ID == EMPTY_BLOCK_ID)
+    if( p_tile[ TILE_REGISTER( X, Y, Z)].ID == EMPTY_BLOCK_ID)
         return false;
     return true;
 }
@@ -174,7 +156,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     timer.Start();
 
     // wird gelöscht
-    if( m_deleting)
+    if( p_deleting)
         return;
 
     bool b_visibility = false;
@@ -210,29 +192,29 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 if( 0&& b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == GetTile( x, y-1, z)->ID) ) {
-                    m_vertex[i - 4] = block_vertex( x,     y+1,     z, 0);
-                    m_vertex[i - 3] = block_vertex( x, y+1, z, 0);
-                    m_vertex[i - 1] = block_vertex( x, y+1, z+1, 0);
+                    p_vertex[i - 4] = block_vertex( x,     y+1,     z, 0);
+                    p_vertex[i - 3] = block_vertex( x, y+1, z, 0);
+                    p_vertex[i - 1] = block_vertex( x, y+1, z+1, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 0);
 
-                    m_data[i] = block_data( 0.f, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    m_vertex[i++] = block_vertex(x, y, z, 0);
+                    p_data[i] = block_data( 0.f, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
+                    p_vertex[i++] = block_vertex(x, y, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    m_vertex[i++] = block_vertex(x, y, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
+                    p_vertex[i++] = block_vertex(x, y, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    m_vertex[i++] = block_vertex(x, y + 1, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
+                    p_vertex[i++] = block_vertex(x, y + 1, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    m_vertex[i++] = block_vertex(x, y + 1, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
+                    p_vertex[i++] = block_vertex(x, y + 1, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    m_vertex[i++] = block_vertex(x, y, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
+                    p_vertex[i++] = block_vertex(x, y, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    m_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
+                    p_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
                 }
 
                 b_visibility = true;
@@ -260,29 +242,29 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 if(b_visibility && y != 0 && CheckTile( x, y-1, z) && GetTile( x, y, z)->ID == GetTile( x, y-1, z)->ID) {
-                    m_vertex[i - 5] = block_vertex(x + 1, y+1, z, 0);
-                    m_vertex[i - 3] = block_vertex(x +1, y+1, z, 0);
-                    m_vertex[i - 2] = block_vertex(x +1, y+1, z+1, 0);
+                    p_vertex[i - 5] = block_vertex(x + 1, y+1, z, 0);
+                    p_vertex[i - 3] = block_vertex(x +1, y+1, z, 0);
+                    p_vertex[i - 2] = block_vertex(x +1, y+1, z+1, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 1);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
                 }
                 b_visibility = true;
             }
@@ -310,29 +292,29 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 if(b_visibility && x != 0 && CheckTile(x-1, y, z) && GetTile( x-1, y, z)->ID == GetTile( x, y, z)->ID) {
-                    m_vertex[i - 5] = block_vertex(x+1    , y, z, 0);
-                    m_vertex[i - 3] = block_vertex(x + 1, y, z, 0);
-                    m_vertex[i - 2] = block_vertex(x + 1, y, z+1, 0);
+                    p_vertex[i - 5] = block_vertex(x+1    , y, z, 0);
+                    p_vertex[i - 3] = block_vertex(x + 1, y, z, 0);
+                    p_vertex[i - 2] = block_vertex(x + 1, y, z+1, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 5);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y, z, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y, z, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y, z + 1, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y, z + 1, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y, z + 1, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y, z + 1, 0);
                 }
                 b_visibility = true;
             }
@@ -358,29 +340,29 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 if(b_visibility && x != 0 && CheckTile(x-1, y, z) && GetTile( x-1, y, z)->ID == GetTile( x, y, z)->ID) {
-                    m_vertex[i - 4] = block_vertex( x+1,     y+1,     z, 0);
-                    m_vertex[i - 3] = block_vertex( x+1, y+1, z, 0);
-                    m_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
+                    p_vertex[i - 4] = block_vertex( x+1,     y+1,     z, 0);
+                    p_vertex[i - 3] = block_vertex( x+1, y+1, z, 0);
+                    p_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 4);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y + 1, z, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y + 1, z, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
 
-                    m_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
                 }
                 b_visibility = true;
             }
@@ -406,29 +388,29 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 if(b_visibility && y != 0 && CheckTile(x, y-1, z) && GetTile( x, y, z)->ID == GetTile( x, y-1, z)->ID) {
-                    m_vertex[i - 5] = block_vertex(x, y+1, z, 0);
-                    m_vertex[i - 2] = block_vertex(x+1, y+1, z, 0);
-                    m_vertex[i - 3] = block_vertex(x, y+1, z, 0);
+                    p_vertex[i - 5] = block_vertex(x, y+1, z, 0);
+                    p_vertex[i - 2] = block_vertex(x+1, y+1, z, 0);
+                    p_vertex[i - 3] = block_vertex(x, y+1, z, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 2);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y + 1, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y + 1, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y + 1, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y + 1, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z, 0);
                 }
                 b_visibility = true;
             }
@@ -455,29 +437,29 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 if(b_visibility && y != 0 && CheckTile(x, y-1, z) && GetTile( x, y-1, z)->ID == GetTile( x, y, z)->ID) {
-                    m_vertex[i - 4] = block_vertex( x,     y+1,     z+1, 0);
-                    m_vertex[i - 3] = block_vertex( x, y+1, z+1, 0);
-                    m_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
+                    p_vertex[i - 4] = block_vertex( x,     y+1,     z+1, 0);
+                    p_vertex[i - 3] = block_vertex( x, y+1, z+1, 0);
+                    p_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 3);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x, y + 1, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y, z + 1, 0);
 
-                    m_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    m_vertex[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
+                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
+                    p_vertex[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
                 }
                 b_visibility = true;
             }
@@ -486,52 +468,50 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     }
     // normal errechnen
     int v;
-    //m_normal.resize( m_vertex.size());
+    //p_normal.resize( p_vertex.size());
     for( v = 0; v+3 <= i; v+=3) {
-        glm::vec3 a(m_vertex[v].x, m_vertex[v].y, m_vertex[v].z);
-        glm::vec3 b(m_vertex[v+1].x, m_vertex[v+1].y, m_vertex[v+1].z);
-        glm::vec3 c(m_vertex[v+2].x, m_vertex[v+2].y, m_vertex[v+2].z);
+        glm::vec3 a(p_vertex[v].x, p_vertex[v].y, p_vertex[v].z);
+        glm::vec3 b(p_vertex[v+1].x, p_vertex[v+1].y, p_vertex[v+1].z);
+        glm::vec3 c(p_vertex[v+2].x, p_vertex[v+2].y, p_vertex[v+2].z);
         glm::vec3 edge1 = b-a;
         glm::vec3 edge2 = c-a;
         glm::vec3 normal = glm::normalize( glm::cross( edge1, edge2));
 
-        m_vertex[v+0].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
-        m_vertex[v+1].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
-        m_vertex[v+2].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
+        p_vertex[v+0].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
+        p_vertex[v+1].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
+        p_vertex[v+2].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
 
-        /*m_normal[v].x = normal.x;
-        m_normal[v].y = normal.y;
-        m_normal[v].z = normal.z;
+        /*p_normal[v].x = normal.x;
+        p_normal[v].y = normal.y;
+        p_normal[v].z = normal.z;
 
-        m_normal[v+1].x = normal.x;
-        m_normal[v+1].y = normal.y;
-        m_normal[v+1].z = normal.z;
+        p_normal[v+1].x = normal.x;
+        p_normal[v+1].y = normal.y;
+        p_normal[v+1].z = normal.z;
 
-        m_normal[v+2].x = normal.x;
-        m_normal[v+2].y = normal.y;
-        m_normal[v+2].z = normal.z;*/
+        p_normal[v+2].x = normal.x;
+        p_normal[v+2].y = normal.y;
+        p_normal[v+2].z = normal.z;*/
     }
-    m_elements = i;
-    m_changed = false;
-    m_updateonce = true;
-    if( m_elements == 0) {// Kein Speicher resavieren weil leer
+    p_elements = i;
+    p_changed = false;
+    p_updateonce = true;
+    if( p_elements == 0) {// Kein Speicher resavieren weil leer
         return;
     }
-    m_arraychange = true;
-    printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), m_elements, GetAmount());
+    p_arraychange = true;
+    printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, GetAmount());
 }
 
-
-
 void Chunk::DestoryVbo() {
-    m_nomorevbo = true;
-    while( m_updatevbo);
+    p_nomorevbo = true;
+    while( p_updatevbo);
 
-    if( m_createvbo ) {
-        m_createvbo = false;
-        glDeleteBuffers(1, &m_vboVertex);
-//        glDeleteBuffers(1, &m_vboNormal);
-        glDeleteBuffers(1, &m_vboData);
+    if( p_createvbo ) {
+        p_createvbo = false;
+        glDeleteBuffers(1, &p_vboVertex);
+//        glDeleteBuffers(1, &p_vboNormal);
+        glDeleteBuffers(1, &p_vboData);
     }
 }
 
@@ -540,33 +520,33 @@ void Chunk::UpdateVbo() {
     timer.Start();
 
     // Nicht bearbeiten falls es anderweilig bearbeitet wird
-    if( m_deleting)
+    if( p_deleting)
         return;
-    if( m_elements == 0 || m_updateonce == false || m_nomorevbo == true)
+    if( p_elements == 0 || p_updateonce == false || p_nomorevbo == true)
         return;
 
     // VBO erstellen falls dieser fehlt
-    if(m_createvbo == false) {
+    if(p_createvbo == false) {
         // Create vbo
-        glGenBuffers(1, &m_vboVertex);
-//        glGenBuffers(1, &m_vboNormal);
-        glGenBuffers(1, &m_vboData);
-        m_createvbo = true;
+        glGenBuffers(1, &p_vboVertex);
+//        glGenBuffers(1, &p_vboNormal);
+        glGenBuffers(1, &p_vboData);
+        p_createvbo = true;
     }
 
     // flags ändern
-    m_arraychange = false;
-    m_updatevboonce = true;
+    p_arraychange = false;
+    p_updatevboonce = true;
 
     // anderweilig beschäftigt?
-    while( m_updatevbo);
-    m_updatevbo = true;
+    while( p_updatevbo);
+    p_updatevbo = true;
     // vbo updaten
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboVertex);
-    glBufferData(GL_ARRAY_BUFFER, m_elements * sizeof *m_vertex, m_vertex, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboData);
-    glBufferData(GL_ARRAY_BUFFER, m_elements * sizeof *m_data, m_data, GL_STATIC_DRAW);
-    m_updatevbo = false;
+    glBindBuffer(GL_ARRAY_BUFFER, p_vboVertex);
+    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof *p_vertex, p_vertex, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, p_vboData);
+    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof *p_data, p_data, GL_STATIC_DRAW);
+    p_updatevbo = false;
     printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(block_vertex), GetAmount(), GetAmount() * sizeof(block_data));
 }
 
@@ -578,26 +558,26 @@ void Chunk::Draw( Graphic* graphic, Shader* shader, Camera* camera, Camera* shad
     f_form.GetPos().z = z*CHUNK_DEPTH;
 
     // chunk wird grad gelöscht
-    if( m_nomorevbo == true)
+    if( p_nomorevbo == true)
         return;
     // wird gelöscht
-    if( m_deleting)
+    if( p_deleting)
         return;
-    if( m_updatevbo)
+    if( p_updatevbo)
         return;
-    m_updatevbo = true;
+    p_updatevbo = true;
 
     // Shader einstellen
     shader->Update( f_form, camera, shadow, aa);
 
     // vbo pointer auf array setzen
-    shader->BindArray( m_vboVertex, 0, GL_FLOAT);
-    shader->BindArray( m_vboData, 1);
+    shader->BindArray( p_vboVertex, 0, GL_FLOAT);
+    shader->BindArray( p_vboData, 1);
 
     // Dreiecke zeichnen
     // Debug GL_LINES, GL_TRIANGLES
-    glDrawArrays( GL_TRIANGLES, 0, (int)m_elements);
+    glDrawArrays( GL_TRIANGLES, 0, (int)p_elements);
 
     // Update war erfolgreich
-    m_updatevbo = false;
+    p_updatevbo = false;
 }

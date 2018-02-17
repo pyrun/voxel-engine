@@ -29,18 +29,18 @@ public:
 protected:
     void DrawBox( GLshort bx, GLshort by, GLshort bz);
 private:
-    bool m_isRunnig;
-    Input m_input;
-    BlockList* m_blocklist;
-    Graphic* m_graphic;
+    bool p_isRunnig;
+    Input p_input;
+    BlockList* p_blocklist;
+    Graphic* p_graphic;
     Framenrate framenrate;
-    Config m_config;
-    Gui *m_gui;
-    Sun *m_sun;
+    Config p_config;
+    Gui *p_gui;
+    Sun *p_sun;
 
     std::string Title;
-    World *m_world;
-    GLuint m_vboCursor;
+    World *p_world;
+    GLuint p_vboCursor;
 };
 
 

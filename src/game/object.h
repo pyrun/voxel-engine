@@ -148,41 +148,41 @@ class Object {
 
 
             //vertices.push_back( glm::vec3( 0.0f, 1.0f, 0.0f) );0
-            m_texture = new Texture( "cube.bmp");
+            p_texture = new Texture( "cube.bmp");
 
-            glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, p_vbo);
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof( glm::vec3 ), &vertices[0], GL_STATIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, m_vboTexture);
+            glBindBuffer(GL_ARRAY_BUFFER, p_vboTexture);
             glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof( glm::vec2 ), &texcoords[0], GL_STATIC_DRAW);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndex);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
             glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof( unsigned int ), &indices[0], GL_STATIC_DRAW);
             size = indices.size();
         }
 
         void draw( Shader* l_shader, Camera* l_camera) {
             Transform f_form;
-            f_form.GetPos().x = m_pos.x;
-            f_form.GetPos().y = m_pos.y;
-            f_form.GetPos().z = m_pos.z;
+            f_form.GetPos().x = p_pos.x;
+            f_form.GetPos().y = p_pos.y;
+            f_form.GetPos().z = p_pos.z;
 
             Shader *shader = l_shader;
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vboIndex);
-            shader->BindArray( m_vbo, 0, GL_FLOAT, 3);
-            shader->BindArray( m_vboTexture, 1, GL_FLOAT, 2);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
+            shader->BindArray( p_vbo, 0, GL_FLOAT, 3);
+            shader->BindArray( p_vboTexture, 1, GL_FLOAT, 2);
 
 
             shader->Bind();
             shader->EnableVertexArray( 0);
             shader->EnableVertexArray( 1);
 
-            m_texture->Bind();
+            p_texture->Bind();
 
             //shader->SetSize( (graphic->GetDisplay()->GetTilesetHeight()/16), ( graphic->GetDisplay()->GetTilesetWidth()/16) );
             shader->Update( f_form, l_camera, l_camera, glm::mat4(1));
 
 
-            //shader->BindArray( m_vbo, 0, GL_FLOAT);
+            //shader->BindArray( p_vbo, 0, GL_FLOAT);
             //glDrawArrays( GL_TRIANGLES, 0, size);
 
             glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
@@ -193,13 +193,13 @@ class Object {
 
     protected:
     private:
-        GLuint m_vbo;
-        GLuint m_vboIndex;
-        GLuint m_vboTexture;
-        glm::vec3 m_pos;
-        glm::vec3 m_view;
+        GLuint p_vbo;
+        GLuint p_vboIndex;
+        GLuint p_vboTexture;
+        glm::vec3 p_pos;
+        glm::vec3 p_view;
         int size;
-        Texture *m_texture;
+        Texture *p_texture;
 };
 
 #endif // OBJECT_H

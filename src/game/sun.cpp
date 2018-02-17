@@ -1,7 +1,7 @@
 #include "sun.h"
 
 Sun::Sun() {
-    m_time.Start();
+    p_time.Start();
 }
 
 Sun::~Sun() {

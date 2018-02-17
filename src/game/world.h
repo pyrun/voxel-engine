@@ -48,7 +48,7 @@ public:
     void SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID);
     void Process();
     void DeleteChunks( Chunk* chunk);
-    inline int GetAmountChunks() const { return m_chunk_amount; }
+    inline int GetAmountChunks() const { return p_chunk_amount; }
     inline bool GetUpdate() const { return (int)CreateChunkList.size() != 0;}
     void AddChunk( int X, int Y, int Z);
     void DeletingChunk( int pos_x, int pos_y, int pos_z);
@@ -65,14 +65,14 @@ public:
 protected:
 private:
     int Seed;
-    bool m_buysvector;
-    bool m_world_tree_empty;
-    int m_chunk_amount;
+    bool p_buysvector;
+    bool p_world_tree_empty;
+    int p_chunk_amount;
     Texture *Tilemap;
     std::vector<World_Position> CreateChunkList;
     std::vector<World_Position> DeletingChunkList;
     Chunk* Chunks;
-    BlockList *m_blocklist;
+    BlockList *p_blocklist;
 
     //ShadowMap Shadow;
 };

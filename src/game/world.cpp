@@ -4,20 +4,20 @@
 
 World::World( std::string Tileset, BlockList* B_List) {
     Seed = (int)time(NULL); // Seed
-    m_buysvector = false;
+    p_buysvector = false;
     Tilemap = new Texture( Tileset);
-    m_chunk_amount = 0;
+    p_chunk_amount = 0;
     // Kein Chunk am anfang
     Chunks = NULL;
-    m_world_tree_empty = true;
+    p_world_tree_empty = true;
     // Blocklist link erstellen
-    m_blocklist = B_List;
+    p_blocklist = B_List;
 }
 
 World::~World() {
     // Löschen der Welt
     DeleteChunks( Chunks);
-    while( m_chunk_amount != 0) {
+    while( p_chunk_amount != 0) {
         SDL_Delay(1);
     }
     delete Tilemap;
@@ -28,39 +28,39 @@ Tile* World::GetTile( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int m_chunk_x = x-node->GetX()*CHUNK_WIDTH;
-        int m_chunk_y = y-node->GetY()*CHUNK_HEIGHT;
-        int m_chunk_z = z-node->GetZ()*CHUNK_DEPTH;
+        int p_chunk_x = x-node->GetX()*CHUNK_WIDTH;
+        int p_chunk_y = y-node->GetY()*CHUNK_HEIGHT;
+        int p_chunk_z = z-node->GetZ()*CHUNK_DEPTH;
 
         // X - Achse
-        if(m_chunk_x < 0 ) {
+        if(p_chunk_x < 0 ) {
             node = node->next;
             continue;
         }
-        if(m_chunk_x >= CHUNK_WIDTH ) {
+        if(p_chunk_x >= CHUNK_WIDTH ) {
             node = node->next;
             continue;
         }
         // Y - Achse
-        if(m_chunk_y < 0 ) {
+        if(p_chunk_y < 0 ) {
             node = node->next;
             continue;
         }
-        if(m_chunk_y >= CHUNK_HEIGHT ) {
+        if(p_chunk_y >= CHUNK_HEIGHT ) {
             node = node->next;
             continue;
         }
         // Z - Achse
-        if(m_chunk_z < 0 ) {
+        if(p_chunk_z < 0 ) {
             node = node->next;
             continue;
         }
-        if(m_chunk_z >= CHUNK_DEPTH) {
+        if(p_chunk_z >= CHUNK_DEPTH) {
             node = node->next;
             continue;
         }
-        //printf("%d %d %d | ", m_chunk_x, m_chunk_y, m_chunk_z);
-        Tile *l_tile = node->GetTile( m_chunk_x, m_chunk_y, m_chunk_z );
+        //printf("%d %d %d | ", p_chunk_x, p_chunk_y, p_chunk_z);
+        Tile *l_tile = node->GetTile( p_chunk_x, p_chunk_y, p_chunk_z );
         if( l_tile && l_tile->ID == EMPTY_BLOCK_ID)
             break;
         return l_tile;
@@ -73,34 +73,34 @@ Chunk* World::GetChunkWithPos( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int m_chunk_x = x-node->GetX()*CHUNK_WIDTH;
-        int m_chunk_y = y-node->GetY()*CHUNK_HEIGHT;
-        int m_chunk_z = z-node->GetZ()*CHUNK_DEPTH;
+        int p_chunk_x = x-node->GetX()*CHUNK_WIDTH;
+        int p_chunk_y = y-node->GetY()*CHUNK_HEIGHT;
+        int p_chunk_z = z-node->GetZ()*CHUNK_DEPTH;
 
         // X - Achse
-        if(m_chunk_x < 0 ) {
+        if(p_chunk_x < 0 ) {
             node = node->next;
             continue;
         }
-        if(m_chunk_x >= CHUNK_WIDTH ) {
+        if(p_chunk_x >= CHUNK_WIDTH ) {
             node = node->next;
             continue;
         }
         // Y - Achse
-        if(m_chunk_y < 0 ) {
+        if(p_chunk_y < 0 ) {
             node = node->next;
             continue;
         }
-        if(m_chunk_y >= CHUNK_HEIGHT ) {
+        if(p_chunk_y >= CHUNK_HEIGHT ) {
             node = node->next;
             continue;
         }
         // Z - Achse
-        if(m_chunk_z < 0 ) {
+        if(p_chunk_z < 0 ) {
             node = node->next;
             continue;
         }
-        if(m_chunk_z >= CHUNK_DEPTH) {
+        if(p_chunk_z >= CHUNK_DEPTH) {
             node = node->next;
             continue;
         }
@@ -162,7 +162,7 @@ void World::AddChunk( int X, int Y, int Z) {
     Vector.x = X;
     Vector.y = Y;
     Vector.z = Z;
-    if( m_buysvector == true)
+    if( p_buysvector == true)
         return;
     CreateChunkList.push_back( Vector);
 }
@@ -172,7 +172,7 @@ void World::DeletingChunk( int pos_x, int pos_y, int pos_z) {
     Vector.x = pos_x;
     Vector.y = pos_y;
     Vector.z = pos_z;
-    //while( m_buysvector == true);
+    //while( p_buysvector == true);
     Chunk* node = GetChunk( pos_x, pos_y, pos_z);
 
     if( node == NULL)
@@ -190,11 +190,11 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
     // Chunk erstellen
     Timer timer;
     timer.Start();
-    node = new Chunk( pos_x, pos_y, pos_z, 102457, m_blocklist);
+    node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
 
     // Landscape erstellen
 
-    Landscape_Generator( node, m_blocklist);
+    Landscape_Generator( node, p_blocklist);
     //printf( "Create Chunk %dms %dkb\n", timer.GetTicks(), CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH*sizeof( Tile)/1024);
 
     // seiten finden
@@ -229,9 +229,9 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
         snode->right = node;
         node->left = snode;
     }
-    //printf( "Add Chunk %d %d %d %d\n", m_chunk_amount+1, node.chunk->GetX(), node.chunk->GetY(), node.chunk->GetZ());
-    //printf( "Add Chunk %d: %d %d %d\n", m_chunk_amount+1, node->GetX(), node->GetY(), node->GetZ());
-    m_chunk_amount++; // Chunks mitzählen
+    //printf( "Add Chunk %d %d %d %d\n", p_chunk_amount+1, node.chunk->GetX(), node.chunk->GetY(), node.chunk->GetZ());
+    //printf( "Add Chunk %d: %d %d %d\n", p_chunk_amount+1, node->GetX(), node->GetY(), node->GetZ());
+    p_chunk_amount++; // Chunks mitzählen
 
     Chunk *tmp = Chunks;
     int z = 0;
@@ -245,7 +245,7 @@ void World::CreateChunk( int pos_x, int pos_y, int pos_z) {
         }
         tmp->next = node;
     }
-    node->UpdateArray( m_blocklist, node->back, node->front, node->left, node->right, node->up, node->down);
+    node->UpdateArray( p_blocklist, node->back, node->front, node->left, node->right, node->up, node->down);
     node->UpdateVbo();
 }
 
@@ -293,7 +293,7 @@ void World::DestoryChunk( int pos_x, int pos_y, int pos_z) {
             // löschen
             delete tmp;
             // runterzählen
-            m_chunk_amount--;
+            p_chunk_amount--;
             break;
         }
         tmpOld = tmp;
@@ -362,8 +362,8 @@ void World::Draw( Graphic *graphic, Config *config) {
         //glCullFace(GL_FRONT);
         glClear(GL_DEPTH_BUFFER_BIT);
         graphic->GetShadowShader()->Bind();// Shader
-        if( m_world_tree != NULL && m_world_tree_empty == false)
-            DrawNode(m_world_tree, graphic, graphic->GetShadowShader(), cam, cam );
+        if( p_world_tree != NULL && p_world_tree_empty == false)
+            DrawNode(p_world_tree, graphic, graphic->GetShadowShader(), cam, cam );
         //glCullFace(GL_BACK);
     }
     if( 0) {
@@ -376,8 +376,8 @@ void World::Draw( Graphic *graphic, Config *config) {
         glActiveTexture( GL_TEXTURE1 );
         Shadow.BindForReading( GL_TEXTURE1);
 
-        if( m_world_tree != NULL && m_world_tree_empty == false )
-            DrawNode(m_world_tree, graphic, graphic->GetVoxelShader(), graphic->GetCamera(), cam);
+        if( p_world_tree != NULL && p_world_tree_empty == false )
+            DrawNode(p_world_tree, graphic, graphic->GetVoxelShader(), graphic->GetCamera(), cam);
     }*/
 
     /*if( 0) {
@@ -388,14 +388,14 @@ void World::Draw( Graphic *graphic, Config *config) {
         //Tilemap->Bind();
         //glActiveTexture(GL_TEXTURE1);
         Shadow.BindForReading(GL_TEXTURE0);
-        if(m_world_tree != NULL && m_world_tree_empty == false)
-            DrawNode(m_world_tree, graphic, graphic->GetShadowShader(), graphic->GetCamera());
+        if(p_world_tree != NULL && p_world_tree_empty == false)
+            DrawNode(p_world_tree, graphic, graphic->GetShadowShader(), graphic->GetCamera());
     }*/
 
     int g_width = graphic->GetWidth();
     int g_height = graphic->GetHeight();
 
-    //glClear(GL_ACCUM_BUFFER_BIT);
+    //glClear(GL_ACCUp_BUFFER_BIT);
 
     // get shader
     Shader* l_shader = graphic->GetVoxelShader();
@@ -487,7 +487,7 @@ void World::UpdateArrayNode() {
             break;
         // Update Chunk if Change
         if( (node->GetChanged() || !node->GetUpdateOnce() ) && node->IsDrawable()) {// Update Chunk -> es hat sich was verändert
-            node->UpdateArray( m_blocklist, node->back, node->front, node->left, node->right, node->up, node->down);
+            node->UpdateArray( p_blocklist, node->back, node->front, node->left, node->right, node->up, node->down);
         }
         node = node->next;
     }

@@ -87,7 +87,7 @@ typedef struct {
   std::vector<float> texcoords;
   std::vector<unsigned int> indices;
   std::vector<unsigned char>
-      num_vertices;              // The number of vertices per face. Up to 255.
+      nup_vertices;              // The number of vertices per face. Up to 255.
   std::vector<int> material_ids; // per-face material ID
   std::vector<tag_t> tags;       // SubD tag
 } mesh_t;
@@ -111,14 +111,14 @@ public:
 class MaterialFileReader : public MaterialReader {
 public:
   MaterialFileReader(const std::string &mtl_basepath)
-      : m_mtlBasePath(mtl_basepath) {}
+      : p_mtlBasePath(mtl_basepath) {}
   virtual ~MaterialFileReader() {}
   virtual bool operator()(const std::string &matId,
                           std::vector<material_t> &materials,
                           std::map<std::string, int> &matMap, std::string &err);
 
 private:
-  std::string m_mtlBasePath;
+  std::string p_mtlBasePath;
 };
 
 /// Loads .obj from a file.
@@ -179,10 +179,10 @@ struct vertex_index {
 };
 
 struct tag_sizes {
-  tag_sizes() : num_ints(0), num_floats(0), num_strings(0) {}
-  int num_ints;
-  int num_floats;
-  int num_strings;
+  tag_sizes() : nup_ints(0), nup_floats(0), nup_strings(0) {}
+  int nup_ints;
+  int nup_floats;
+  int nup_strings;
 };
 
 // for std::map
@@ -393,21 +393,21 @@ static inline void parseFloat3(float &x, float &y, float &z,
 static tag_sizes parseTagTriple(const char *&token) {
   tag_sizes ts;
 
-  ts.num_ints = atoi(token);
+  ts.nup_ints = atoi(token);
   token += strcspn(token, "/ \t\r");
   if (token[0] != '/') {
     return ts;
   }
   token++;
 
-  ts.num_floats = atoi(token);
+  ts.nup_floats = atoi(token);
   token += strcspn(token, "/ \t\r");
   if (token[0] != '/') {
     return ts;
   }
   token++;
 
-  ts.num_strings = atoi(token);
+  ts.nup_strings = atoi(token);
   token += strcspn(token, "/ \t\r") + 1;
 
   return ts;
@@ -552,7 +552,7 @@ static bool exportFaceGroupToShape(
         shape.mesh.indices.push_back(v1);
         shape.mesh.indices.push_back(v2);
 
-        shape.mesh.num_vertices.push_back(3);
+        shape.mesh.nup_vertices.push_back(3);
         shape.mesh.material_ids.push_back(material_id);
       }
     } else {
@@ -566,7 +566,7 @@ static bool exportFaceGroupToShape(
         shape.mesh.indices.push_back(v);
       }
 
-      shape.mesh.num_vertices.push_back(static_cast<unsigned char>(npolys));
+      shape.mesh.nup_vertices.push_back(static_cast<unsigned char>(npolys));
       shape.mesh.material_ids.push_back(material_id); // per face
     }
   }
@@ -814,8 +814,8 @@ bool MaterialFileReader::operator()(const std::string &matId,
                                     std::string &err) {
   std::string filepath;
 
-  if (!m_mtlBasePath.empty()) {
-    filepath = std::string(m_mtlBasePath) + matId;
+  if (!p_mtlBasePath.empty()) {
+    filepath = std::string(p_mtlBasePath) + matId;
   } else {
     filepath = matId;
   }
@@ -1097,21 +1097,21 @@ bool LoadObj(std::vector<shape_t> &shapes,       // [output]
 
       tag_sizes ts = parseTagTriple(token);
 
-      tag.intValues.resize(static_cast<size_t>(ts.num_ints));
+      tag.intValues.resize(static_cast<size_t>(ts.nup_ints));
 
-      for (size_t i = 0; i < static_cast<size_t>(ts.num_ints); ++i) {
+      for (size_t i = 0; i < static_cast<size_t>(ts.nup_ints); ++i) {
         tag.intValues[i] = atoi(token);
         token += strcspn(token, "/ \t\r") + 1;
       }
 
-      tag.floatValues.resize(static_cast<size_t>(ts.num_floats));
-      for (size_t i = 0; i < static_cast<size_t>(ts.num_floats); ++i) {
+      tag.floatValues.resize(static_cast<size_t>(ts.nup_floats));
+      for (size_t i = 0; i < static_cast<size_t>(ts.nup_floats); ++i) {
         tag.floatValues[i] = parseFloat(token);
         token += strcspn(token, "/ \t\r") + 1;
       }
 
-      tag.stringValues.resize(static_cast<size_t>(ts.num_strings));
-      for (size_t i = 0; i < static_cast<size_t>(ts.num_strings); ++i) {
+      tag.stringValues.resize(static_cast<size_t>(ts.nup_strings));
+      for (size_t i = 0; i < static_cast<size_t>(ts.nup_strings); ++i) {
         char stringValueBuffer[4096];
 
 #ifdef _MSC_VER

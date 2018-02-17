@@ -44,15 +44,15 @@ public:
 	void SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a);
 	void Update(const Transform& transform, Camera *camera, Camera *shadow, glm::mat4 aa = glm::mat4(1));
 	void UpdateWithout( glm::mat4 mvp, Camera *t_camera, Transform t_transform = Transform() );
-	inline GLuint& GetProgram() { return m_program; }
+	inline GLuint& GetProgram() { return p_program; }
 	void BindArray( GLuint Data, int Type, GLenum Type_Attrib = GL_SHORT, int Attrib_size = 4);
 	virtual ~Shader();
 protected:
 private:
-    static const unsigned int NUM_ATTRIBUTE = 3;
-	static const unsigned int NUM_SHADERS = 2;
-	static const unsigned int NUM_UNIFORMS = 7;
-	int m_attribute_flag[NUM_ATTRIBUTE];
+    static const unsigned int NUp_ATTRIBUTE = 3;
+	static const unsigned int NUp_SHADERS = 2;
+	static const unsigned int NUp_UNIFORMS = 7;
+	int p_attribute_flag[NUp_ATTRIBUTE];
 	void operator=(const Shader& shader) {}
 	Shader(const Shader& shader) {}
 
@@ -60,10 +60,10 @@ private:
 	void CheckShaderError(GLuint shader, GLuint flag, bool isProgram, const std::string& errorMessage);
 	GLuint CreateShader(const std::string& text, unsigned int type);
 
-	GLuint m_attribute[NUM_ATTRIBUTE];
-	GLuint m_program;
-	GLuint m_shaders[NUM_SHADERS];
-	GLuint m_uniforms[NUM_UNIFORMS];
+	GLuint p_attribute[NUp_ATTRIBUTE];
+	GLuint p_program;
+	GLuint p_shaders[NUp_SHADERS];
+	GLuint p_uniforms[NUp_UNIFORMS];
 };
 
 #endif

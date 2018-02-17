@@ -4,29 +4,29 @@
 
 BlockImage::BlockImage() {
     // Null setzen
-    m_surface = NULL;
+    p_surface = NULL;
 }
 
 BlockImage::~BlockImage() {
     // falls was geladen wurde wieder freigeben
-    if( m_surface != NULL)
-        SDL_FreeSurface( m_surface);
+    if( p_surface != NULL)
+        SDL_FreeSurface( p_surface);
 }
 
 void BlockImage::LoadImage( Graphic* graphic) {
     // Lade Image
-    //printf( "%s loaded\n", m_imagename.c_str());
-    m_surface = graphic->LoadSurface( m_imagename);
+    //printf( "%s loaded\n", p_imagename.c_str());
+    p_surface = graphic->LoadSurface( p_imagename);
 }
 
 void BlockImage::SetImageName( std::string name) {
-    m_imagename = name;
+    p_imagename = name;
 }
 
 /**< block */
 
 Block::Block() {
-    m_imageloaded = false;
+    p_imageloaded = false;
 }
 
 Block::~Block() {
@@ -41,7 +41,7 @@ void Block::LoadImage( Graphic* t_graphic) {
     image_right.LoadImage( t_graphic);
     image_top.LoadImage( t_graphic);
     image_bottom.LoadImage( t_graphic);
-    m_imageloaded = true;
+    p_imageloaded = true;
 }
 
 /**< block list */
@@ -206,15 +206,15 @@ void BlockList::LoadBlock (std::string Path, std::string Name) {
 
     printf( "LoadBlock: %d %d %s\n", (int)List.size(), i_id, Name.c_str());
     // Block erstellen
-    Block m_id;
-    m_id.SetFile( Path + pGraphic->FirstChildElement( "front")->Attribute("image"),
+    Block p_id;
+    p_id.SetFile( Path + pGraphic->FirstChildElement( "front")->Attribute("image"),
                   Path + pGraphic->FirstChildElement( "back")->Attribute("image"),
                   Path + pGraphic->FirstChildElement( "left")->Attribute("image"),
                   Path + pGraphic->FirstChildElement( "right")->Attribute("image"),
                   Path + pGraphic->FirstChildElement( "top")->Attribute("image"),
                   Path + pGraphic->FirstChildElement( "bottom")->Attribute("image"));
-    m_id.SetName( Name);
-    m_id.SetAlpha( Alpha);
-    m_id.SetID( (int)List.size()+1);
-    List.push_back( m_id);
+    p_id.SetName( Name);
+    p_id.SetAlpha( Alpha);
+    p_id.SetID( (int)List.size()+1);
+    List.push_back( p_id);
 }

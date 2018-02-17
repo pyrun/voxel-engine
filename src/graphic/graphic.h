@@ -20,26 +20,26 @@ public:
     void Draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip);
     void SaveImageBMP( std::string File);
 
-    int GetWidth() { return m_display->GetWidth(); }
-    int GetHeight() { return m_display->GetHeight(); }
+    int GetWidth() { return p_display->GetWidth(); }
+    int GetHeight() { return p_display->GetHeight(); }
 
-    SDL_Window* GetWindow() { if(m_display->GetWindow() == NULL) printf( "Graphic::GetWindow dont exist\n"); return m_display->GetWindow(); }
+    SDL_Window* GetWindow() { if(p_display->GetWindow() == NULL) printf( "Graphic::GetWindow dont exist\n"); return p_display->GetWindow(); }
 
-    Display * GetDisplay() { if(m_display == NULL) printf( "Graphic::GetDisplay dont exist\n"); return m_display; }
+    Display * GetDisplay() { if(p_display == NULL) printf( "Graphic::GetDisplay dont exist\n"); return p_display; }
 
-    inline Shader *GetVoxelShader() { if(m_voxel == NULL) printf( "Graphic::GetVoxelShader dont exist\n"); return m_voxel; }
-    inline Shader *GetVertexShader() { if(m_vertex== NULL) printf( "Graphic::GetVertexShader dont exist\n"); return m_vertex; }
-    inline Shader *GetShadowShader() { if(m_shadow== NULL) printf( "Graphic::GetShadowShader dont exist\n"); return m_shadow; }
-    inline Shader *GetObjectShader() { if(m_object== NULL) printf( "Graphic::GetObjectShader dont exist\n"); return m_object; }
-    inline Camera *GetCamera() { if(m_camera == NULL) printf( "Graphic::GetCamera dont exist\n"); return m_camera; }
+    inline Shader *GetVoxelShader() { if(p_voxel == NULL) printf( "Graphic::GetVoxelShader dont exist\n"); return p_voxel; }
+    inline Shader *GetVertexShader() { if(p_vertex== NULL) printf( "Graphic::GetVertexShader dont exist\n"); return p_vertex; }
+    inline Shader *GetShadowShader() { if(p_shadow== NULL) printf( "Graphic::GetShadowShader dont exist\n"); return p_shadow; }
+    inline Shader *GetObjectShader() { if(p_object== NULL) printf( "Graphic::GetObjectShader dont exist\n"); return p_object; }
+    inline Camera *GetCamera() { if(p_camera == NULL) printf( "Graphic::GetCamera dont exist\n"); return p_camera; }
 protected:
 private:
-    Camera *m_camera;
-    Display* m_display;
-    Shader* m_voxel;
-    Shader* m_vertex;
-    Shader *m_shadow;
-    Shader *m_object;
+    Camera *p_camera;
+    Display* p_display;
+    Shader* p_voxel;
+    Shader* p_vertex;
+    Shader *p_shadow;
+    Shader *p_object;
 };
 
 #endif // GRAPHIC_H

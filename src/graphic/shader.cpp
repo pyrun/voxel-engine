@@ -3,37 +3,37 @@
 #include <fstream>
 
 Shader::Shader(const std::string& fileName) {
-	m_program = glCreateProgram();
-	m_shaders[0] = CreateShader(LoadShader(fileName + ".vs"), GL_VERTEX_SHADER);
-	m_shaders[1] = CreateShader(LoadShader(fileName + ".fs"), GL_FRAGMENT_SHADER);
+	p_program = glCreateProgram();
+	p_shaders[0] = CreateShader(LoadShader(fileName + ".vs"), GL_VERTEX_SHADER);
+	p_shaders[1] = CreateShader(LoadShader(fileName + ".fs"), GL_FRAGMENT_SHADER);
 
-	for(unsigned int i = 0; i < NUM_SHADERS; i++)
-		glAttachShader(m_program, m_shaders[i]);
+	for(unsigned int i = 0; i < NUp_SHADERS; i++)
+		glAttachShader(p_program, p_shaders[i]);
 
-	glBindAttribLocation(m_program, 0, "position");
-	glBindAttribLocation(m_program, 1, "texCoord");
-	glBindAttribLocation(m_program, 2, "normal");
-
-
-	glLinkProgram(m_program);
-	CheckShaderError(m_program, GL_LINK_STATUS, true, "Error linking shader program");
-
-	glValidateProgram(m_program);
-	CheckShaderError(m_program, GL_LINK_STATUS, true, "Invalid shader program");
-
-	m_uniforms[0] = glGetUniformLocation(m_program, "g_mvp");
-	m_uniforms[1] = glGetUniformLocation(m_program, "g_shadowmvp");
-	m_uniforms[2] = glGetUniformLocation(m_program, "g_size");
-	m_uniforms[3] = glGetUniformLocation(m_program, "g_shadowmap");
-	m_uniforms[4] = glGetUniformLocation(m_program, "g_backgroundcolor");
-	m_uniforms[5] = glGetUniformLocation(m_program, "g_alpha_cutoff");
-	m_uniforms[6] = glGetUniformLocation(m_program, "g_sun");
+	glBindAttribLocation(p_program, 0, "position");
+	glBindAttribLocation(p_program, 1, "texCoord");
+	glBindAttribLocation(p_program, 2, "normal");
 
 
+	glLinkProgram(p_program);
+	CheckShaderError(p_program, GL_LINK_STATUS, true, "Error linking shader program");
 
-    m_attribute[0] = glGetAttribLocation(m_program, "coord");
-    m_attribute[1] = glGetAttribLocation(m_program, "data");
-    m_attribute[2] = glGetAttribLocation(m_program, "normal");
+	glValidateProgram(p_program);
+	CheckShaderError(p_program, GL_LINK_STATUS, true, "Invalid shader program");
+
+	p_uniforms[0] = glGetUniformLocation(p_program, "g_mvp");
+	p_uniforms[1] = glGetUniformLocation(p_program, "g_shadowmvp");
+	p_uniforms[2] = glGetUniformLocation(p_program, "g_size");
+	p_uniforms[3] = glGetUniformLocation(p_program, "g_shadowmap");
+	p_uniforms[4] = glGetUniformLocation(p_program, "g_backgroundcolor");
+	p_uniforms[5] = glGetUniformLocation(p_program, "g_alpha_cutoff");
+	p_uniforms[6] = glGetUniformLocation(p_program, "g_sun");
+
+
+
+    p_attribute[0] = glGetAttribLocation(p_program, "coord");
+    p_attribute[1] = glGetAttribLocation(p_program, "data");
+    p_attribute[2] = glGetAttribLocation(p_program, "normal");
 
 
     // GL error anzeigen
@@ -44,18 +44,18 @@ Shader::Shader(const std::string& fileName) {
 }
 
 Shader::~Shader() {
-	for(unsigned int i = 0; i < NUM_SHADERS; i++) {
-        glDetachShader(m_program, m_shaders[i]);
-        glDeleteShader(m_shaders[i]);
+	for(unsigned int i = 0; i < NUp_SHADERS; i++) {
+        glDetachShader(p_program, p_shaders[i]);
+        glDeleteShader(p_shaders[i]);
     }
 
-	glDeleteProgram(m_program);
+	glDeleteProgram(p_program);
 }
 
 void Shader::EnableVertexArray( int i) {
     // Nur ein bestimmtes nutzen
-    glEnableVertexAttribArray(m_attribute[i]);
-    m_attribute_flag[ i] = 1;
+    glEnableVertexAttribArray(p_attribute[i]);
+    p_attribute_flag[ i] = 1;
     // GL error
     GLenum error =  glGetError(); if(error) {
         printf( "Shader::EnableVertexArray Error %d\n", (int)error);
@@ -64,9 +64,9 @@ void Shader::EnableVertexArray( int i) {
 
 void Shader::DisableVertexAllArray() {
     // Vertex Array einschalten
-    for(int i = 0; i < NUM_ATTRIBUTE; i++)
-        if( m_attribute_flag[i] == 1)
-            glDisableVertexAttribArray(m_attribute[i]);
+    for(int i = 0; i < NUp_ATTRIBUTE; i++)
+        if( p_attribute_flag[i] == 1)
+            glDisableVertexAttribArray(p_attribute[i]);
     // GL error
     GLenum error =  glGetError(); if(error) {
         printf( "Shader::EnableVertexAllArray Error %d\n", (int)error);
@@ -74,29 +74,29 @@ void Shader::DisableVertexAllArray() {
 }
 
 void Shader::Bind() {
-	glUseProgram(m_program);
+	glUseProgram(p_program);
 
 	DisableVertexAllArray();
 }
 
 void Shader::SetSun( GLfloat x, GLfloat y, GLfloat z, GLfloat f_strength) {
-    glUniform4f( m_uniforms[6], x, y, z, f_strength);
+    glUniform4f( p_uniforms[6], x, y, z, f_strength);
 }
 
 void Shader::SetSize( GLfloat x, GLfloat y) {
-    glUniform2f( m_uniforms[2], x, y);
+    glUniform2f( p_uniforms[2], x, y);
 }
 
 void Shader::SetAlpha_cutoff( GLfloat x) {
-    glUniform1f( m_uniforms[5], x);
+    glUniform1f( p_uniforms[5], x);
 }
 
 void Shader::SetTextureUnit(unsigned int TextureUnit) {
-    glUniform1i( m_uniforms[3], TextureUnit);
+    glUniform1i( p_uniforms[3], TextureUnit);
 }
 
 void Shader::SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a) {
-    glUniform4f( m_uniforms[4], r, g, b, a);
+    glUniform4f( p_uniforms[4], r, g, b, a);
 }
 
 void Shader::Update(const Transform& transform, Camera *camera, Camera *shadow, glm::mat4 aa) {
@@ -116,13 +116,13 @@ void Shader::Update(const Transform& transform, Camera *camera, Camera *shadow, 
         glm::vec3 shift = glm::vec3((i % 2) * 0.5 / w, (i / 2) * 0.5 / h, 0);
         glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
         glm::mat4 mvp = aa * projection * modelview;
-        glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(uniforp_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
         draw_scene();
         glAccum(i ? GL_ACCUM : GL_LOAD, 0.25);
     }*/
 
-    glUniformMatrix4fv(m_uniforms[0], 1, GL_FALSE, &MVP[0][0]);
-	glUniformMatrix4fv(m_uniforms[1], 1, GL_FALSE, &depthBiasMVP[0][0]);
+    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &MVP[0][0]);
+	glUniformMatrix4fv(p_uniforms[1], 1, GL_FALSE, &depthBiasMVP[0][0]);
 }
 
 void Shader::UpdateWithout( glm::mat4 mvp, Camera* t_camera, Transform t_transform) {
@@ -138,15 +138,15 @@ void Shader::UpdateWithout( glm::mat4 mvp, Camera* t_camera, Transform t_transfo
 
     mvp = glm::translate( mvp, glm::vec3(x, y, z));
 
-    glUniformMatrix4fv(m_uniforms[0], 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &mvp[0][0]);
 }
 
 void Shader::BindArray( GLuint Data, int Type, GLenum Type_Attrib, int Attrib_size ) {
     glBindBuffer( GL_ARRAY_BUFFER, Data); //
     switch( Type) {
-        case 0: glVertexAttribPointer( m_attribute[0], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
-        case 1: glVertexAttribPointer( m_attribute[1], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
-        case 2: glVertexAttribPointer( m_attribute[2], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
+        case 0: glVertexAttribPointer( p_attribute[0], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
+        case 1: glVertexAttribPointer( p_attribute[1], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
+        case 2: glVertexAttribPointer( p_attribute[2], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
         default: break;
     }
 }

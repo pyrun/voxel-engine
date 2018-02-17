@@ -70,8 +70,8 @@ struct Entity {
     char value;
 };
 
-static const int NUM_ENTITIES = 5;
-static const Entity entities[NUM_ENTITIES] = {
+static const int NUp_ENTITIES = 5;
+static const Entity entities[NUp_ENTITIES] = {
     { "quot", 4,	DOUBLE_QUOTE },
     { "amp", 3,		'&'  },
     { "apos", 4,	SINGLE_QUOTE },
@@ -224,7 +224,7 @@ const char* StrPair::GetStr()
                     }
                     else {
                         int i=0;
-                        for(; i<NUM_ENTITIES; ++i ) {
+                        for(; i<NUp_ENTITIES; ++i ) {
                             if (    strncmp( p+1, entities[i].pattern, entities[i].length ) == 0
                                     && *(p+entities[i].length+1) == ';' ) {
                                 // Found an entity convert;
@@ -234,7 +234,7 @@ const char* StrPair::GetStr()
                                 break;
                             }
                         }
-                        if ( i == NUM_ENTITIES ) {
+                        if ( i == NUp_ENTITIES ) {
                             // fixme: treat as error?
                             ++p;
                             ++q;
@@ -593,7 +593,7 @@ XMLNode::~XMLNode()
     }
 }
 
-const char* XMLNode::Value() const 
+const char* XMLNode::Value() const
 {
     return _value.GetStr();
 }
@@ -1063,12 +1063,12 @@ bool XMLUnknown::Accept( XMLVisitor* visitor ) const
 
 // --------- XMLAttribute ---------- //
 
-const char* XMLAttribute::Name() const 
+const char* XMLAttribute::Name() const
 {
     return _name.GetStr();
 }
 
-const char* XMLAttribute::Value() const 
+const char* XMLAttribute::Value() const
 {
     return _value.GetStr();
 }
@@ -1271,7 +1271,7 @@ void	XMLElement::SetText( const char* inText )
 }
 
 
-void XMLElement::SetText( int v ) 
+void XMLElement::SetText( int v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1279,7 +1279,7 @@ void XMLElement::SetText( int v )
 }
 
 
-void XMLElement::SetText( unsigned v ) 
+void XMLElement::SetText( unsigned v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1287,7 +1287,7 @@ void XMLElement::SetText( unsigned v )
 }
 
 
-void XMLElement::SetText( bool v ) 
+void XMLElement::SetText( bool v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1295,7 +1295,7 @@ void XMLElement::SetText( bool v )
 }
 
 
-void XMLElement::SetText( float v ) 
+void XMLElement::SetText( float v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1303,7 +1303,7 @@ void XMLElement::SetText( float v )
 }
 
 
-void XMLElement::SetText( double v ) 
+void XMLElement::SetText( double v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1833,7 +1833,7 @@ XMLPrinter::XMLPrinter( FILE* file, bool compact, int depth ) :
         _entityFlag[i] = false;
         _restrictedEntityFlag[i] = false;
     }
-    for( int i=0; i<NUM_ENTITIES; ++i ) {
+    for( int i=0; i<NUp_ENTITIES; ++i ) {
         TIXMLASSERT( entities[i].value < ENTITY_RANGE );
         if ( entities[i].value < ENTITY_RANGE ) {
             _entityFlag[ (int)entities[i].value ] = true;
@@ -1900,7 +1900,7 @@ void XMLPrinter::PrintString( const char* p, bool restricted )
                         Print( "%c", *p );
                         ++p;
                     }
-                    for( int i=0; i<NUM_ENTITIES; ++i ) {
+                    for( int i=0; i<NUp_ENTITIES; ++i ) {
                         if ( entities[i].value == *q ) {
                             Print( "&%s;", entities[i].pattern );
                             break;

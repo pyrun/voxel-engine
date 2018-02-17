@@ -1,8 +1,8 @@
-#ifndef TRANSFORM_INCLUDED_H
-#define TRANSFORM_INCLUDED_H
+#ifndef TRANSFORp_INCLUDED_H
+#define TRANSFORp_INCLUDED_H
 
 #include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
+//#include <glm/gtx/transform.hpp>
 #include "camera.h"
 
 struct Transform {

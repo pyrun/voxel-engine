@@ -7,11 +7,11 @@
 class Framenrate_List {
 public:
     Framenrate_List() {
-        m_max = 10;
+        p_max = 10;
     }
     void AddTime( int time) {
         timeTimer.push_back( time);
-        if( (int)timeTimer.size() > m_max )
+        if( (int)timeTimer.size() > p_max )
             timeTimer.erase( timeTimer.begin());
     }
     float GetTime() {
@@ -21,12 +21,12 @@ public:
         return (float)fps/(int)timeTimer.size();
     }
     void SetMax( int Max) {
-        m_max = Max;
+        p_max = Max;
     }
 protected:
 private:
     std::vector<int> timeTimer;
-    int m_max;
+    int p_max;
 };
 
 class Framenrate {
@@ -39,20 +39,20 @@ public:
     void EndCount();
     void CalcDelay();
     float getFramenrate();
-    double getFrameratePrecisely() { return m_fps; }
-    double getMSframe() { return m_msframe; }
-    int getLimit() { return m_rate; }
+    double getFrameratePrecisely() { return p_fps; }
+    double getMSframe() { return p_msframe; }
+    int getLimit() { return p_rate; }
 protected:
 private:
-    int m_start;
-    int m_end;
-    float m_rate;
+    int p_start;
+    int p_end;
+    float p_rate;
     Framenrate_List List;
 
-    int m_lastTime = SDL_GetTicks();
-    int m_nbFrames = 0;
-    double m_fps = 0.0;
-    double m_msframe = 0.0;
+    int p_lastTime = SDL_GetTicks();
+    int p_nbFrames = 0;
+    double p_fps = 0.0;
+    double p_msframe = 0.0;
 };
 
 #endif // FRAMENRATE_H

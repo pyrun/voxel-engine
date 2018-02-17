@@ -24,15 +24,15 @@ public:
     ~BlockImage();
     void LoadImage( Graphic* graphic);
     void SetImageName( std::string name);
-    int &getPosX() { return m_posx; }
-    int &getPosY() { return m_posy; }
-    SDL_Surface *getSurface() { return m_surface; }
-    std::string GetImageName() { return m_imagename; }
+    int &getPosX() { return p_posx; }
+    int &getPosY() { return p_posy; }
+    SDL_Surface *getSurface() { return p_surface; }
+    std::string GetImageName() { return p_imagename; }
 private:
-    SDL_Surface* m_surface;
-    int m_posx;
-    int m_posy;
-    std::string m_imagename;
+    SDL_Surface* p_surface;
+    int p_posx;
+    int p_posy;
+    std::string p_imagename;
 };
 
 class Block {
@@ -43,7 +43,7 @@ public:
     void LoadImage( Graphic* t_graphic);
     void SetID( int id) { i_id = id; }
     void SetName( std::string name) { n_name = name; }
-    void SetAlpha( bool flag) { m_alpha = flag; }
+    void SetAlpha( bool flag) { p_alpha = flag; }
     void SetFile( std::string s_front, std::string s_back, std::string s_left, std::string s_right, std::string s_top, std::string s_bottom) {
         image_front.SetImageName(s_front);
         image_back.SetImageName(s_back);
@@ -58,23 +58,23 @@ public:
     BlockImage* getRight() { return &image_right; }
     BlockImage* getUp() { return &image_top; }
     BlockImage* getDown() { return &image_bottom; }
-    bool getLoadedImage() { return m_imageloaded; }
+    bool getLoadedImage() { return p_imageloaded; }
     int getID() { return i_id; }
     std::string getName() { return n_name; }
-    bool getAlpha() { return m_alpha; }
+    bool getAlpha() { return p_alpha; }
 protected:
 private:
     // Block
     int i_id;
     std::string n_name;
-    bool m_alpha;
+    bool p_alpha;
     BlockImage image_front;
     BlockImage image_back;
     BlockImage image_left;
     BlockImage image_right;
     BlockImage image_top;
     BlockImage image_bottom;
-    bool m_imageloaded;
+    bool p_imageloaded;
 };
 
 class BlockList {

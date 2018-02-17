@@ -4,35 +4,35 @@
 
 
 ShadowMap::ShadowMap() {
-    m_fbo = 0;
-    m_shadowMap = 0;
-    m_started = false;
+    p_fbo = 0;
+    p_shadowMap = 0;
+    p_started = false;
 }
 
 ShadowMap::~ShadowMap() {
-    if (m_fbo != 0) {
-        glDeleteFramebuffers(1, &m_fbo);
+    if (p_fbo != 0) {
+        glDeleteFramebuffers(1, &p_fbo);
     }
 
-    if (m_shadowMap != 0) {
-        glDeleteTextures(1, &m_shadowMap);
+    if (p_shadowMap != 0) {
+        glDeleteTextures(1, &p_shadowMap);
     }
 }
 
 bool ShadowMap::Init(unsigned int WindowWidth, unsigned int WindowHeight) {
      // Create the FBO
-    glGenFramebuffers(1, &m_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glGenFramebuffers(1, &p_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo);
     // Create the depth buffer
-    glGenTextures(1, &m_shadowMap);
-    glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+    glGenTextures(1, &p_shadowMap);
+    glBindTexture(GL_TEXTURE_2D, p_shadowMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap, 0);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_shadowMap, 0);
 
     // Disable writes to the color buffer
     glDrawBuffer(GL_NONE);
@@ -45,14 +45,14 @@ bool ShadowMap::Init(unsigned int WindowWidth, unsigned int WindowHeight) {
         return false;
     }
 
-    m_started = true;
+    p_started = true;
 
     return true;
 /*    GLenum FBOstatus;
 
 	  // Try to use a texture depth component
-	  glGenTextures(1, &m_shadowMap);
-	  glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+	  glGenTextures(1, &p_shadowMap);
+	  glBindTexture(GL_TEXTURE_2D, p_shadowMap);
 
 	  // GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -67,16 +67,16 @@ bool ShadowMap::Init(unsigned int WindowWidth, unsigned int WindowHeight) {
 	  glBindTexture(GL_TEXTURE_2D, 0);
 
 	  // create a framebuffer object
-	  glGenFramebuffersEXT(1, &m_fbo);
-	  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
+	  glGenFramebuffersEXT(1, &p_fbo);
+	  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, p_fbo);
 
 	  // Instruct openGL that we won't bind a color texture with the currently bound FBO
 	  glDrawBuffer(GL_NONE);
 	  glReadBuffer(GL_NONE);
 
 	  // attach the texture to FBO depth attachment point
-	  //glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, m_shadowMap, 0);
-	  glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap, 0);
+	  //glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, p_shadowMap, 0);
+	  glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_shadowMap, 0);
 
 	  // check FBO status
 	  FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -119,11 +119,11 @@ void ShadowMap::setTextureMatrix(void) {
 
 void ShadowMap::BindForWriting()
 {
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_fbo);
 }
 
 void ShadowMap::BindForReading(GLenum TextureUnit)
 {
     glActiveTexture(TextureUnit);
-    glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+    glBindTexture(GL_TEXTURE_2D, p_shadowMap);
 }

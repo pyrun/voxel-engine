@@ -17,14 +17,14 @@ public:
 
     void BindForReading(GLenum TextureUnit);
 
-    bool IsStarted() { return m_started; }
+    bool IsStarted() { return p_started; }
 
-    glm::vec2 GetSize() { return m_size; }
+    glm::vec2 GetSize() { return p_size; }
 private:
-    GLuint m_fbo;
-    GLuint m_shadowMap;
-    bool m_started;
-    glm::vec2 m_size;
+    GLuint p_fbo;
+    GLuint p_shadowMap;
+    bool p_started;
+    glm::vec2 p_size;
 };
 
 #endif // SHADOWMAP_H

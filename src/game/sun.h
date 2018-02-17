@@ -13,34 +13,34 @@ public:
     void Process( Shader *t_shader, Graphic *t_graphic) {
         // Shader Sonne
         t_shader->Bind();
-        t_shader->SetBackgroundcolor( m_red, m_green, m_blue, 1);
+        t_shader->SetBackgroundcolor( p_red, p_green, p_blue, 1);
 
-        t_shader->SetSun( m_red, m_green, m_blue, 1);
+        t_shader->SetSun( p_red, p_green, p_blue, 1);
 
         // Hintergrundfarbe setzten
-        t_graphic->GetDisplay()->SetBackgroundColor( m_red, m_green, m_blue, 1);
+        t_graphic->GetDisplay()->SetBackgroundColor( p_red, p_green, p_blue, 1);
 
         double pi = acos(-1);
 
-        m_red = cosf( pi / ((float)TIME_BORDER/m_time.GetTicks()) - (pi/2) );
+        p_red = cosf( pi / ((float)TIME_BORDER/p_time.GetTicks()) - (pi/2) );
         // http://www.abi-physik.de/buch/das-elektrische-feld/kondensator/
-        m_green = m_red;
-        m_blue = m_red;
+        p_green = p_red;
+        p_blue = p_red;
 
         // Time
-        if( m_time.GetTicks() > TIME_BORDER) {
-            m_time.Start();
+        if( p_time.GetTicks() > TIME_BORDER) {
+            p_time.Start();
         }
-        //printf( "%f\n", m_red);
+        //printf( "%f\n", p_red);
     }
 
-    void SetDay() { m_time.Set( TIME_BORDER/2 ); }
+    void SetDay() { p_time.Set( TIME_BORDER/2 ); }
 protected:
 private:
-    Timer m_time;
-    float m_red;
-    float m_green;
-    float m_blue;
+    Timer p_time;
+    float p_red;
+    float p_green;
+    float p_blue;
 
 };
 

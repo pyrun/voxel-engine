@@ -36,16 +36,16 @@ public:
 
     InputMap Map;
     InputMap MapOld;
-    bool getResize() { return m_resize; }
-    int getResizeW() { return m_resize_w; }
-    int getResizeH() { return m_resize_h; }
+    bool getResize() { return p_resize; }
+    int getResizeW() { return p_resize_w; }
+    int getResizeH() { return p_resize_h; }
 protected:
 private:
     bool GrabMouse;
-    SDL_Event m_event;
-    bool m_resize;
-    int m_resize_w;
-    int m_resize_h;
+    SDL_Event p_event;
+    bool p_resize;
+    int p_resize_w;
+    int p_resize_h;
 };
 
 #endif // INPUT_H

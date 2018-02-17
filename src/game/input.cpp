@@ -29,23 +29,23 @@ void Input::Reset() {
 bool Input::Handle( int l_width, int l_height, SDL_Window* l_window) {
     int X, Y;
     Uint32 State = NULL;
-    m_resize = false;
+    p_resize = false;
     const Uint8* Keys = SDL_GetKeyboardState( NULL );
     // Pull all keys
-    while( SDL_PollEvent(&m_event) ) {
+    while( SDL_PollEvent(&p_event) ) {
         // Windows event auffangen
-        if (m_event.type == SDL_WINDOWEVENT) {
-            switch (m_event.window.event) {
+        if (p_event.type == SDL_WINDOWEVENT) {
+            switch (p_event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
-                    m_resize = true;
-                    m_resize_w = m_event.window.data1;
-                    m_resize_h = m_event.window.data2;
-                    //t_graphic->ResizeWindow( m_event.window.data1, m_event.window.data2);
+                    p_resize = true;
+                    p_resize_w = p_event.window.data1;
+                    p_resize_h = p_event.window.data2;
+                    //t_graphic->ResizeWindow( p_event.window.data1, p_event.window.data2);
                 break;
             }
         }
 
-        if(m_event.type == SDL_QUIT)
+        if(p_event.type == SDL_QUIT)
             return false;
 
     }

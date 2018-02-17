@@ -150,12 +150,12 @@ extern "C" {
 // load image by filename, open file, or memory buffer
 //
 
-extern stbi_uc *stbi_load_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+extern stbi_uc *stbi_load_frop_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
 
 #ifndef STBI_NO_STDIO
 extern stbi_uc *stbi_load            (char const *filename,     int *x, int *y, int *comp, int req_comp);
-extern stbi_uc *stbi_load_from_file  (FILE *f,                  int *x, int *y, int *comp, int req_comp);
-// for stbi_load_from_file, file pointer is left pointing immediately after image
+extern stbi_uc *stbi_load_frop_file  (FILE *f,                  int *x, int *y, int *comp, int req_comp);
+// for stbi_load_frop_file, file pointer is left pointing immediately after image
 #endif
 
 typedef struct
@@ -165,17 +165,17 @@ typedef struct
    int      (*eof)   (void *user);                       // returns nonzero if we are at end of file/data
 } stbi_io_callbacks;
 
-extern stbi_uc *stbi_load_from_callbacks  (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
+extern stbi_uc *stbi_load_frop_callbacks  (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
 
 #ifndef STBI_NO_HDR
-   extern float *stbi_loadf_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+   extern float *stbi_loadf_frop_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
 
    #ifndef STBI_NO_STDIO
    extern float *stbi_loadf            (char const *filename,   int *x, int *y, int *comp, int req_comp);
-   extern float *stbi_loadf_from_file  (FILE *f,                int *x, int *y, int *comp, int req_comp);
+   extern float *stbi_loadf_frop_file  (FILE *f,                int *x, int *y, int *comp, int req_comp);
    #endif
 
-   extern float *stbi_loadf_from_callbacks  (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
+   extern float *stbi_loadf_frop_callbacks  (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
 
    extern void   stbi_hdr_to_ldr_gamma(float gamma);
    extern void   stbi_hdr_to_ldr_scale(float scale);
@@ -185,11 +185,11 @@ extern stbi_uc *stbi_load_from_callbacks  (stbi_io_callbacks const *clbk, void *
 #endif // STBI_NO_HDR
 
 // stbi_is_hdr is always defined
-extern int    stbi_is_hdr_from_callbacks(stbi_io_callbacks const *clbk, void *user);
-extern int    stbi_is_hdr_from_memory(stbi_uc const *buffer, int len);
+extern int    stbi_is_hdr_frop_callbacks(stbi_io_callbacks const *clbk, void *user);
+extern int    stbi_is_hdr_frop_memory(stbi_uc const *buffer, int len);
 #ifndef STBI_NO_STDIO
 extern int      stbi_is_hdr          (char const *filename);
-extern int      stbi_is_hdr_from_file(FILE *f);
+extern int      stbi_is_hdr_frop_file(FILE *f);
 #endif // STBI_NO_STDIO
 
 
@@ -198,15 +198,15 @@ extern int      stbi_is_hdr_from_file(FILE *f);
 extern const char *stbi_failure_reason  (void);
 
 // free the loaded image -- this is just free()
-extern void     stbi_image_free      (void *retval_from_stbi_load);
+extern void     stbi_image_free      (void *retval_frop_stbi_load);
 
 // get image dimensions & components without fully decoding
-extern int      stbi_info_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp);
-extern int      stbi_info_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
+extern int      stbi_info_frop_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp);
+extern int      stbi_info_frop_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
 
 #ifndef STBI_NO_STDIO
 extern int      stbi_info            (char const *filename,     int *x, int *y, int *comp);
-extern int      stbi_info_from_file  (FILE *f,                  int *x, int *y, int *comp);
+extern int      stbi_info_frop_file  (FILE *f,                  int *x, int *y, int *comp);
 
 #endif
 
