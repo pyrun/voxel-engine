@@ -125,9 +125,10 @@ void Game::ViewCurrentBlock( int view_width) {
         if( tile->ID && m_input.Map.Destory && !m_input.MapOld.Destory) {
             Chunk *tmp = m_world->GetChunkWithPos( mx, my, mz);
             if( tmp)
-                m_world->SetTile( tmp, mx, my, mz, 0 );
+                m_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
             else
                 printf( "Game::ViewCurrentBlock Chunk nicht vorhanden\n");
+            break;
         }
 
         // tile
@@ -226,6 +227,7 @@ void Game::Start() {
 
 
 
+
         Timer m_timer;
         m_timer.Start();
         m_sun->SetDay();
@@ -239,13 +241,12 @@ void Game::Start() {
 
 
 		// View Cross
-        ViewCross();
+        //ViewCross();
 
         // Debug
         //DrawBox( -1, -1, -1);
 
         //m_gui->Draw( m_graphic);
-
         // Block anzeigen was in der Sichtweite ist
         ViewCurrentBlock( 275); // 275 = 2,75Meter
 
@@ -286,7 +287,7 @@ void Game::Start() {
 }
 
 void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
-    std::vector<ChunkVboDataStruct> t_box;
+/*    std::vector<ChunkVboDataStruct> t_box;
 
     // Chunk Vbo Data Struct
     t_box.resize( 24 );
@@ -335,5 +336,5 @@ void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
     glBufferData(GL_ARRAY_BUFFER, t_box.size() * sizeof(ChunkVboDataStruct), &t_box[0], GL_DYNAMIC_DRAW);
 
     // Zeichnen
-    glDrawArrays( GL_LINES, 0, 24);
+    glDrawArrays( GL_LINES, 0, 24);*/
 }

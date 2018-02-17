@@ -140,11 +140,9 @@ glm::vec2 BlockList::GetTexturByType( int Type, int Side) {
 }
 
 Block* BlockList::GetBlock( int ID) {
-    for( int i = 0; i < (int)List.size(); i++) {
-        Block *block = &List[i];
-        if( block->getID() == ID)
-            return block;
-    }
+    for( int i = 0; i < (int)List.size(); i++)
+        if( List[i].getID() == ID)
+            return &List[i];
     return NULL;
 }
 

@@ -60,7 +60,10 @@ Tile* World::GetTile( int x, int y, int z) {
             continue;
         }
         //printf("%d %d %d | ", m_chunk_x, m_chunk_y, m_chunk_z);
-        return node->GetTile( m_chunk_x, m_chunk_y, m_chunk_z );
+        Tile *l_tile = node->GetTile( m_chunk_x, m_chunk_y, m_chunk_z );
+        if( l_tile && l_tile->ID == EMPTY_BLOCK_ID)
+            break;
+        return l_tile;
     }
     return NULL;
 }
@@ -116,7 +119,8 @@ void World::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
     int chunk_z = chunk->GetZ()*CHUNK_DEPTH;
 
     // Letzte prüfung
-    chunk->CreateTile( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
+    //chunk->CreateTile( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
+    chunk->set( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
 }
 
 void World::Process() {

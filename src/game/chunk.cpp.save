@@ -116,6 +116,12 @@ void Chunk::CreateTile( int X, int Y, int Z, int ID) {
 
     // tile nehmen
     tile->ID = ID;
+    tile->m_left = TILE_VERTEX_NULL;
+    tile->m_right = TILE_VERTEX_NULL;
+    tile->m_up = TILE_VERTEX_NULL;
+    tile->m_down = TILE_VERTEX_NULL;
+    tile->m_forward = TILE_VERTEX_NULL;
+    tile->m_back = TILE_VERTEX_NULL;
     // welt hat sich verändert
     m_changed = true;
 }
@@ -128,6 +134,12 @@ void Chunk::set( int X, int Y, int Z, int ID) {
 
     // tile nehmen
     l_tile->ID = ID;
+    l_tile->m_left = TILE_VERTEX_NULL;
+    l_tile->m_right = TILE_VERTEX_NULL;
+    l_tile->m_up = TILE_VERTEX_NULL;
+    l_tile->m_down = TILE_VERTEX_NULL;
+    l_tile->m_forward = TILE_VERTEX_NULL;
+    l_tile->m_back = TILE_VERTEX_NULL;
     // welt hat sich verändert
     m_changed = true;
 }
@@ -199,7 +211,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 // Line of sight blocked?
-                if(  x != 0 && CheckTile(x-1, y, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x-1, y, z)->ID )->getAlpha() )
+                if(  x != 0 && CheckTile(x-1, y, z))// && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x-1, y, z)->ID )->getAlpha() ) {
                 {
                     b_visibility = false;
                     continue;
@@ -239,6 +251,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
             }
         }
     }
+    printf( "UpdateArray1 %dms\n", timer.GetTicks());
     // View from positive x
     for(int z = 0; z < CHUNK_DEPTH; z++) {
         for(int x = 0; x < CHUNK_WIDTH; x++)  {
