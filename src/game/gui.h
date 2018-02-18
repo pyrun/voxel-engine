@@ -54,7 +54,7 @@ public:
         graphic->getVertexShader()->EnableVertexArray( 0);
 
         //graphic->getVertexShader()->Update( f_form, graphic->getCamera(), graphic->getCamera());
-        graphic->getVertexShader()->UpdateWithout( one, graphic->getCamera(), f_form);
+        graphic->getVertexShader()->UpdateWithout( one, graphic->getCamera(), &f_form);
         //p_graphic->getVertexShader()->UpdateWithout( one, p_graphic->getCamera());
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }

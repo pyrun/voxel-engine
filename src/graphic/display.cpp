@@ -22,7 +22,7 @@ display::display(int width, int height, const std::string& title) {
     // This line is only needed, if you want debug the program
     SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
 
-    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
         fprintf(stderr, "Could not init SDL");
         return;
     }

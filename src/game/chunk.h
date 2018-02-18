@@ -5,13 +5,13 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_WIDTH 16
-#define CHUNK_HEIGHT 16
-#define CHUNK_DEPTH 16
+#define CHUNK_WIDTH 32
+#define CHUNK_HEIGHT 32
+#define CHUNK_DEPTH 32
 
 #define EMPTY_BLOCK_ID 0
 
-#define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_WIDTH * (posY + CHUNK_DEPTH * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
+#define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_WIDTH * (posY + CHUNK_HEIGHT * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
 struct Tile {
     int ID;
@@ -61,9 +61,10 @@ public:
         return true;
     }
 
-    inline int GetX() { return x; }
-    inline int GetY() { return y; }
-    inline int GetZ() { return z; }
+    inline int getX() { return p_pos.x; }
+    inline int getY() { return p_pos.y; }
+    inline int getZ() { return p_pos.z; }
+    inline glm::tvec3<int> getPos() { return p_pos; }
 
     inline bool GetChanged() { return p_changed; }
     inline bool SetChange( bool Change) { p_changed = Change; return Change; }
@@ -77,18 +78,16 @@ public:
 
     void CreateTile( int X, int Y, int Z, int ID);
     void set( int X, int Y, int Z, int ID);
-    Tile *GetTile( int X, int Y, int Z);
+    Tile *getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
     void UpdateArray( BlockList *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
     void UpdateVbo();
-    void Draw( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa = glm::mat4(1));
+    void Draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
 protected:
 private:
-    int x;
-    int y;
-    int z;
+    glm::tvec3<int> p_pos;
     int p_time_idle;
     int p_elements;
     bool p_changed;

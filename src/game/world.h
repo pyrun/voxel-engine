@@ -64,7 +64,7 @@ public:
     void addDeleteChunk( glm::tvec3<int> pos );
     void Draw( graphic *graphic, Config *config) ;
     void DrawTransparency( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
-    void DrawNode( graphic* graphic, Shader* shader, Camera* camera,  Camera* shadow,  glm::mat4 aa =  glm::mat4(1));
+    void DrawNode( graphic* graphic, Shader* shader, Camera* camera,  glm::mat4 aa =  glm::mat4(1));
     void UpdateArray();
     void UpdateArrayNode();
 

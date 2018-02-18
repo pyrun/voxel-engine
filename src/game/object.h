@@ -179,7 +179,7 @@ class Object {
             p_texture->Bind();
 
             //shader->SetSize( (graphic->GetDisplay()->GetTilesetHeight()/16), ( graphic->GetDisplay()->GetTilesetWidth()/16) );
-            shader->Update( f_form, l_camera, l_camera, glm::mat4(1));
+            shader->Update( &f_form, l_camera->GetViewProjection(), glm::mat4(1));
 
 
             //shader->BindArray( p_vbo, 0, GL_FLOAT);

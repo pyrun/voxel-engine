@@ -26,10 +26,11 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     p_updatevbo = false;
     p_deleting = false;
     p_seed = Seed;
+
     // Set Position
-    this->x = X;
-    this->y = Y;
-    this->z = Z;
+    p_pos.x = X;
+    p_pos.y = Y;
+    p_pos.z = Z;
 
     p_tile = NULL;
 
@@ -48,17 +49,9 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
             for(int cy = 0; cy < CHUNK_HEIGHT; cy++) {
                 int index = TILE_REGISTER( cx, cy, cz);
                 p_tile[ index ].ID = EMPTY_BLOCK_ID;
-                //p_tile[ index ].;
-                //CreateTile( cx, cy, cz, 0);
             }
 
-    /*p_vertex.reserve( 1);
-    p_data.reserve( 1);*/
-    //p_vertex.reserve( CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6 );
-    //p_data.reserve( CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6 );
-
-    printf( "Chunk::chunk %dms\n", SDL_GetTicks()-t);
-    // http://www.blitzbasic.com/Community/posts.php?topic=93982
+    printf( "Chunk::chunk take %dms creating x%dy%dz%d\n", SDL_GetTicks()-t, p_pos.x, p_pos.y, p_pos.z);
 }
 
 Chunk::~Chunk() {
@@ -89,40 +82,38 @@ Chunk::~Chunk() {
 /*    p_data.clear();
     p_vertex.clear();*/
     //p_normal.clear();
-    printf( "~Chunk(): remove vbo data in %dms\n", timer.GetTicks());
+    printf( "~Chunk(): remove vbo data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
 }
 
 void Chunk::CreateTile( int X, int Y, int Z, int ID) {
-    Tile* tile;
-    tile = GetTile( X, Y, Z);
-    if( ID == 0) {
-        if( tile != NULL) {
-            p_changed = true;
-//            delete p_tile[ TILE_REGISTER( X, Y, Z)];
-//            p_tile[ TILE_REGISTER( X, Y, Z)] = NULL;
-        }
+    Tile* l_tile;
+    l_tile = getTile( X, Y, Z);
+
+    // cant happen but make sure
+    if( l_tile == NULL)
         return;
-    }
 
     // tile nehmen
-    tile->ID = ID;
+    l_tile->ID = ID;
+
     // welt hat sich verändert
     p_changed = true;
 }
 
 void Chunk::set( int X, int Y, int Z, int ID) {
     Tile* l_tile;
-    l_tile = GetTile( X, Y, Z);
+    l_tile = getTile( X, Y, Z);
     if( l_tile == NULL)
         return;
 
     // tile nehmen
     l_tile->ID = ID;
+
     // welt hat sich verändert
     p_changed = true;
 }
 
-Tile *Chunk::GetTile( int X, int Y, int Z) {
+Tile *Chunk::getTile( int X, int Y, int Z) {
     if( X < 0)
         return NULL;
     if( Y < 0)
@@ -175,7 +166,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     for(int z = 0; z < CHUNK_DEPTH; z++) {
         for(int x = CHUNK_WIDTH - 1; x >= 0; x--) {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
-                l_tile = GetTile( x, y, z);
+                l_tile = getTile( x, y, z);
                 if( !l_tile)
                     continue;
 
@@ -189,17 +180,17 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 // Line of sight blocked?
-                if(  x != 0 && CheckTile(x-1, y, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x-1, y, z)->ID )->getAlpha() )
+                if(  x != 0 && CheckTile(x-1, y, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x-1, y, z)->ID )->getAlpha() )
                 {
                     b_visibility = false;
                     continue;
                 }
                 // View from negative x
-                if( x == 0 && Back != NULL && Back->CheckTile(CHUNK_WIDTH-1, y, z) && Back->GetTile( CHUNK_WIDTH-1, y, z)->ID) {
+                if( x == 0 && Back != NULL && Back->CheckTile(CHUNK_WIDTH-1, y, z) && Back->getTile( CHUNK_WIDTH-1, y, z)->ID) {
                     b_visibility = false;
                     continue;
                 }
-                if( 0&& b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == GetTile( x, y-1, z)->ID) ) {
+                if( 0&& b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == getTile( x, y-1, z)->ID) ) {
                     p_vertex[i - 4] = block_vertex( x,     y+1,     z, 0);
                     p_vertex[i - 3] = block_vertex( x, y+1, z, 0);
                     p_vertex[i - 1] = block_vertex( x, y+1, z+1, 0);
@@ -236,23 +227,23 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     for(int z = 0; z < CHUNK_DEPTH; z++) {
         for(int x = 0; x < CHUNK_WIDTH; x++)  {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
-                if( GetTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
                     continue;
-                uint8_t type = GetTile( x, y, z)->ID;
+                uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if(  x != CHUNK_WIDTH-1 && CheckTile(x+1, y, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x+1, y, z)->ID)->getAlpha() ) {
+                if(  x != CHUNK_WIDTH-1 && CheckTile(x+1, y, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x+1, y, z)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
                 // View from positive x
-                if( x == CHUNK_WIDTH-1 && Front != NULL && Front->CheckTile( 0, y, z) && Front->GetTile( 0, y, z)->ID) {
+                if( x == CHUNK_WIDTH-1 && Front != NULL && Front->CheckTile( 0, y, z) && Front->getTile( 0, y, z)->ID) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && y != 0 && CheckTile( x, y-1, z) && GetTile( x, y, z)->ID == GetTile( x, y-1, z)->ID) {
+                if(b_visibility && y != 0 && CheckTile( x, y-1, z) && getTile( x, y, z)->ID == getTile( x, y-1, z)->ID) {
                     p_vertex[i - 5] = block_vertex(x + 1, y+1, z, 0);
                     p_vertex[i - 3] = block_vertex(x +1, y+1, z, 0);
                     p_vertex[i - 2] = block_vertex(x +1, y+1, z+1, 0);
@@ -290,22 +281,22 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
         for(int y = CHUNK_HEIGHT - 1; y >= 0; y--)
             for(int x = 0; x < CHUNK_WIDTH; x++) {
               {
-                if( GetTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
                     continue;
-                uint8_t type = GetTile( x, y, z)->ID;
+                uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if( y != 0 && CheckTile(x, y-1, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x, y-1, z)->ID)->getAlpha() ) {
+                if( y != 0 && CheckTile(x, y-1, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y-1, z)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( y == 0 && Down != NULL && Down->CheckTile(x, CHUNK_HEIGHT-1, z) && Down->GetTile( x, CHUNK_HEIGHT-1, z)->ID) {
+                if( y == 0 && Down != NULL && Down->CheckTile(x, CHUNK_HEIGHT-1, z) && Down->getTile( x, CHUNK_HEIGHT-1, z)->ID) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && GetTile( x-1, y, z)->ID == GetTile( x, y, z)->ID) {
+                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z)->ID == getTile( x, y, z)->ID) {
                     p_vertex[i - 5] = block_vertex(x+1    , y, z, 0);
                     p_vertex[i - 3] = block_vertex(x + 1, y, z, 0);
                     p_vertex[i - 2] = block_vertex(x + 1, y, z+1, 0);
@@ -341,22 +332,22 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     for(int z = 0; z < CHUNK_DEPTH; z++) {
          for(int y = 0; y < CHUNK_HEIGHT; y++){
              for(int x = 0; x < CHUNK_WIDTH; x++) {
-                if( GetTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
                     continue;
-                uint8_t type = GetTile( x, y, z)->ID;
+                uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if(  y != CHUNK_HEIGHT-1 && CheckTile(x, y+1, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x, y+1, z)->ID)->getAlpha() ) {
+                if(  y != CHUNK_HEIGHT-1 && CheckTile(x, y+1, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y+1, z)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( y == CHUNK_HEIGHT-1 && Up != NULL && Up->CheckTile(x, 0, z) && Up->GetTile( x, 0, z)->ID) {
+                if( y == CHUNK_HEIGHT-1 && Up != NULL && Up->CheckTile(x, 0, z) && Up->getTile( x, 0, z)->ID) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && GetTile( x-1, y, z)->ID == GetTile( x, y, z)->ID) {
+                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z)->ID == getTile( x, y, z)->ID) {
                     p_vertex[i - 4] = block_vertex( x+1,     y+1,     z, 0);
                     p_vertex[i - 3] = block_vertex( x+1, y+1, z, 0);
                     p_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
@@ -392,22 +383,22 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     for(int z = CHUNK_DEPTH - 1; z >= 0; z--) {
          for(int x = 0; x < CHUNK_WIDTH; x++){
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
-                if( GetTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
                     continue;
-                uint8_t type = GetTile( x, y, z)->ID;
+                uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if(  z != 0 && CheckTile(x, y, z-1) && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x, y, z-1)->ID)->getAlpha() ) {
+                if(  z != 0 && CheckTile(x, y, z-1) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y, z-1)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( z == 0 && Left != NULL && Left->CheckTile(x, y, CHUNK_DEPTH-1) && Left->GetTile( x, y, CHUNK_DEPTH-1)->ID) {
+                if( z == 0 && Left != NULL && Left->CheckTile(x, y, CHUNK_DEPTH-1) && Left->getTile( x, y, CHUNK_DEPTH-1)->ID) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && y != 0 && CheckTile(x, y-1, z) && GetTile( x, y, z)->ID == GetTile( x, y-1, z)->ID) {
+                if(b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z)->ID == getTile( x, y-1, z)->ID) {
                     p_vertex[i - 5] = block_vertex(x, y+1, z, 0);
                     p_vertex[i - 2] = block_vertex(x+1, y+1, z, 0);
                     p_vertex[i - 3] = block_vertex(x, y+1, z, 0);
@@ -443,23 +434,23 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     for(int z = 0; z < CHUNK_DEPTH; z++) {
         for(int x = 0; x < CHUNK_WIDTH; x++) {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
-                if( GetTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
                     continue;
-                uint8_t type = GetTile( x, y, z)->ID;
+                uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if( z != CHUNK_DEPTH-1 && CheckTile(x, y, z+1) && List->GetBlock( type)->getAlpha() == List->GetBlock( GetTile( x, y, z+1)->ID)->getAlpha() ) {
+                if( z != CHUNK_DEPTH-1 && CheckTile(x, y, z+1) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y, z+1)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
                 // View from positive z
-                if( z == CHUNK_DEPTH-1 && Right != NULL && Right->CheckTile(x, y, 0) && Right->GetTile( x, y, 0)->ID) {
+                if( z == CHUNK_DEPTH-1 && Right != NULL && Right->CheckTile(x, y, 0) && Right->getTile( x, y, 0)->ID) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && y != 0 && CheckTile(x, y-1, z) && GetTile( x, y-1, z)->ID == GetTile( x, y, z)->ID) {
+                if(b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y-1, z)->ID == getTile( x, y, z)->ID) {
                     p_vertex[i - 4] = block_vertex( x,     y+1,     z+1, 0);
                     p_vertex[i - 3] = block_vertex( x, y+1, z+1, 0);
                     p_vertex[i - 1] = block_vertex( x+1, y+1, z+1, 0);
@@ -578,12 +569,12 @@ void Chunk::UpdateVbo() {
     printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(block_vertex), getAmount(), getAmount() * sizeof(block_data));
 }
 
-void Chunk::Draw( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa) {
+void Chunk::Draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
     // Position errechnen
     Transform f_form;
-    f_form.GetPos().x = x*CHUNK_WIDTH;
-    f_form.GetPos().y = y*CHUNK_HEIGHT;
-    f_form.GetPos().z = z*CHUNK_DEPTH;
+    f_form.GetPos().x = p_pos.x*CHUNK_WIDTH;
+    f_form.GetPos().y = p_pos.y*CHUNK_HEIGHT;
+    f_form.GetPos().z = p_pos.z*CHUNK_DEPTH;
 
     // chunk wird grad gelöscht
     if( p_nomorevbo == true)
@@ -596,7 +587,7 @@ void Chunk::Draw( graphic* graphic, Shader* shader, Camera* camera, Camera* shad
     p_updatevbo = true;
 
     // Shader einstellen
-    shader->Update( f_form, camera, shadow, aa);
+    shader->Update( &f_form, viewProjection, aa);
 
     // vbo pointer auf array setzen
     shader->BindArray( p_vboVertex, 0, GL_FLOAT);

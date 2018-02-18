@@ -12,7 +12,7 @@ static int world_thread(void *data)
 
         if( l_world->getDestory() )
             break;
-        SDL_Delay(100);
+        SDL_Delay(1);
     }
 
     return 0;
@@ -51,9 +51,9 @@ Tile* World::GetTile( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->GetX()*CHUNK_WIDTH;
-        int p_chunk_y = y-node->GetY()*CHUNK_HEIGHT;
-        int p_chunk_z = z-node->GetZ()*CHUNK_DEPTH;
+        int p_chunk_x = x-node->getX()*CHUNK_WIDTH;
+        int p_chunk_y = y-node->getY()*CHUNK_HEIGHT;
+        int p_chunk_z = z-node->getZ()*CHUNK_DEPTH;
 
         // X - Achse
         if(p_chunk_x < 0 ) {
@@ -83,7 +83,7 @@ Tile* World::GetTile( int x, int y, int z) {
             continue;
         }
         //printf("%d %d %d | ", p_chunk_x, p_chunk_y, p_chunk_z);
-        Tile *l_tile = node->GetTile( p_chunk_x, p_chunk_y, p_chunk_z );
+        Tile *l_tile = node->getTile( p_chunk_x, p_chunk_y, p_chunk_z );
         if( l_tile && l_tile->ID == EMPTY_BLOCK_ID)
             break;
         return l_tile;
@@ -96,9 +96,9 @@ Chunk* World::getChunkWithPos( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->GetX()*CHUNK_WIDTH;
-        int p_chunk_y = y-node->GetY()*CHUNK_HEIGHT;
-        int p_chunk_z = z-node->GetZ()*CHUNK_DEPTH;
+        int p_chunk_x = x-node->getX()*CHUNK_WIDTH;
+        int p_chunk_y = y-node->getY()*CHUNK_HEIGHT;
+        int p_chunk_z = z-node->getZ()*CHUNK_DEPTH;
 
         // X - Achse
         if(p_chunk_x < 0 ) {
@@ -137,9 +137,9 @@ void World::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
         printf( "SetTile: Cant set tile!\n");
         return;
     }
-    int chunk_x = chunk->GetX()*CHUNK_WIDTH;
-    int chunk_y = chunk->GetY()*CHUNK_HEIGHT;
-    int chunk_z = chunk->GetZ()*CHUNK_DEPTH;
+    int chunk_x = chunk->getX()*CHUNK_WIDTH;
+    int chunk_y = chunk->getY()*CHUNK_HEIGHT;
+    int chunk_z = chunk->getZ()*CHUNK_DEPTH;
 
     // Letzte prüfung
     //chunk->CreateTile( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
@@ -165,11 +165,13 @@ void World::process_thrend() {
             deleteChunk( l_node);
     }
     p_deletingList.clear();
+
+    // be änderung Updaten
+    UpdateArray();
 }
 
 void World::process() {
-    // be änderung Updaten
-    UpdateArray();
+
     // chunks erstellen
     /*if( CheckChunk( 0, -1, 0) == false) {
         int factor = WORLD_TEST_FACTOR;
@@ -187,7 +189,7 @@ void World::process() {
     int i = 0;
     for( auto l_node:p_updateNodeList)
     {
-        l_node->UpdateArray( p_blocklist, l_node->back, l_node->front, l_node->left, l_node->right, l_node->up, l_node->down);
+        //l_node->UpdateArray( p_blocklist, l_node->back, l_node->front, l_node->left, l_node->right, l_node->up, l_node->down);
         l_node->UpdateVbo();
     }
     p_updateNodeList.clear();
@@ -217,7 +219,7 @@ void World::deleteChunk( Chunk* node) {
     if( node->GetVbo() )
         node->DestoryVbo();
     // löschen des chunks
-    destoryChunk( node->GetX(), node->GetY(), node->GetZ());
+    destoryChunk( node->getX(), node->getY(), node->getZ());
     //DeletingChunkList.push_back( Vector);
 }
 
@@ -293,9 +295,9 @@ void World::destoryChunk( int pos_x, int pos_y, int pos_z) {
     for( ;; ) {
         if( tmp == NULL)
             break;
-         if( tmp->GetX() == pos_x &&
-             tmp->GetY() == pos_y &&
-             tmp->GetZ() == pos_z ) {
+         if( tmp->getX() == pos_x &&
+             tmp->getY() == pos_y &&
+             tmp->getZ() == pos_z ) {
             if( tmpOld == NULL)
                 Chunks = tmp->next;
             else tmpOld->next = tmp->next;
@@ -342,9 +344,9 @@ bool World::CheckChunk( int X, int Y, int Z) {
     for( ;; ) {
         if( tmp == NULL)
             break;
-         if( tmp->GetX() == X &&
-             tmp->GetY() == Y &&
-             tmp->GetZ() == Z )
+         if( tmp->getX() == X &&
+             tmp->getY() == Y &&
+             tmp->getZ() == Z )
              return true;
         tmp = tmp->next;
     }
@@ -358,9 +360,9 @@ Chunk* World::getChunk( int X, int Y, int Z) {
     for( ;; ) {
         if( tmp == NULL)
             break;
-         if( tmp->GetX() == X &&
-             tmp->GetY() == Y &&
-             tmp->GetZ() == Z )
+         if( tmp->getX() == X &&
+             tmp->getY() == Y &&
+             tmp->getZ() == Z )
              return tmp;
         tmp = tmp->next;
     }
@@ -480,7 +482,7 @@ void World::Draw( graphic *graphic, Config *config) {
             // Ohne Transperenz -> Sehr schnell
             graphic->getVoxelShader()->SetAlpha_cutoff( 0.0f);
             glDisable( GL_BLEND);
-            DrawNode( graphic, l_shader, graphic->getCamera(), graphic->getCamera());
+            DrawNode( graphic, l_shader, graphic->getCamera());
             glEnable( GL_BLEND);
         }
     }
@@ -496,12 +498,13 @@ void World::DrawTransparency( graphic* graphic, Shader* shader, Camera* camera, 
         shader->SetAlpha_cutoff( 1.10f);
     }
     // Draw node
-    DrawNode( graphic, shader, camera, camera, aa);
+    DrawNode( graphic, shader, camera, aa);
     glDepthMask(true);
 }
 
-void World::DrawNode( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa) {
+void World::DrawNode( graphic* graphic, Shader* shader, Camera* camera, glm::mat4 aa) {
     Chunk *node = Chunks;
+    glm::mat4 l_viewProjection = camera->GetViewProjection();
     for( ;; ) {
         if( node == NULL)
             break;
@@ -513,7 +516,7 @@ void World::DrawNode( graphic* graphic, Shader* shader, Camera* camera, Camera* 
             if( SDL_GetTicks() - node->GetTimeIdle() > WORLD_TILE_IDLE_TIME ) {
                 deleteChunk( node );
             } else {
-                node->Draw( graphic, shader, camera, shadow, aa);
+                node->Draw( graphic, shader, l_viewProjection, aa);
             }
         }
         node = node->next;

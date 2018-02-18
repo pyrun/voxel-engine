@@ -152,7 +152,7 @@ void Game::ViewCross() {
     Transform f_form;
 
     //p_graphic->getVertexShader()->Update( f_form, p_graphic->getCamera(), p_graphic->getCamera());
-    p_graphic->getVertexShader()->UpdateWithout( one, p_graphic->getCamera());
+    p_graphic->getVertexShader()->UpdateWithout( one, p_graphic->getCamera(), &f_form);
 
     //p_graphic->GetVoxelShader()->UpdateWithout( one, p_graphic->getCamera());
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);
@@ -175,10 +175,11 @@ void Game::Start() {
     Object *obj = new Object;
     obj->Init();
 
-    for( int i = 0; i < 10; i++)
-        for( int x = 0; x < 10; x++)
-            for( int z = -10; z < 10; z++)
+    for( int i = 0; i < 5; i++)
+        for( int x = 0; x < 5; x++)
+            for( int z = -3; z < 3; z++)
                 p_world->addChunk( glm::tvec3<int>( i, z, x) );
+    //p_world->addChunk( glm::tvec3<int>( 0, -1, 0) );
 
     int number = 0;
     while( p_isRunnig) { // Runniz
@@ -335,7 +336,7 @@ void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
     p_graphic->getVertexShader()->BindArray( p_vboCursor, 0);
     p_graphic->getVertexShader()->Bind();// Shader
     p_graphic->getVertexShader()->EnableVertexArray( 0);
-    p_graphic->getVertexShader()->Update( f_form, p_graphic->getCamera(), p_graphic->getCamera());
+    p_graphic->getVertexShader()->Update( &f_form, p_graphic->getCamera()->GetViewProjection());
 
     // Vbo übertragen
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);

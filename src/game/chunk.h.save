@@ -5,49 +5,22 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_WIDTH 64
-#define CHUNK_HEIGHT 64
-#define CHUNK_DEPTH 64
+#define CHUNK_WIDTH 32
+#define CHUNK_HEIGHT 32
+#define CHUNK_DEPTH 32
+
+#define EMPTY_BLOCK_ID 0
 
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_WIDTH * (posY + CHUNK_DEPTH * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
 struct Tile {
     int ID;
-    short m_left;
-    short m_right;
-    short m_up;
-    short m_down;
-    short m_forward;
-    short m_back;
 };
 
 #define TILE_VERTEX_NULL -1
 
-struct ChunkVboDataStruct {
-    GLshort x;
-    GLshort y;
-    GLshort z;
-    GLshort w;
-};
-
-struct ChunkVboVertexStruct {
-    GLfloat x;
-    GLfloat y;
-    GLfloat z;
-    GLfloat w;
-};
-
-
-/** \brief Erstellt ein Vbo datenblock in einem format der Grafikkarte
- *
- * \param gl float X
- * \param gl float Y
- * \param gl float Z
- * \return Vbo daten block
- *
- */
-ChunkVboDataStruct CVDS_SetBlock( GLfloat x = 0.f, GLfloat y = 0.f, GLfloat z = 0.f, GLfloat w = 0.0f);
-
+typedef glm::tvec4<GLfloat> block_vertex;
+typedef glm::tvec4<GLshort> block_data;
 
 //static float Noise2d(float x, float y, int seed, int octaves, float persistence);
 //static float Noise3d(float x, float y, float z, int seed, int octaves, float persistence);
@@ -82,57 +55,60 @@ public:
     }
 
     bool SetDeleting() {
-        if( m_deleting)
+        if( p_deleting)
             return false;
-        m_deleting = true;
+        p_deleting = true;
         return true;
     }
 
-    inline int GetX() { return x; }
-    inline int GetY() { return y; }
-    inline int GetZ() { return z; }
+    inline int GetX() { return pos.x; }
+    inline int GetY() { return pos.y; }
+    inline int GetZ() { return pos.z; }
+    inline glm::tvec3<int> 
 
-    inline bool GetChanged() { return m_changed; }
-    inline bool SetChange( bool Change) { m_changed = Change; return Change; }
-    inline bool GetUpdateOnce() { return m_updateonce; }
-    inline bool GetVbo() { return m_createvbo; }
-    inline bool GetArrayChange() { return m_arraychange; }
-    inline int GetAmount() { return m_vertex.size(); }
-    inline bool GetUpdateVboOnce() { return m_updatevboonce; }
-    inline int GetTimeIdle() { return m_time_idle; }
-    void ResetTimeIdle() { m_time_idle = SDL_GetTicks(); }
+    inline bool GetChanged() { return p_changed; }
+    inline bool SetChange( bool Change) { p_changed = Change; return Change; }
+    inline bool GetUpdateOnce() { return p_updateonce; }
+    inline bool GetVbo() { return p_createvbo; }
+    inline bool GetArrayChange() { return p_arraychange; }
+    inline int getAmount() { return /*sizeof(p_vertex)/sizeof(*p_vertex);*/p_vertex.size(); }
+    inline bool GetUpdateVboOnce() { return p_updatevboonce; }
+    inline int GetTimeIdle() { return p_time_idle; }
+    void ResetTimeIdle() { p_time_idle = SDL_GetTicks(); }
 
     void CreateTile( int X, int Y, int Z, int ID);
+    void set( int X, int Y, int Z, int ID);
     Tile *GetTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
     void UpdateArray( BlockList *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
     void UpdateVbo();
-    void Draw( Graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, glm::mat4 aa = glm::mat4(1));
+    void Draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
 protected:
 private:
-    int x;
-    int y;
-    int z;
-    int m_time_idle;
-    int m_elements;
-    bool m_changed;
-    bool m_updateonce;
-    bool m_createvbo;
-    bool m_arraychange;
-    bool m_updatevboonce;
-    bool m_updatevbo;
-    bool m_nomorevbo;
-    bool m_deleting;
-    GLuint m_vboVertex;
-    GLuint m_vboNormal;
-    GLuint m_vboData;
-    Tile** m_tile;
-    int m_seed;
-    std::vector<ChunkVboVertexStruct> m_vertex;
-    std::vector<ChunkVboDataStruct> m_normal;
-    std::vector<ChunkVboDataStruct> m_data;
+    glm::tvec3<int> pos;
+    int p_time_idle;
+    int p_elements;
+    bool p_changed;
+    bool p_updateonce;
+    bool p_createvbo;
+    bool p_arraychange;
+    bool p_updatevboonce;
+    bool p_updatevbo;
+    bool p_nomorevbo;
+    bool p_deleting;
+    GLuint p_vboVertex;
+    GLuint p_vboData;
+    Tile* p_tile;
+    int p_seed;
+
+    std::vector<block_vertex> p_vertex;
+    std::vector<block_data> p_data;
+    //block_data p_data[ CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6];
+
+    /*std::vector<ChunkVboVertexStruct> p_vertex;
+    std::vector<ChunkVboDataStruct> p_data;*/
 };
 
 #endif // CHUNK_H

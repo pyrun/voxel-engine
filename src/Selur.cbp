@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="Selur2" />
+		<Option title="Selur" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -15,7 +15,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="../../SDL2_64/include" />
+					<Add directory="../../SDL2/include" />
 					<Add directory="../../OpenGL" />
 					<Add directory="../../glm/" />
 				</Compiler>
@@ -23,7 +23,7 @@
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
 					<Add option="-lopengl32" />
 					<Add option="-lglew32" />
-					<Add directory="../../SDL2_64/lib" />
+					<Add directory="../../SDL2/lib" />
 					<Add directory="../../OpenGL/lib" />
 				</Linker>
 			</Target>
@@ -45,7 +45,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-std=c++1z" />
+			<Add option="-std=c++1y" />
 		</Compiler>
 		<Unit filename="../res/shader/object.fs" />
 		<Unit filename="../res/shader/object.vs" />
