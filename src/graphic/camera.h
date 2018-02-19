@@ -21,7 +21,7 @@ public:
 	void resize( float aspect);
 	void zoom( float change = 0.0f);
 
-    glm::mat4 GetViewProjection() const{ return p_projection * glm::lookAt(p_position, p_position + p_direction, p_up); }
+    glm::mat4 getViewProjection() const{ return p_projection * glm::lookAt(p_position, p_position + p_direction, p_up); }
 	inline glm::mat4 GetViewProjectionOrtho() const{ return projectionortho * glm::lookAt(p_position, p_position+p_direction, p_up); }
 
 	inline glm::vec3& GetPos() { return p_position; }

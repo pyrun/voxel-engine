@@ -156,6 +156,7 @@ class Object {
             glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof( glm::vec2 ), &texcoords[0], GL_STATIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
             glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof( unsigned int ), &indices[0], GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             size = indices.size();
         }
 
@@ -178,17 +179,10 @@ class Object {
 
             p_texture->Bind();
 
-            //shader->SetSize( (graphic->GetDisplay()->GetTilesetHeight()/16), ( graphic->GetDisplay()->GetTilesetWidth()/16) );
-            shader->Update( &f_form, l_camera->GetViewProjection(), glm::mat4(1));
-
-
-            //shader->BindArray( p_vbo, 0, GL_FLOAT);
-            //glDrawArrays( GL_TRIANGLES, 0, size);
+            shader->Update( &f_form, l_camera->getViewProjection());
 
             glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
-            //    shader->EnableVertexArray( 1);
-
-            //glDrawElements( GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
     protected:

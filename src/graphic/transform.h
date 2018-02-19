@@ -25,7 +25,7 @@ public:
 
 	inline glm::mat4 GetMVP(Camera *camera) const {
 		glm::mat4 M = GetModel();
-		glm::mat4 VP = camera->GetViewProjection();
+		glm::mat4 VP = camera->getViewProjection();
 		return VP * M;
 	}
 

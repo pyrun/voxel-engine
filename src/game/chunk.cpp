@@ -7,6 +7,7 @@
 Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     // node reset
     next = NULL;
+
     // side reset
     front = NULL;
     back = NULL;
@@ -15,6 +16,7 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
     up = NULL;
     down = NULL;
     p_time_idle = SDL_GetTicks();
+
     // falgs
     p_nomorevbo = false;
     p_updateonce = false;
@@ -587,7 +589,7 @@ void Chunk::Draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, gl
     p_updatevbo = true;
 
     // Shader einstellen
-    shader->Update( &f_form, viewProjection, aa);
+    shader->Update( &f_form, viewProjection);
 
     // vbo pointer auf array setzen
     shader->BindArray( p_vboVertex, 0, GL_FLOAT);

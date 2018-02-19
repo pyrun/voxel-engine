@@ -71,7 +71,7 @@ public:
     inline bool GetUpdateOnce() { return p_updateonce; }
     inline bool GetVbo() { return p_createvbo; }
     inline bool GetArrayChange() { return p_arraychange; }
-    inline int getAmount() { return /*sizeof(p_vertex)/sizeof(*p_vertex);*/p_vertex.size(); }
+    inline int getAmount() { return p_vertex.size(); }
     inline bool GetUpdateVboOnce() { return p_updatevboonce; }
     inline int GetTimeIdle() { return p_time_idle; }
     void ResetTimeIdle() { p_time_idle = SDL_GetTicks(); }

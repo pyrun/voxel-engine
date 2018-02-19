@@ -42,8 +42,8 @@ public:
 	void SetAlpha_cutoff( GLfloat x);
 	void SetTextureUnit(unsigned int TextureUnit);
 	void SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a);
-	void Update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
-	void UpdateWithout( glm::mat4 mvp, Camera *t_camera, Transform *t_transform );
+	void Update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix);
+	void UpdateWithout(  Transform *t_transform, glm::mat4 mvp) ;
 	inline GLuint& GetProgram() { return p_program; }
 	void BindArray( GLuint Data, int Type, GLenum Type_Attrib = GL_SHORT, int Attrib_size = 4);
 	virtual ~Shader();

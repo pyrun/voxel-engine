@@ -99,25 +99,13 @@ void Shader::SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a) {
     glUniform4f( p_uniforms[4], r, g, b, a);
 }
 
-void Shader::Update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {
-    //glm::mat4 MVP = aa * transform.GetMVP(*camera);
+void Shader::Update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix) {
     glm::mat4 MVP = getCurrentViewProjectionMatrix * transform->GetModel();
-
-    /*for(int i = 0; i < 4; i++) {
-        glm::vec3 shift = glm::vec3((i % 2) * 0.5 / w, (i / 2) * 0.5 / h, 0);
-        glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
-        glm::mat4 mvp = aa * projection * modelview;
-        glUniformMatrix4fv(uniforp_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
-        draw_scene();
-        glAccum(i ? GL_ACCUM : GL_LOAD, 0.25);
-    }*/
 
     glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &MVP[0][0]);
 }
 
-void Shader::UpdateWithout( glm::mat4 mvp, Camera* camera, Transform *t_transform) {
-    Update( t_transform, camera->GetViewProjection());
-
+void Shader::UpdateWithout(  Transform *t_transform, glm::mat4 mvp) {
     //GetMVPOrtho
     float x = t_transform->GetPos().x;
     float y = t_transform->GetPos().y;

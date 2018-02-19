@@ -24,7 +24,7 @@ public:
     Game();
     virtual ~Game();
     void viewCurrentBlock( int view_width);
-    void ViewCross();
+    void viewCross();
     void Start();
 protected:
     void DrawBox( GLshort bx, GLshort by, GLshort bz);

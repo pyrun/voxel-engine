@@ -22,6 +22,9 @@ display::display(int width, int height, const std::string& title) {
     // This line is only needed, if you want debug the program
     SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
 
+    // disable V-Sync for openVR ( need more then 60Hz)
+    SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+
     if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
         fprintf(stderr, "Could not init SDL");
         return;
@@ -63,6 +66,9 @@ display::display(int width, int height, const std::string& title) {
 		printf( "Glew failed to initialize!" );
     }
     printf("OpenGL version supported by this platform (%s): \n",glGetString(GL_VERSION));
+
+    // disable the build in vsync
+    SDL_GL_SetSwapInterval(0);
 
     int Depth;
     SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE, &Depth);

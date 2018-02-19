@@ -21,9 +21,8 @@ Game::Game() {
     p_blocklist = new BlockList("objects");
 
     // Framenrate setzten
-    framenrate.Set( 100);
+    framenrate.Set( 60);
     p_blocklist->Draw( p_graphic);
-    p_world = NULL;
     p_world = new World( "tileset.png", p_blocklist);
 
     p_gui = new Gui;
@@ -31,6 +30,7 @@ Game::Game() {
     p_sun = new Sun;
 
     p_vboCursor = NULL;
+    glGenBuffers(1, &p_vboCursor);
 }
 
 Game::~Game() {
@@ -140,36 +140,35 @@ void Game::viewCurrentBlock( int view_width) {
 }
 
 void Game::viewCross() {
-    std::vector<glm::vec4> l_vertices;
-    l_vertices.resize(4);
-    l_vertices[0] = glm::vec4( -0.05, 0, 0, 14);
-    l_vertices[1] = glm::vec4( +0.05, 0, 0, 14);
-    l_vertices[2] = glm::vec4( 0, -0.05, 0, 14);
-    l_vertices[3] = glm::vec4( 0, +0.05, 0, 14);
+    std::vector<block_data> l_vertices;
+    l_vertices.push_back( block_data( -0.05, 0, 0, 14));
+    l_vertices.push_back( block_data( +0.05, 0, 0, 14));
+    l_vertices.push_back( block_data( 0, -0.05, 0, 14));
+    l_vertices.push_back( block_data( 0, +0.05, 0, 14));
 
     if( p_vboCursor == NULL)
-        glGenBuffers(1, &p_vboCursor);
+        return;
+
+    glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);
+    glBufferData(GL_ARRAY_BUFFER, l_vertices.size()* sizeof( block_data ), &l_vertices[0], GL_DYNAMIC_DRAW);
+
+    // shader
+    Shader *l_shader = p_graphic->getVertexShader();
+
+    l_shader->DisableVertexAllArray();
+    l_shader->EnableVertexArray( 0);
+
+    l_shader->Bind();// Shader
 
     Transform f_form;
     f_form.GetPos().x = 0;
     f_form.GetPos().y = 0;
     f_form.GetPos().z = 0;
+    l_shader->Update( &f_form, p_graphic->getCamera()->getViewProjection());
 
-    float p_width = p_graphic->getWidth();
-    float p_hight = p_graphic->getHeight();
-    glm::mat4 one = glm::ortho( (float)-1, (float)1, (float)-1, (float)1);
+    l_shader->BindArray( p_vboCursor, 0, GL_SHORT, 4);
 
-    // Shader einstellen
-    p_graphic->getVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT, 4);
-    p_graphic->getVertexShader()->Bind();// Shader
-    p_graphic->getVertexShader()->EnableVertexArray( 0);
-    p_graphic->getVertexShader()->UpdateWithout( &f_form, one); //p_graphic->getCamera()->getViewProjection());
-
-    // Vbo übertragen
-    glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);
-    glBufferData(GL_ARRAY_BUFFER, l_vertices.size() * sizeof(glm::vec4), &l_vertices[0], GL_DYNAMIC_DRAW);
-
-    glDrawArrays( GL_LINES, 0, l_vertices.size());
+    glDrawArrays( GL_LINES, 0, (int)l_vertices.size());
 
 }
 
@@ -178,19 +177,15 @@ void Game::Start() {
 
     Object *obj = new Object;
     obj->Init();
-    Object *obj2 = new Object;
-    obj2->Init();
 
-    if( p_world)
-        for( int i = 0; i < 5; i++)
-            for( int x = 0; x < 5; x++)
-                for( int z = -3; z < 3; z++)
-                    p_world->addChunk( glm::tvec3<int>( i, z, x) );
+    for( int i = 0; i < 5; i++)
+        for( int x = 0; x < 5; x++)
+            for( int z = -3; z < 3; z++)
+                p_world->addChunk( glm::tvec3<int>( i, z, x) );
     //p_world->addChunk( glm::tvec3<int>( 0, -1, 0) );
 
     int number = 0;
     while( p_isRunnig) { // Runniz
-
         p_input.Reset();
         p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
         // Input einsehen
@@ -202,8 +197,7 @@ void Game::Start() {
         cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
 
         if( p_input.Map.Inventory ) {
-            if( p_world)
-                p_world->addChunk( { number++, -1, 0});
+            p_world->addChunk( { number++, -1, 0});
         }
 
         if( p_input.Map.Up )
@@ -253,24 +247,23 @@ void Game::Start() {
         // chunks zeichnen
         p_world->Draw( p_graphic, &p_config);
 
-        //obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
-        //obj2->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
+        //
+
+        obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
 
 		// View Cross
-        viewCross();
+        //ViewCross();
 
         // Debug
-        //DrawBox( 1, 1, 1);
+        //DrawBox( -1, -1, -1);
 
         //p_gui->Draw( p_graphic);
         // Block anzeigen was in der Sichtweite ist
-        if( p_world)
-            viewCurrentBlock( 275); // 275 = 2,75Meter
+        viewCurrentBlock( 275); // 275 = 2,75Meter
 
 		// World process
-		if( p_world)
-            p_world->process();
+        p_world->process();
 
         // Swap die Buffer um keine Renderfehler zu bekommen
         p_graphic->getDisplay()->swapBuffers();
@@ -290,8 +283,7 @@ void Game::Start() {
         Title = Title + " ms_" + NumberToString( framenrate.getMSframe());
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
 //      Title = Title + "Tile X " + NumberToString( (float)x) + " Y " + NumberToString(  (float)y) + " Z " + NumberToString(  (float)z );
-        if( p_world)
-            Title = Title + " Chunks_" + NumberToString( (double)p_world->GetAmountChunks());
+        Title = Title + " Chunks_" + NumberToString( (double)p_world->GetAmountChunks());
 //        if( p_world->GetWorldTree() != NULL)
 //            p_world->GetWorldTree()->SetTile( cam->GetPos().x, cam->GetPos().y, cam->GetPos().z, 1);
         p_graphic->getDisplay()->setTitle( Title);
@@ -342,10 +334,6 @@ void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
     f_form.GetPos().x = bx;
     f_form.GetPos().y = by;
     f_form.GetPos().z = bz;
-
-    if( p_vboCursor == NULL)
-        glGenBuffers(1, &p_vboCursor);
-
 
     // Shader einstellen
     p_graphic->getVertexShader()->BindArray( p_vboCursor, 0);
