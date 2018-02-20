@@ -6,6 +6,10 @@ ehthumbs.db
 *.layout
 *.depend
 
+# some save files
+*.cpp.save
+*.h.save
+
 # archiv
 archiv/
 
