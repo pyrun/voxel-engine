@@ -27,7 +27,7 @@ public:
     void viewCross();
     void Start();
 protected:
-    void DrawBox( GLshort bx, GLshort by, GLshort bz);
+    void drawBox( glm::vec3 pos);
 private:
     bool p_isRunnig;
     Input p_input;

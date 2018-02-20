@@ -162,7 +162,10 @@ class Object {
 
         void draw( Shader* l_shader, Camera* l_camera) {
             Transform f_form;
-            f_form.setPos( p_pos );
+            f_form.setPos( ve);
+            f_form.getPos().x = p_pos.x;
+            f_form.getPos().y = p_pos.y;
+            f_form.getPos().z = p_pos.z;
 
             Shader *shader = l_shader;
 

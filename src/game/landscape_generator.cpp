@@ -100,11 +100,11 @@ void Landscape_Generator( Chunk* c_chunk, BlockList* b_list) {
     int l_earth = b_list->GetBlockID( "earth")->getID();
     int l_grass = b_list->GetBlockID( "grass")->getID();
 
-    for (int cz = 0; cz < CHUNK_DEPTH; cz++) {
-        for (int cx = 0; cx < CHUNK_WIDTH; cx++) {
+    for (int cz = 0; cz < CHUNK_SIZE; cz++) {
+        for (int cx = 0; cx < CHUNK_SIZE; cx++) {
             // Position errechen
-            posx = cx + ( c_chunk->getX()*CHUNK_WIDTH);
-            posz = cz + ( c_chunk->getZ()*CHUNK_DEPTH);
+            posx = cx + ( c_chunk->getX()*CHUNK_SIZE);
+            posz = cz + ( c_chunk->getZ()*CHUNK_SIZE);
             // Noise generieren
             float interval = scaled_raw_noise_2d( -0.5, 7, (float)posx/interval_range, (float)posz/interval_range);
             interval += scaled_raw_noise_2d( 0, -0.5, (float)posx/interval_range_form, (float)posz/interval_range_form);
@@ -112,10 +112,10 @@ void Landscape_Generator( Chunk* c_chunk, BlockList* b_list) {
             high += scaled_raw_noise_2d( 0, -0.02, (float)posx/interval_range_form, (float)posz/interval_range_form);
 
             // Höhe errechnen
-            for(int cy = 0; cy < CHUNK_HEIGHT; cy++) {
+            for(int cy = 0; cy < CHUNK_SIZE; cy++) {
                 i++;
                 // Position errechen
-                posy = cy + (c_chunk->getY()*CHUNK_HEIGHT);
+                posy = cy + (c_chunk->getY()*CHUNK_SIZE);
                 int type = 0;
                 //if( interval*Island_high > posy+high*Island_high )
                 if( posy < Island_high*high + border) {

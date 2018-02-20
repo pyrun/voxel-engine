@@ -35,15 +35,19 @@ public:
 	Shader(const std::string& fileName);
 
 	void EnableVertexArray( int i);
-	void DisableVertexAllArray();
+	void disableArray( int i);
+	void disableFullVertexArray();
+
 	void Bind();
 	void SetSun( GLfloat x, GLfloat y, GLfloat z, GLfloat f_strength);
 	void SetSize( GLfloat x, GLfloat y);
 	void SetAlpha_cutoff( GLfloat x);
 	void SetTextureUnit(unsigned int TextureUnit);
 	void SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a);
-	void Update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix);
-	void UpdateWithout(  Transform *t_transform, glm::mat4 mvp) ;
+
+	void update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
+	void updateWithout(  Transform *t_transform, glm::mat4 mvp) ;
+
 	inline GLuint& GetProgram() { return p_program; }
 	void BindArray( GLuint Data, int Type, GLenum Type_Attrib = GL_SHORT, int Attrib_size = 4);
 	virtual ~Shader();

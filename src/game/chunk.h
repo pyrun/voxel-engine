@@ -5,13 +5,12 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_WIDTH 32
-#define CHUNK_HEIGHT 32
-#define CHUNK_DEPTH 32
+#define CHUNK_SIZE 32
+#define CHUNK_SCALE 0.5f
 
 #define EMPTY_BLOCK_ID 0
 
-#define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_WIDTH * (posY + CHUNK_HEIGHT * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
+#define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
 struct Tile {
     int ID;
@@ -64,7 +63,7 @@ public:
     inline int getX() { return p_pos.x; }
     inline int getY() { return p_pos.y; }
     inline int getZ() { return p_pos.z; }
-    inline glm::tvec3<int> getPos() { return p_pos; }
+    inline glm::vec3 getPos() { return p_pos; }
 
     inline bool GetChanged() { return p_changed; }
     inline bool SetChange( bool Change) { p_changed = Change; return Change; }
@@ -81,13 +80,16 @@ public:
     Tile *getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
+    void updateForm();
+
     void UpdateArray( BlockList *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
     void UpdateVbo();
-    void Draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
+    void draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
 protected:
 private:
     glm::tvec3<int> p_pos;
+    Transform p_form;
     int p_time_idle;
     int p_elements;
     bool p_changed;

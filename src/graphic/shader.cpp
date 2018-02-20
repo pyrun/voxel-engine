@@ -56,27 +56,22 @@ void Shader::EnableVertexArray( int i) {
     // Nur ein bestimmtes nutzen
     glEnableVertexAttribArray(p_attribute[i]);
     p_attribute_flag[ i] = 1;
-    // GL error
-    GLenum error =  glGetError(); if(error) {
-        printf( "Shader::EnableVertexArray Error %d\n", (int)error);
-    }
 }
 
-void Shader::DisableVertexAllArray() {
+void Shader::disableArray( int i) {
+    if( p_attribute_flag[i] == 1)
+        glDisableVertexAttribArray(p_attribute[i]);
+}
+
+void Shader::disableFullVertexArray() {
     // Vertex Array einschalten
     for(int i = 0; i < NUM_ATTRIBUTE; i++)
         if( p_attribute_flag[i] == 1)
             glDisableVertexAttribArray(p_attribute[i]);
-    // GL error
-    GLenum error =  glGetError(); if(error) {
-        printf( "Shader::EnableVertexAllArray Error %d\n", (int)error);
-    }
 }
 
 void Shader::Bind() {
 	glUseProgram(p_program);
-
-	DisableVertexAllArray();
 }
 
 void Shader::SetSun( GLfloat x, GLfloat y, GLfloat z, GLfloat f_strength) {
@@ -99,17 +94,17 @@ void Shader::SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a) {
     glUniform4f( p_uniforms[4], r, g, b, a);
 }
 
-void Shader::Update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix) {
-    glm::mat4 MVP = getCurrentViewProjectionMatrix * transform->GetModel();
+void Shader::update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {
+    glm::mat4 MVP = getCurrentViewProjectionMatrix * transform->getModel() * aa;
 
     glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &MVP[0][0]);
 }
 
-void Shader::UpdateWithout(  Transform *t_transform, glm::mat4 mvp) {
+void Shader::updateWithout(  Transform *t_transform, glm::mat4 mvp) {
     //GetMVPOrtho
-    float x = t_transform->GetPos().x;
-    float y = t_transform->GetPos().y;
-    float z = t_transform->GetPos().z;
+    float x = t_transform->getPos().x;
+    float y = t_transform->getPos().y;
+    float z = t_transform->getPos().z;
 
 
     //mvp = mvp * glm::vec4( x, y, z, 1.0);

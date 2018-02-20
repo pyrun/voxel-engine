@@ -46,8 +46,7 @@ public:
         graphic->getVertexShader()->Bind();// Shader
         graphic->getVertexShader()->EnableVertexArray( 0);
         Transform f_form;
-        f_form.GetPos().x = x;
-        f_form.GetPos().y = y;
+        f_form.setPos( glm::vec3( x, y, 0));
 
         graphic->getVertexShader()->BindArray( p_vbo, 0, GL_FLOAT);
         graphic->getVertexShader()->Bind();// Shader

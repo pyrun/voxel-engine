@@ -62,9 +62,11 @@ public:
     Chunk* getChunk( int X, int Y, int Z);
     void addChunk( glm::tvec3<int> pos );
     void addDeleteChunk( glm::tvec3<int> pos );
+
     void Draw( graphic *graphic, Config *config) ;
-    void DrawTransparency( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
-    void DrawNode( graphic* graphic, Shader* shader, Camera* camera,  glm::mat4 aa =  glm::mat4(1));
+    void drawTransparency( graphic* graphic, Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
+    void drawNode( graphic* graphic, Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
+
     void UpdateArray();
     void UpdateArrayNode();
 

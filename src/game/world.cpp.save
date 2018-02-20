@@ -52,16 +52,16 @@ Tile* World::GetTile( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->getX()*CHUNK_WIDTH;
-        int p_chunk_y = y-node->getY()*CHUNK_HEIGHT;
-        int p_chunk_z = z-node->getZ()*CHUNK_DEPTH;
+        int p_chunk_x = x-node->getX()*CHUNK_SIZE;
+        int p_chunk_y = y-node->getY()*CHUNK_SIZE;
+        int p_chunk_z = z-node->getZ()*CHUNK_SIZE;
 
         // X - Achse
         if(p_chunk_x < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_x >= CHUNK_WIDTH ) {
+        if(p_chunk_x >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
@@ -70,7 +70,7 @@ Tile* World::GetTile( int x, int y, int z) {
             node = node->next;
             continue;
         }
-        if(p_chunk_y >= CHUNK_HEIGHT ) {
+        if(p_chunk_y >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
@@ -79,7 +79,7 @@ Tile* World::GetTile( int x, int y, int z) {
             node = node->next;
             continue;
         }
-        if(p_chunk_z >= CHUNK_DEPTH) {
+        if(p_chunk_z >= CHUNK_SIZE) {
             node = node->next;
             continue;
         }
@@ -97,16 +97,16 @@ Chunk* World::getChunkWithPos( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->getX()*CHUNK_WIDTH;
-        int p_chunk_y = y-node->getY()*CHUNK_HEIGHT;
-        int p_chunk_z = z-node->getZ()*CHUNK_DEPTH;
+        int p_chunk_x = x-node->getX()*CHUNK_SIZE;
+        int p_chunk_y = y-node->getY()*CHUNK_SIZE;
+        int p_chunk_z = z-node->getZ()*CHUNK_SIZE;
 
         // X - Achse
         if(p_chunk_x < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_x >= CHUNK_WIDTH ) {
+        if(p_chunk_x >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
@@ -115,7 +115,7 @@ Chunk* World::getChunkWithPos( int x, int y, int z) {
             node = node->next;
             continue;
         }
-        if(p_chunk_y >= CHUNK_HEIGHT ) {
+        if(p_chunk_y >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
@@ -124,7 +124,7 @@ Chunk* World::getChunkWithPos( int x, int y, int z) {
             node = node->next;
             continue;
         }
-        if(p_chunk_z >= CHUNK_DEPTH) {
+        if(p_chunk_z >= CHUNK_SIZE) {
             node = node->next;
             continue;
         }
@@ -138,9 +138,9 @@ void World::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
         printf( "SetTile: Cant set tile!\n");
         return;
     }
-    int chunk_x = chunk->getX()*CHUNK_WIDTH;
-    int chunk_y = chunk->getY()*CHUNK_HEIGHT;
-    int chunk_z = chunk->getZ()*CHUNK_DEPTH;
+    int chunk_x = chunk->getX()*CHUNK_SIZE;
+    int chunk_y = chunk->getY()*CHUNK_SIZE;
+    int chunk_z = chunk->getZ()*CHUNK_SIZE;
 
     // Letzte prüfung
     //chunk->CreateTile( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
@@ -456,16 +456,17 @@ void World::Draw( graphic *graphic, Config *config) {
 
     Tilemap->Bind();
 
-    // How to not code a draw function... well played alex
-    if( config->GetSupersampling()) {
+    glm::mat4 l_viewProjection = graphic->getCamera()->getViewProjection();
 
+    // How to not code a draw function... well played alex
+    if( config->GetSupersampling() ) {
         for( int alpha_cut = 0; alpha_cut < 1; alpha_cut++) {
             for(int i = 0; i < 4; i++) {
                 glm::vec3 shift = glm::vec3((i % 4) * 0.5 / g_width, (i / 2) * 0.5 / g_height, 0);
                 glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
 
                 // Zeichnen
-                DrawTransparency(  graphic, l_shader, graphic->getCamera(), graphic->getCamera(), alpha_cut == 1 ? false : true, aa);
+                drawTransparency(  graphic, l_shader, l_viewProjection, alpha_cut == 1 ? false : true, aa);
                 glAccum(i ? GL_ACCUM : GL_LOAD, 0.25f);
             }
             // zusammenrechnen
@@ -473,25 +474,25 @@ void World::Draw( graphic *graphic, Config *config) {
         }
         // Zeichne Transperenz wenn gewünscht
         if( config->GetTransparency())
-            DrawTransparency(  graphic, l_shader, graphic->getCamera(), graphic->getCamera(), false);
+            drawTransparency(  graphic, l_shader, l_viewProjection, false);
     } else {
         if( config->GetTransparency() ) {
             // Transparent zeichnen
-            DrawTransparency( graphic, l_shader, graphic->getCamera(), graphic->getCamera(), true);
-            DrawTransparency( graphic, l_shader, graphic->getCamera(), graphic->getCamera(), false);
+            drawTransparency( graphic, l_shader, l_viewProjection, true);
+            drawTransparency( graphic, l_shader, l_viewProjection, false);
         } else {
             // Ohne Transperenz -> Sehr schnell
             graphic->getVoxelShader()->SetAlpha_cutoff( 0.0f);
             glDisable( GL_BLEND);
-            DrawNode( graphic, l_shader, graphic->getCamera());
+            drawNode( graphic, l_shader, l_viewProjection);
             glEnable( GL_BLEND);
         }
     }
     // disable all Vertex arrays
-    l_shader->DisableVertexAllArray();
+    l_shader->disableArray( 1);
 }
 
-void World::DrawTransparency( graphic* graphic, Shader* shader, Camera* camera, Camera* shadow, bool alpha_cutoff, glm::mat4 aa) {
+void World::drawTransparency( graphic* graphic, Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
     // shader einstellen
     if( alpha_cutoff) {
         glDepthMask(true);
@@ -501,13 +502,12 @@ void World::DrawTransparency( graphic* graphic, Shader* shader, Camera* camera, 
         shader->SetAlpha_cutoff( 1.10f);
     }
     // Draw node
-    DrawNode( graphic, shader, camera, aa);
+    drawNode( graphic, shader, viewProjection, aa);
     glDepthMask(true);
 }
 
-void World::DrawNode( graphic* graphic, Shader* shader, Camera* camera, glm::mat4 aa) {
+void World::drawNode( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
     Chunk *node = Chunks;
-    glm::mat4 l_viewProjection = camera->getViewProjection();
     for( ;; ) {
         if( node == NULL)
             break;
@@ -519,7 +519,7 @@ void World::DrawNode( graphic* graphic, Shader* shader, Camera* camera, glm::mat
             if( SDL_GetTicks() - node->GetTimeIdle() > WORLD_TILE_IDLE_TIME ) {
                 deleteChunk( node );
             } else {
-                node->Draw( graphic, shader, l_viewProjection, aa);
+                node->Draw( graphic, shader, viewProjection, aa);
             }
         }
         node = node->next;

@@ -5,13 +5,11 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_WIDTH 32
-#define CHUNK_HEIGHT 32
-#define CHUNK_DEPTH 32
+#define CHUNK_SIZE 32
 
 #define EMPTY_BLOCK_ID 0
 
-#define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_WIDTH * (posY + CHUNK_DEPTH * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
+#define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
 struct Tile {
     int ID;
@@ -61,24 +59,24 @@ public:
         return true;
     }
 
-    inline int GetX() { return pos.x; }
-    inline int GetY() { return pos.y; }
-    inline int GetZ() { return pos.z; }
-    inline glm::tvec3<int> 
+    inline int getX() { return f_form.getPos().x; }
+    inline int getY() { return f_form.getPos().y; }
+    inline int getZ() { return f_form.getPos().z; }
+    inline glm::tvec3<int> getPos() { return p_pos; }
 
     inline bool GetChanged() { return p_changed; }
     inline bool SetChange( bool Change) { p_changed = Change; return Change; }
     inline bool GetUpdateOnce() { return p_updateonce; }
     inline bool GetVbo() { return p_createvbo; }
     inline bool GetArrayChange() { return p_arraychange; }
-    inline int getAmount() { return /*sizeof(p_vertex)/sizeof(*p_vertex);*/p_vertex.size(); }
+    inline int getAmount() { return p_vertex.size(); }
     inline bool GetUpdateVboOnce() { return p_updatevboonce; }
     inline int GetTimeIdle() { return p_time_idle; }
     void ResetTimeIdle() { p_time_idle = SDL_GetTicks(); }
 
     void CreateTile( int X, int Y, int Z, int ID);
     void set( int X, int Y, int Z, int ID);
-    Tile *GetTile( int X, int Y, int Z);
+    Tile *getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
     void UpdateArray( BlockList *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
@@ -87,7 +85,8 @@ public:
     void Draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
 protected:
 private:
-    glm::tvec3<int> pos;
+    glm::tvec3<int> p_pos;
+    Transform f_form;
     int p_time_idle;
     int p_elements;
     bool p_changed;

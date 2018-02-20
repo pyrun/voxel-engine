@@ -64,18 +64,18 @@ void Game::viewCurrentBlock( int view_width) {
         testpos += p_graphic->getCamera()->GetForward() * 0.02f;
 
         // hack die komma zahl ab z.B. 13,4 -> 13,0
-        mx = floorf(testpos.x);
-        my = floorf(testpos.y);
-        mz = floorf(testpos.z);
+        mx = floorf(testpos.x/CHUNK_SCALE);
+        my = floorf(testpos.y/CHUNK_SCALE);
+        mz = floorf(testpos.z/CHUNK_SCALE);
 
         // falls wir ein block finden das kein "Air" ist dann sind wir fertig
         Tile *tile = p_world->GetTile( mx, my, mz);
         if( !tile )
             continue;
 
-        int px = floorf(prevpos.x);
-        int py = floorf(prevpos.y);
-        int pz = floorf(prevpos.z);
+        int px = floorf(prevpos.x/CHUNK_SCALE);
+        int py = floorf(prevpos.y/CHUNK_SCALE);
+        int pz = floorf(prevpos.z/CHUNK_SCALE);
 
         int face;
         // Welche Seite wird angeklickt
@@ -133,7 +133,7 @@ void Game::viewCurrentBlock( int view_width) {
 
         // tile
         if( tile->ID) {
-            DrawBox( mx, my, mz);
+            drawBox( glm::vec3( mx, my, mz)*glm::vec3( CHUNK_SCALE));
             break;
         }
     }
@@ -151,9 +151,6 @@ void Game::viewCross() {
         glGenBuffers(1, &p_vboCursor);
 
     Transform f_form;
-    f_form.GetPos().x = 0;
-    f_form.GetPos().y = 0;
-    f_form.GetPos().z = 0;
 
     float p_width = p_graphic->getWidth();
     float p_hight = p_graphic->getHeight();
@@ -163,7 +160,7 @@ void Game::viewCross() {
     p_graphic->getVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT, 4);
     p_graphic->getVertexShader()->Bind();// Shader
     p_graphic->getVertexShader()->EnableVertexArray( 0);
-    p_graphic->getVertexShader()->UpdateWithout( &f_form, one); //p_graphic->getCamera()->getViewProjection());
+    p_graphic->getVertexShader()->updateWithout( &f_form, one); //p_graphic->getCamera()->getViewProjection());
 
     // Vbo übertragen
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);
@@ -182,14 +179,17 @@ void Game::Start() {
     obj2->Init();
 
     if( p_world)
-        for( int i = 0; i < 5; i++)
-            for( int x = 0; x < 5; x++)
+        for( int i = 0; i < 15; i++)
+            for( int x = 0; x < 15; x++)
                 for( int z = -3; z < 3; z++)
                     p_world->addChunk( glm::tvec3<int>( i, z, x) );
     //p_world->addChunk( glm::tvec3<int>( 0, -1, 0) );
 
+
+    Timer l_timer;
     int number = 0;
     while( p_isRunnig) { // Runniz
+        l_timer.Start();
 
         p_input.Reset();
         p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
@@ -281,13 +281,11 @@ void Game::Start() {
             std::cout << error << std::endl;
         }
 
-        // Framenrate begrenzen
-        framenrate.CalcDelay();
 
         // Titel setzten
         //Title = "FPS: " + NumberToString( (double)(int)framenrate.GetFramenrate());
         Title = "FPS_" + NumberToString( framenrate.getFrameratePrecisely() );
-        Title = Title + " ms_" + NumberToString( framenrate.getMSframe());
+        Title = Title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
 //      Title = Title + "Tile X " + NumberToString( (float)x) + " Y " + NumberToString(  (float)y) + " Z " + NumberToString(  (float)z );
         if( p_world)
@@ -295,6 +293,9 @@ void Game::Start() {
 //        if( p_world->GetWorldTree() != NULL)
 //            p_world->GetWorldTree()->SetTile( cam->GetPos().x, cam->GetPos().y, cam->GetPos().z, 1);
         p_graphic->getDisplay()->setTitle( Title);
+
+        // Framenrate begrenzen
+        framenrate.CalcDelay();
 
         // Measure speed
         //printf("%s\n", Title.c_str());
@@ -304,7 +305,7 @@ void Game::Start() {
     delete obj;
 }
 
-void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
+void Game::drawBox( glm::vec3 pos) {
     std::vector<block_data> t_box;
 
     // Chunk Vbo Data Struct
@@ -339,9 +340,8 @@ void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
     t_box[23] = block_data(1, 1, 1, 14);
 
     Transform f_form;
-    f_form.GetPos().x = bx;
-    f_form.GetPos().y = by;
-    f_form.GetPos().z = bz;
+    f_form.setPos( pos);
+    f_form.setScale( glm::vec3( CHUNK_SCALE) );
 
     if( p_vboCursor == NULL)
         glGenBuffers(1, &p_vboCursor);
@@ -351,7 +351,7 @@ void Game::DrawBox( GLshort bx, GLshort by, GLshort bz) {
     p_graphic->getVertexShader()->BindArray( p_vboCursor, 0);
     p_graphic->getVertexShader()->Bind();// Shader
     p_graphic->getVertexShader()->EnableVertexArray( 0);
-    p_graphic->getVertexShader()->Update( &f_form, p_graphic->getCamera()->getViewProjection());
+    p_graphic->getVertexShader()->update( &f_form, p_graphic->getCamera()->getViewProjection());
 
     // Vbo übertragen
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);

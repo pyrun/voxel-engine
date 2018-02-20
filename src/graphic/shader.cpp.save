@@ -7,7 +7,7 @@ Shader::Shader(const std::string& fileName) {
 	p_shaders[0] = CreateShader(LoadShader(fileName + ".vs"), GL_VERTEX_SHADER);
 	p_shaders[1] = CreateShader(LoadShader(fileName + ".fs"), GL_FRAGMENT_SHADER);
 
-	for(unsigned int i = 0; i < NUp_SHADERS; i++)
+	for(unsigned int i = 0; i < NUM_SHADERS; i++)
 		glAttachShader(p_program, p_shaders[i]);
 
 	glBindAttribLocation(p_program, 0, "position");
@@ -44,7 +44,7 @@ Shader::Shader(const std::string& fileName) {
 }
 
 Shader::~Shader() {
-	for(unsigned int i = 0; i < NUp_SHADERS; i++) {
+	for(unsigned int i = 0; i < NUM_SHADERS; i++) {
         glDetachShader(p_program, p_shaders[i]);
         glDeleteShader(p_shaders[i]);
     }
@@ -64,7 +64,7 @@ void Shader::EnableVertexArray( int i) {
 
 void Shader::DisableVertexAllArray() {
     // Vertex Array einschalten
-    for(int i = 0; i < NUp_ATTRIBUTE; i++)
+    for(int i = 0; i < NUM_ATTRIBUTE; i++)
         if( p_attribute_flag[i] == 1)
             glDisableVertexAttribArray(p_attribute[i]);
     // GL error
@@ -75,8 +75,6 @@ void Shader::DisableVertexAllArray() {
 
 void Shader::Bind() {
 	glUseProgram(p_program);
-
-	DisableVertexAllArray();
 }
 
 void Shader::SetSun( GLfloat x, GLfloat y, GLfloat z, GLfloat f_strength) {
@@ -99,36 +97,13 @@ void Shader::SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a) {
     glUniform4f( p_uniforms[4], r, g, b, a);
 }
 
-void Shader::Update(Transform *transform, Matrix4 *getCurrentViewProjectionMatrix, glm::mat4 aa) {
-    //glm::mat4 MVP = aa * transform.GetMVP(*camera);
-    glm::mat4 MVP = camera->GetViewProjection() * transform->GetModel();
-
-    /*if( camera == shadow)
-        MVP = transform.GetMVPOrtho(*camera);*/
-
-    glm::mat4 biasMatrix(
-            0.5, 0.0, 0.0, 0.0,
-            0.0, 0.5, 0.0, 0.0,
-            0.0, 0.0, 0.5, 0.0,
-            0.5, 0.5, 0.5, 1.0
-        );
-    glm::mat4 depthBiasMVP = biasMatrix;// * transform->GetMVPOrtho( *shadow);
-    /*for(int i = 0; i < 4; i++) {
-        glm::vec3 shift = glm::vec3((i % 2) * 0.5 / w, (i / 2) * 0.5 / h, 0);
-        glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
-        glm::mat4 mvp = aa * projection * modelview;
-        glUniformMatrix4fv(uniforp_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
-        draw_scene();
-        glAccum(i ? GL_ACCUM : GL_LOAD, 0.25);
-    }*/
+void Shader::Update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix) {
+    glm::mat4 MVP = getCurrentViewProjectionMatrix * transform->GetModel();
 
     glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &MVP[0][0]);
-	glUniformMatrix4fv(p_uniforms[1], 1, GL_FALSE, &depthBiasMVP[0][0]);
 }
 
-void Shader::UpdateWithout( glm::mat4 mvp, Camera* t_camera, Transform *t_transform) {
-    Update( t_transform, t_camera, t_camera);
-
+void Shader::UpdateWithout(  Transform *t_transform, glm::mat4 mvp) {
     //GetMVPOrtho
     float x = t_transform->GetPos().x;
     float y = t_transform->GetPos().y;
