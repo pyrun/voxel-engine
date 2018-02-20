@@ -1,1 +1,1 @@
-../bin/win/debug32/Selur.exe
+"../bin/win/debug32/Selur.exe"
