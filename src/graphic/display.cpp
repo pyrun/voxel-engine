@@ -30,8 +30,13 @@ display::display(int width, int height, const std::string& title) {
         return;
     }
 	// benötigt opengl 4.0
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
+
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+
+    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
+	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
 
     // bit grße der Farben
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 3);
@@ -61,6 +66,7 @@ display::display(int width, int height, const std::string& title) {
         printf( "Display: Renderer could not be created! SDL Error \"%s\"", SDL_GetError());
     }
 	// Glew starten
+	glewExperimental = GL_TRUE;
 	GLenum res = glewInit();
     if(res != GLEW_OK) {
 		printf( "Glew failed to initialize!" );

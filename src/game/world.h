@@ -63,7 +63,7 @@ public:
     void addChunk( glm::tvec3<int> pos );
     void addDeleteChunk( glm::tvec3<int> pos );
 
-    void Draw( graphic *graphic, Config *config) ;
+    void draw( graphic *graphic, Config *config, glm::mat4 viewProjection) ;
     void drawTransparency( graphic* graphic, Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
     void drawNode( graphic* graphic, Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
 

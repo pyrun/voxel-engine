@@ -21,14 +21,12 @@ Game::Game() {
     p_blocklist = new BlockList("objects");
 
     // Framenrate setzten
-    framenrate.Set( 100);
+    framenrate.Set( 200);
     p_blocklist->Draw( p_graphic);
     p_world = NULL;
     p_world = new World( "tileset.png", p_blocklist);
 
     p_gui = new Gui;
-
-    p_sun = new Sun;
 
     p_vboCursor = NULL;
 }
@@ -39,7 +37,6 @@ Game::~Game() {
     delete p_world;
     delete p_blocklist;
     delete p_gui;
-    delete p_sun;
     delete p_graphic;
 }
 
@@ -170,6 +167,26 @@ void Game::viewCross() {
 
 }
 
+void Game::render( glm::mat4 viewProjection) {
+    // chunks zeichnen
+    p_world->draw( p_graphic, &p_config, viewProjection);
+
+    //obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
+    //obj2->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
+
+
+    // View Cross
+    //viewCross();
+
+    // Debug
+    //DrawBox( 1, 1, 1);
+
+    //p_gui->Draw( p_graphic);
+    // Block anzeigen was in der Sichtweite ist
+    //if( p_world)
+    //    viewCurrentBlock( 275); // 275 = 2,75Meter
+}
+
 void Game::Start() {
     p_config.SetTransparency( true);
 
@@ -177,6 +194,8 @@ void Game::Start() {
     obj->Init();
     Object *obj2 = new Object;
     obj2->Init();
+
+    p_openvr = new openvr();
 
     if( p_world)
         for( int i = 0; i < 15; i++)
@@ -188,6 +207,8 @@ void Game::Start() {
 
     Timer l_timer;
     int number = 0;
+
+    glm::mat4 l_mvp;
     while( p_isRunnig) { // Runniz
         l_timer.Start();
 
@@ -236,41 +257,36 @@ void Game::Start() {
 
         if( p_input.getResize())
             p_graphic->resizeWindow( p_input.getResizeW(), p_input.getResizeH());
-        //cos_i++;
+
         // Framenrate anfangen zu zählen
         framenrate.StartCount();
-
-        // Zeichen oberfläche aufräumen
-        p_sun->Process( p_graphic->getVoxelShader(), p_graphic);
-
-
-        Timer p_timer;
-        p_timer.Start();
-        p_sun->SetDay();
-
-        p_graphic->getDisplay()->clear();
-
-        // chunks zeichnen
-        p_world->Draw( p_graphic, &p_config);
-
-        //obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
-        //obj2->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
-
-
-		// View Cross
-        viewCross();
-
-        // Debug
-        //DrawBox( 1, 1, 1);
-
-        //p_gui->Draw( p_graphic);
-        // Block anzeigen was in der Sichtweite ist
-        if( p_world)
-            viewCurrentBlock( 275); // 275 = 2,75Meter
 
 		// World process
 		if( p_world)
             p_world->process();
+
+
+        /// Render
+        p_openvr->renderForLeftEye();
+        l_mvp = p_openvr->getViewProjectionMatrixLeft();
+        p_openvr->renderModels( l_mvp);
+        render( l_mvp);
+        p_openvr->renderEndLeftEye();
+
+        p_openvr->renderForRightEye();
+        l_mvp = p_openvr->getViewProjectionMatrixRight();
+        p_openvr->renderModels( l_mvp);
+        render( l_mvp);
+        p_openvr->renderEndRightEye();
+
+        l_timer.Start();
+        p_openvr->renderFrame();
+
+
+        p_graphic->getDisplay()->clear();
+        l_mvp = l_mvp;// p_graphic->getCamera()->getViewProjection();
+        //
+        render( l_mvp);
 
         // Swap die Buffer um keine Renderfehler zu bekommen
         p_graphic->getDisplay()->swapBuffers();
@@ -281,25 +297,16 @@ void Game::Start() {
             std::cout << error << std::endl;
         }
 
-
         // Titel setzten
-        //Title = "FPS: " + NumberToString( (double)(int)framenrate.GetFramenrate());
         Title = "FPS_" + NumberToString( framenrate.getFrameratePrecisely() );
         Title = Title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
-//      Title = Title + "Tile X " + NumberToString( (float)x) + " Y " + NumberToString(  (float)y) + " Z " + NumberToString(  (float)z );
         if( p_world)
             Title = Title + " Chunks_" + NumberToString( (double)p_world->GetAmountChunks());
-//        if( p_world->GetWorldTree() != NULL)
-//            p_world->GetWorldTree()->SetTile( cam->GetPos().x, cam->GetPos().y, cam->GetPos().z, 1);
         p_graphic->getDisplay()->setTitle( Title);
 
         // Framenrate begrenzen
         framenrate.CalcDelay();
-
-        // Measure speed
-        //printf("%s\n", Title.c_str());
-        // http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2005.html
 
     }
     delete obj;

@@ -14,8 +14,8 @@
 #include "world.h"
 #include "config.h"
 #include "gui.h"
-#include "sun.h"
 #include "object.h"
+#include "../engine/openvr.h"
 
 std::string NumberToString( int Number);
 
@@ -25,6 +25,9 @@ public:
     virtual ~Game();
     void viewCurrentBlock( int view_width);
     void viewCross();
+
+    void render( glm::mat4 viewProjection);
+
     void Start();
 protected:
     void drawBox( glm::vec3 pos);
@@ -36,7 +39,7 @@ private:
     Framenrate framenrate;
     Config p_config;
     Gui *p_gui;
-    Sun *p_sun;
+    openvr *p_openvr;
 
     std::string Title;
     World *p_world;

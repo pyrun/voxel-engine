@@ -164,6 +164,9 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     Timer timer;
     timer.Start();
 
+    p_vertex.reserve( 2048);
+    p_data.reserve( 2048);
+
     // wird gelöscht
     if( p_deleting)
         return;

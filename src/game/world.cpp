@@ -384,7 +384,7 @@ Camera *cam;
 
 #define ota_size 200.0f
 
-void World::Draw( graphic *graphic, Config *config) {
+void World::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
     /*if( !Shadow.IsStarted()) {
         int w = graphic->GetWidth();
         int h = graphic->GetHeight();
@@ -454,8 +454,6 @@ void World::Draw( graphic *graphic, Config *config) {
 
     Tilemap->Bind();
 
-    glm::mat4 l_viewProjection = graphic->getCamera()->getViewProjection();
-
     // How to not code a draw function... well played alex
     if( config->GetSupersampling() ) {
         for( int alpha_cut = 0; alpha_cut < 1; alpha_cut++) {
@@ -464,7 +462,7 @@ void World::Draw( graphic *graphic, Config *config) {
                 glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
 
                 // Zeichnen
-                drawTransparency(  graphic, l_shader, l_viewProjection, alpha_cut == 1 ? false : true, aa);
+                drawTransparency(  graphic, l_shader, viewProjection, alpha_cut == 1 ? false : true, aa);
                 glAccum(i ? GL_ACCUM : GL_LOAD, 0.25f);
             }
             // zusammenrechnen
@@ -472,22 +470,24 @@ void World::Draw( graphic *graphic, Config *config) {
         }
         // Zeichne Transperenz wenn gewünscht
         if( config->GetTransparency())
-            drawTransparency(  graphic, l_shader, l_viewProjection, false);
+            drawTransparency(  graphic, l_shader, viewProjection, false);
     } else {
         if( config->GetTransparency() ) {
             // Transparent zeichnen
-            drawTransparency( graphic, l_shader, l_viewProjection, true);
-            drawTransparency( graphic, l_shader, l_viewProjection, false);
+            drawTransparency( graphic, l_shader, viewProjection, true);
+            drawTransparency( graphic, l_shader, viewProjection, false);
         } else {
             // Ohne Transperenz -> Sehr schnell
             graphic->getVoxelShader()->SetAlpha_cutoff( 0.0f);
             glDisable( GL_BLEND);
-            drawNode( graphic, l_shader, l_viewProjection);
+            drawNode( graphic, l_shader, viewProjection);
             glEnable( GL_BLEND);
         }
     }
     // disable all Vertex arrays
+    l_shader->disableArray( 0);
     l_shader->disableArray( 1);
+    glUseProgram( 0 );
 }
 
 void World::drawTransparency( graphic* graphic, Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {

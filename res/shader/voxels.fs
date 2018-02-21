@@ -128,5 +128,5 @@ void main() {
 
 
     //fragColor = mix( fogcolor, color, fog) * vec4 ( sh_light( vec3(texnormal), beach) , 1);
-    fragColor = color * o_sun; // * vec4 ( sh_light( normal1, tomb) , 1);
+    fragColor = color; // * vec4 ( sh_light( normal1, tomb) , 1);
 }
