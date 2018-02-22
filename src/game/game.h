@@ -19,18 +19,21 @@
 
 std::string NumberToString( int Number);
 
-class Game {
+class game {
 public:
-    Game();
-    virtual ~Game();
-    void viewCurrentBlock( int view_width);
+    game();
+    virtual ~game();
+
+    void startVR();
+
+    void viewCurrentBlock( glm::mat4 viewProjection, int view_width);
     void viewCross();
 
     void render( glm::mat4 viewProjection);
 
     void Start();
 protected:
-    void drawBox( glm::vec3 pos);
+    void drawBox( glm::mat4 viewProjection, glm::vec3 pos);
 private:
     bool p_isRunnig;
     Input p_input;

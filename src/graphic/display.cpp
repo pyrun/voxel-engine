@@ -105,6 +105,7 @@ void display::clear() {
     // setzte background color und clear BUFFER
     glClearColor( p_red, p_green, p_blue, p_alpha);
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+	glViewport( 0, 0, getWidth(), getHeight());
 }
 
 void display::swapBuffers() {

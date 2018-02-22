@@ -1,6 +1,7 @@
 #ifndef OPENVR_MODELS_H
 #define OPENVR_MODELS_H
 
+#include <stdio.h>
 #include <openvr.h>
 #include <string>
 

@@ -13,7 +13,10 @@ std::string NumberToString( double Number) {
     return temp;
 }
 
-Game::Game() {
+game::game() {
+
+    p_openvr = NULL;
+
     p_graphic = new graphic( 1024, 800);
 
     // Runnig
@@ -31,7 +34,7 @@ Game::Game() {
     p_vboCursor = NULL;
 }
 
-Game::~Game() {
+game::~game() {
     glDeleteBuffers(1, &p_vboCursor);
     p_vboCursor = NULL;
     delete p_world;
@@ -40,7 +43,11 @@ Game::~Game() {
     delete p_graphic;
 }
 
-void Game::viewCurrentBlock( int view_width) {
+void game::startVR() {
+    p_openvr = new openvr();
+}
+
+void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
     float depth;
 
     // Voxel Anzeigen
@@ -113,10 +120,10 @@ void Game::viewCurrentBlock( int view_width) {
                 if( tmp)
                     p_world->SetTile( tmp, mX, mY, mZ, p_blocklist->GetBlockID( "water")->getID());
                 else
-                    printf( "Game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
+                    printf( "game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
 
-            printf( "Game::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile->ID);
+            printf( "game::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile->ID);
             break;
         }
         if( tile->ID && p_input.Map.Destory && !p_input.MapOld.Destory) {
@@ -124,19 +131,19 @@ void Game::viewCurrentBlock( int view_width) {
             if( tmp)
                 p_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
             else
-                printf( "Game::ViewCurrentBlock Chunk nicht vorhanden\n");
+                printf( "game::ViewCurrentBlock Chunk nicht vorhanden\n");
             break;
         }
 
         // tile
         if( tile->ID) {
-            drawBox( glm::vec3( mx, my, mz)*glm::vec3( CHUNK_SCALE));
+            drawBox( viewProjection, glm::vec3( mx, my, mz)*glm::vec3( CHUNK_SCALE));
             break;
         }
     }
 }
 
-void Game::viewCross() {
+void game::viewCross() {
     std::vector<glm::vec4> l_vertices;
     l_vertices.resize(4);
     l_vertices[0] = glm::vec4( -0.05, 0, 0, 14);
@@ -167,7 +174,7 @@ void Game::viewCross() {
 
 }
 
-void Game::render( glm::mat4 viewProjection) {
+void game::render( glm::mat4 viewProjection) {
     // chunks zeichnen
     p_world->draw( p_graphic, &p_config, viewProjection);
 
@@ -183,19 +190,15 @@ void Game::render( glm::mat4 viewProjection) {
 
     //p_gui->Draw( p_graphic);
     // Block anzeigen was in der Sichtweite ist
-    //if( p_world)
-    //    viewCurrentBlock( 275); // 275 = 2,75Meter
 }
 
-void Game::Start() {
+void game::Start() {
     p_config.SetTransparency( true);
 
     Object *obj = new Object;
     obj->Init();
     Object *obj2 = new Object;
     obj2->Init();
-
-    p_openvr = new openvr();
 
     if( p_world)
         for( int i = 0; i < 15; i++)
@@ -244,9 +247,9 @@ void Game::Start() {
 
                 p_config.SetSupersampling( false);
 
-                printf( "Game::Start Supersampling deactive\n");
+                printf( "game::Start Supersampling deactive\n");
             } else {
-                printf( "Game::Start Supersampling active\n");
+                printf( "game::Start Supersampling active\n");
                 p_config.SetSupersampling( true);
             }*/
             cam->zoom( -1.5);
@@ -267,35 +270,44 @@ void Game::Start() {
 
 
         /// Render
-        p_openvr->renderForLeftEye();
-        l_mvp = p_openvr->getViewProjectionMatrixLeft();
-        p_openvr->renderModels( l_mvp);
-        render( l_mvp);
-        p_openvr->renderEndLeftEye();
+        if( p_openvr ) {
+            p_openvr->renderForLeftEye();
+            l_mvp = p_openvr->getViewProjectionMatrixLeft();
+            render( l_mvp);
+            p_openvr->renderModels( l_mvp);
+            p_openvr->renderEndLeftEye();
 
-        p_openvr->renderForRightEye();
-        l_mvp = p_openvr->getViewProjectionMatrixRight();
-        p_openvr->renderModels( l_mvp);
-        render( l_mvp);
-        p_openvr->renderEndRightEye();
+            p_openvr->renderForRightEye();
+            l_mvp = p_openvr->getViewProjectionMatrixRight();
+            render( l_mvp);
+            p_openvr->renderModels( l_mvp);
+            p_openvr->renderEndRightEye();
 
-        l_timer.Start();
-        p_openvr->renderFrame();
 
+            l_timer.Start();
+            p_openvr->renderFrame();
+        }
 
         p_graphic->getDisplay()->clear();
-        l_mvp = l_mvp;// p_graphic->getCamera()->getViewProjection();
+
+        glm::mat4 l_mvp_cam = p_graphic->getCamera()->getViewProjection();
+
         //
-        render( l_mvp);
+        render( l_mvp_cam);
+
+        if( p_world)
+            viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
 
         // Swap die Buffer um keine Renderfehler zu bekommen
         p_graphic->getDisplay()->swapBuffers();
 
+
         // fehler anzeigen -> schleife eine meldung bedeutet ich habe verkackt
         GLenum error =  glGetError();
         if(error) {
-            std::cout << error << std::endl;
+            std::cout << "nope" << error << std::endl;
         }
+
 
         // Titel setzten
         Title = "FPS_" + NumberToString( framenrate.getFrameratePrecisely() );
@@ -312,7 +324,7 @@ void Game::Start() {
     delete obj;
 }
 
-void Game::drawBox( glm::vec3 pos) {
+void game::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
     std::vector<block_data> t_box;
 
     // Chunk Vbo Data Struct
@@ -358,7 +370,7 @@ void Game::drawBox( glm::vec3 pos) {
     p_graphic->getVertexShader()->BindArray( p_vboCursor, 0);
     p_graphic->getVertexShader()->Bind();// Shader
     p_graphic->getVertexShader()->EnableVertexArray( 0);
-    p_graphic->getVertexShader()->update( &f_form, p_graphic->getCamera()->getViewProjection());
+    p_graphic->getVertexShader()->update( &f_form, viewProjection);
 
     // Vbo übertragen
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);

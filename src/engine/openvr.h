@@ -5,6 +5,9 @@
 #include <openvr.h>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <cstdlib>
+#include <sstream>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -51,6 +54,8 @@ class openvr
 
         void renderFrame();
 
+        void processVREvent( const vr::VREvent_t & event );
+
         glm::mat4 getCurrentViewProjectionMatrix( vr::Hmd_Eye nEye );
         glm::mat4 getHMDMatrixProjectionEye( vr::Hmd_Eye nEye );
         glm::mat4 getHMDMatrixPoseEye( vr::Hmd_Eye nEye );
@@ -74,7 +79,6 @@ class openvr
         vr::IVRSystem *p_hmd;
         vr::IVRRenderModels *p_pRenderModels;
         vr::TrackedDevicePose_t p_rTrackedDevicePose[ vr::k_unMaxTrackedDeviceCount ];
-
         glm::mat4 p_rmat4DevicePose[ vr::k_unMaxTrackedDeviceCount ];
         bool p_rbShowTrackedDevice[ vr::k_unMaxTrackedDeviceCount ];
 

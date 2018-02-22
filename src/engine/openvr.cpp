@@ -10,19 +10,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-static inline glm::mat4 hmd_mat4(const vr::HmdMatrix44_t & m) noexcept {
-      return glm::transpose(glm::make_mat4((float*)&m.m));
-    }
-
-static inline glm::mat4 hmd_mat3x4(const vr::HmdMatrix34_t & m) noexcept {
-  return glm::mat4(
-    m.m[0][0], m.m[1][0], m.m[2][0], 0.0,
-    m.m[0][1], m.m[1][1], m.m[2][1], 0.0,
-    m.m[0][2], m.m[1][2], m.m[2][2], 0.0,
-    m.m[0][3], m.m[1][3], m.m[2][3], 1.0f
-  );
-}
-
 openvr::openvr()
 {
     // set all up
@@ -30,6 +17,7 @@ openvr::openvr()
 	p_nRenderModelMatrixLocation = -1;
 
 	p_hmd = NULL;
+	p_pRenderModels = NULL;
 
 	p_fNearClip = 0.1f;
  	p_fFarClip = 30.0f;
@@ -58,7 +46,26 @@ openvr::openvr()
 		return;
 	}
 
-	// controll shader
+	p_pRenderModels = (vr::IVRRenderModels *)vr::VR_GetGenericInterface( vr::IVRRenderModels_Version, &eError );
+	if( !p_pRenderModels )
+	{
+		p_hmd = NULL;
+		vr::VR_Shutdown();
+
+		char buf[1024];
+		snprintf( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+		return;
+	}
+	glGetError();
+
+	// setup vr compositor
+	if ( !vr::VRCompositor() )
+	{
+		printf( "Compositor initialization failed. See log file for details\n" );
+	}
+
+// controll shader
     p_unRenderModelProgramID = compileGLShader(
 		"render model",
 
@@ -92,31 +99,10 @@ openvr::openvr()
 		return;
 	}
 
-	p_pRenderModels = (vr::IVRRenderModels *)vr::VR_GetGenericInterface( vr::IVRRenderModels_Version, &eError );
-	if( !p_pRenderModels )
-	{
-		p_hmd = NULL;
-		vr::VR_Shutdown();
-
-		char buf[1024];
-		snprintf( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
-		return;
-	}
-	glGetError();
-
 	// setup opengl
 	setupCameras();
 	setupStereoRenderTargets();
 	setupRenderModels();
-
-	// setup vr compositor
-    vr::EVRInitError peError = vr::VRInitError_None;
-
-	if ( !vr::VRCompositor() )
-	{
-		printf( "Compositor initialization failed. See log file for details\n" );
-	}
 }
 
 openvr::~openvr()
@@ -308,6 +294,7 @@ openvr_models *openvr::findOrLoadRenderModel( const char *pchRenderModelName )
 		vr::VRRenderModels()->FreeRenderModel( pModel );
 		vr::VRRenderModels()->FreeTexture( pTexture );
 	}
+
 	return pRenderModel;
 }
 
@@ -381,7 +368,7 @@ void openvr::updateHMDMatrixPose()
 		if ( p_rTrackedDevicePose[nDevice].bPoseIsValid )
 		{
 			p_iValidPoseCount++;
-			p_rmat4DevicePose[nDevice] = glm::inverse( glm::transpose(glm::mat4(glm::make_mat3x4((float*)p_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking.m ))));
+			p_rmat4DevicePose[nDevice] = glm::transpose( glm::mat4(glm::make_mat3x4((float*)p_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking.m )));
 			if ( p_rDevClassChar[nDevice]==0)
 			{
 				switch (p_hmd->GetTrackedDeviceClass(nDevice))
@@ -400,7 +387,7 @@ void openvr::updateHMDMatrixPose()
 
 	if ( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
 	{
-		p_mat4HMDPose = p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+		p_mat4HMDPose = glm::inverse( p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd]);
 		//p_mat4HMDPose.invert();
 	}
 }
@@ -475,25 +462,29 @@ void openvr::renderModels( glm::mat4 matMVP)
 
 	for( uint32_t unTrackedDevice = 0; unTrackedDevice < vr::k_unMaxTrackedDeviceCount; unTrackedDevice++ )
 	{
-		if( !p_rTrackedDeviceToRenderModel[ unTrackedDevice ] || !p_rbShowTrackedDevice[ unTrackedDevice ] )
-			continue;
+		if (!p_rTrackedDeviceToRenderModel[unTrackedDevice])
+				continue;
 
-		const vr::TrackedDevicePose_t & pose = p_rTrackedDevicePose[ unTrackedDevice ];
-		if( !pose.bPoseIsValid )
-			continue;
+			const vr::TrackedDevicePose_t & pose = p_rTrackedDevicePose[unTrackedDevice];
+			if (!pose.bPoseIsValid) {
+				continue;
+			}
 
-		if( !bIsInputAvailable && p_hmd->GetTrackedDeviceClass( unTrackedDevice ) == vr::TrackedDeviceClass_Controller )
-			continue;
+			if ( !bIsInputAvailable && p_hmd->GetTrackedDeviceClass(unTrackedDevice) == vr::TrackedDeviceClass_Controller) {
+				continue;
+			}
 
 		glm::mat4 matDeviceToTracking = p_rmat4DevicePose[ unTrackedDevice ];
-		glm::mat4 matMVP = matMVP * matDeviceToTracking;
-		glUniformMatrix4fv( p_nRenderModelMatrixLocation, 1, GL_FALSE, &matMVP[0][0] );
+		glm::mat4 matMVP2 = matMVP * matDeviceToTracking;
+		glUniformMatrix4fv( p_nRenderModelMatrixLocation, 1, GL_FALSE, &matMVP2[0][0] );
 
 		p_rTrackedDeviceToRenderModel[ unTrackedDevice ]->draw();
 	}
 
 
 	glUseProgram( 0 );
+
+
 
 }
 
@@ -503,7 +494,7 @@ void openvr::renderFrame()
 	vr::VREvent_t event;
 	while( p_hmd->PollNextEvent( &event, sizeof( event ) ) )
 	{
-		//ProcessVREvent( event );
+		processVREvent( event );
 	}
 
 	// Process SteamVR controller state
@@ -529,7 +520,7 @@ void openvr::renderFrame()
 		vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture );
 	}
 
-	// Spew out the controller and pose count whenever they change.
+    // Spew out the controller and pose count whenever they change.
 	if ( p_iTrackedControllerCount != p_iTrackedControllerCount_Last || p_iValidPoseCount != p_iValidPoseCount_Last )
 	{
 		p_iValidPoseCount_Last = p_iValidPoseCount;
@@ -541,14 +532,37 @@ void openvr::renderFrame()
 	updateHMDMatrixPose();
 }
 
-glm::mat4 openvr::getCurrentViewProjectionMatrix( vr::Hmd_Eye nEye )
+void openvr::processVREvent( const vr::VREvent_t & event )
 {
-	glm::mat4 matMVP;
-	if( nEye == vr::Eye_Left )
+	switch( event.eventType )
+	{
+	case vr::VREvent_TrackedDeviceActivated:
+		{
+			setupRenderModelForTrackedDevice( event.trackedDeviceIndex );
+			printf( "Device %u attached. Setting up render model.\n", event.trackedDeviceIndex );
+		}
+		break;
+	case vr::VREvent_TrackedDeviceDeactivated:
+		{
+			printf( "Device %u detached.\n", event.trackedDeviceIndex );
+		}
+		break;
+	case vr::VREvent_TrackedDeviceUpdated:
+		{
+			printf( "Device %u updated.\n", event.trackedDeviceIndex );
+		}
+		break;
+	}
+}
+
+glm::mat4 openvr::getCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
+{
+	glm::mat4x4 matMVP;
+	if (nEye == vr::Eye_Left)
 	{
 		matMVP = p_mat4ProjectionLeft * p_mat4eyePosLeft * p_mat4HMDPose;
 	}
-	else if( nEye == vr::Eye_Right )
+	else if (nEye == vr::Eye_Right)
 	{
 		matMVP = p_mat4ProjectionRight * p_mat4eyePosRight *  p_mat4HMDPose;
 	}
@@ -556,25 +570,34 @@ glm::mat4 openvr::getCurrentViewProjectionMatrix( vr::Hmd_Eye nEye )
 	return matMVP;
 }
 
-glm::mat4 openvr::getHMDMatrixProjectionEye( vr::Hmd_Eye nEye )
+glm::mat4 openvr::getHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 {
-	if ( !p_hmd )
-		return glm::mat4();
+	if (!p_hmd)
+		return glm::mat4x4();
 
-	vr::HmdMatrix44_t mat = p_hmd->GetProjectionMatrix( nEye, p_fNearClip, p_fFarClip );
+	vr::HmdMatrix44_t mat = p_hmd->GetProjectionMatrix(nEye, p_fNearClip, p_fFarClip );
 
-	return hmd_mat4( mat);
+	return glm::mat4x4(
+		mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
+		mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
+		mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
+		mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]
+	);
 }
 
-glm::mat4 openvr::getHMDMatrixPoseEye( vr::Hmd_Eye nEye )
+glm::mat4 openvr::getHMDMatrixPoseEye(vr::Hmd_Eye nEye)
 {
-	if ( !p_hmd )
-		return glm::mat4();
+	if (!p_hmd)
+		return glm::mat4x4();
 
-	vr::HmdMatrix34_t matEyeRight = p_hmd->GetEyeToHeadTransform( nEye );
+	vr::HmdMatrix34_t matEyeRight = p_hmd->GetEyeToHeadTransform(nEye);
+	glm::mat4x4 matrixObj(
+		matEyeRight.m[0][0], matEyeRight.m[1][0], matEyeRight.m[2][0], 0.0,
+		matEyeRight.m[0][1], matEyeRight.m[1][1], matEyeRight.m[2][1], 0.0,
+		matEyeRight.m[0][2], matEyeRight.m[1][2], matEyeRight.m[2][2], 0.0,
+		matEyeRight.m[0][3], matEyeRight.m[1][3], matEyeRight.m[2][3], 1.0f
+	);
 
-
-	glm::mat4 matrixObj = hmd_mat3x4(matEyeRight);
-
-	return matrixObj;
+	return glm::inverse(matrixObj);
 }
+
