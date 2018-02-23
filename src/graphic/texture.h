@@ -4,17 +4,17 @@
 #include <string>
 #include <GL/glew.h>
 
-class Texture {
+class texture {
 public:
-	Texture(const std::string& fileName);
+	texture(const std::string& fileName);
 
 	void Bind();
 
-	virtual ~Texture();
+	virtual ~texture();
 protected:
 private:
-	Texture(const Texture& texture) {}
-	void operator=(const Texture& texture) {}
+	texture(const texture& texture) {}
+	void operator=(const texture& texture) {}
 
 	GLuint p_texture;
 };

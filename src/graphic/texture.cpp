@@ -2,7 +2,7 @@
 #include "stb_image.h"
 #include <iostream>
 
-Texture::Texture(const std::string& fileName) {
+texture::texture(const std::string& fileName) {
 	int width, height, numComponents;
     unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4);
 
@@ -22,10 +22,10 @@ Texture::Texture(const std::string& fileName) {
     stbi_image_free(data);
 }
 
-Texture::~Texture() {
+texture::~texture() {
 	glDeleteTextures(1, &p_texture);
 }
 
-void Texture::Bind() {
+void texture::Bind() {
 	glBindTexture(GL_TEXTURE_2D, p_texture);
 }

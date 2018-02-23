@@ -64,8 +64,8 @@ public:
     void addDeleteChunk( glm::tvec3<int> pos );
 
     void draw( graphic *graphic, Config *config, glm::mat4 viewProjection) ;
-    void drawTransparency( graphic* graphic, Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
-    void drawNode( graphic* graphic, Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
+    void drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
+    void drawNode( Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
 
     void UpdateArray();
     void UpdateArrayNode();
@@ -78,7 +78,7 @@ private:
     bool p_buysvector;
     bool p_world_tree_empty;
     int p_chunk_amount;
-    Texture *Tilemap;
+    texture *p_tilemap;
     Chunk* Chunks;
     BlockList *p_blocklist;
     bool p_destroy;

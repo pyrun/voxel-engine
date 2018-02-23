@@ -6,7 +6,7 @@
 #include "block.h"
 
 #define CHUNK_SIZE 32
-#define CHUNK_SCALE 0.5f
+#define CHUNK_SCALE 1.0f
 
 #define EMPTY_BLOCK_ID 0
 
@@ -19,7 +19,7 @@ struct Tile {
 #define TILE_VERTEX_NULL -1
 
 typedef glm::tvec4<GLfloat> block_vertex;
-typedef glm::tvec4<GLshort> block_data;
+typedef glm::tvec4<GLfloat> block_data;
 
 //static float Noise2d(float x, float y, int seed, int octaves, float persistence);
 //static float Noise3d(float x, float y, float z, int seed, int octaves, float persistence);
@@ -84,8 +84,8 @@ public:
 
     void UpdateArray( BlockList *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
-    void UpdateVbo();
-    void draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
+    void updateVbo( Shader *shader);
+    void draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
 protected:
 private:
     glm::tvec3<int> p_pos;
@@ -100,13 +100,16 @@ private:
     bool p_updatevbo;
     bool p_nomorevbo;
     bool p_deleting;
+    GLuint p_vboVao;
     GLuint p_vboVertex;
+    GLuint p_vboNormal;
     GLuint p_vboData;
     Tile* p_tile;
     int p_seed;
 
     std::vector<block_vertex> p_vertex;
-    std::vector<block_data> p_data;
+    std::vector<block_vertex> p_normal;
+    std::vector<block_vertex> p_data;
     //block_data p_data[ CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6];
 
     /*std::vector<ChunkVboVertexStruct> p_vertex;

@@ -22,7 +22,7 @@ static int world_thread(void *data)
 World::World( std::string Tileset, BlockList* B_List) {
     Seed = (int)time(NULL); // Seed
     p_buysvector = false;
-    Tilemap = new Texture( Tileset);
+    p_tilemap = new texture( Tileset);
     p_chunk_amount = 0;
     // Kein Chunk am anfang
     Chunks = NULL;
@@ -44,7 +44,7 @@ World::~World() {
     while( p_chunk_amount != 0) {
         SDL_Delay(1);
     }
-    delete Tilemap;
+    delete p_tilemap;
 }
 
 Tile* World::GetTile( int x, int y, int z) {
@@ -172,30 +172,6 @@ void World::process_thrend() {
 }
 
 void World::process() {
-
-    // chunks erstellen
-    /*if( CheckChunk( 0, -1, 0) == false) {
-        int factor = WORLD_TEST_FACTOR;
-        for( int cx = -factor; cx <= factor; cx++)
-            for( int cz = -factor; cz <= factor; cz++)
-                for( int cy = 0; cy <= 0; cy++) {
-            int tmp_x = cx;
-            int tmp_y = cy;
-            int tmp_z = cz;
-            createChunk( tmp_x, tmp_y-1, tmp_z);
-        }
-        printf( "World::Process %d Chunks\n", GetAmountChunks());
-    }*/
-
-    int i = 0;
-    for( auto l_node:p_updateNodeList)
-    {
-        //l_node->UpdateArray( p_blocklist, l_node->back, l_node->front, l_node->left, l_node->right, l_node->up, l_node->down);
-        l_node->UpdateVbo();
-    }
-    p_updateNodeList.clear();
-
-
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = Chunks;
     for( ;; ) {
@@ -385,74 +361,25 @@ Camera *cam;
 #define ota_size 200.0f
 
 void World::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
-    /*if( !Shadow.IsStarted()) {
-        int w = graphic->GetWidth();
-        int h = graphic->GetHeight();
-        Shadow.Init( w, h );
-        cam =  new Camera(glm::vec3( 0.0f, 0.0f, 0.0f), 1.0f, w/h, -850.0f, 20.0f, ota_size);
-        //cam->GetPos() = graphic->getCamera()->GetPos();
-        cam->Pitch( +0.5);
-        cam->RotateY( 0.1);
-    }
-    //cam->GetForward() = graphic->getCamera()->GetForward();
-    //cam->GetUp() = graphic->getCamera()->GetUp();
-    cam->GetPos() = graphic->getCamera()->GetPos();
-    cam->GetPos().x += ota_size/2;
-    cam->GetPos().z += ota_size/2;
-    cam->GetPos().x = (int)(cam->GetPos().x);
-    cam->GetPos().y = (int)(cam->GetPos().y);
-    cam->GetPos().z = (int)(cam->GetPos().z);
-
-    if( 0) {
-        Shadow.BindForWriting();
-        //glCullFace(GL_FRONT);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        graphic->GetShadowShader()->Bind();// Shader
-        if( p_world_tree != NULL && p_world_tree_empty == false)
-            DrawNode(p_world_tree, graphic, graphic->GetShadowShader(), cam, cam );
-        //glCullFace(GL_BACK);
-    }
-    if( 0) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        graphic->GetVoxelShader()->Bind();// Shader
-        glActiveTexture(GL_TEXTURE0);
-        Tilemap->Bind();
-        graphic->GetVoxelShader()->SetTextureUnit( 1 );
-        glActiveTexture( GL_TEXTURE1 );
-        Shadow.BindForReading( GL_TEXTURE1);
-
-        if( p_world_tree != NULL && p_world_tree_empty == false )
-            DrawNode(p_world_tree, graphic, graphic->GetVoxelShader(), graphic->getCamera(), cam);
-    }*/
-
-    /*if( 0) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        graphic->GetShadowShader()->Bind();// Shader
-        //glActiveTexture(GL_TEXTURE0);
-        graphic->GetShadowShader()->SetTextureUnit( 0);
-        //Tilemap->Bind();
-        //glActiveTexture(GL_TEXTURE1);
-        Shadow.BindForReading(GL_TEXTURE0);
-        if(p_world_tree != NULL && p_world_tree_empty == false)
-            DrawNode(p_world_tree, graphic, graphic->GetShadowShader(), graphic->getCamera());
-    }*/
-
     int g_width = graphic->getWidth();
     int g_height = graphic->getHeight();
 
     // get shader
     Shader* l_shader = graphic->getVoxelShader();
 
+    int i = 0;
+    for( auto l_node:p_updateNodeList)
+    {
+        if( l_node->GetArrayChange())
+            l_node->updateVbo( l_shader);
+    }
+    p_updateNodeList.clear();
+
     // einstellung des shaders
     l_shader->Bind();
     l_shader->SetSize( (graphic->getDisplay()->getTilesetHeight()/16), ( graphic->getDisplay()->getTilesetWidth()/16) );
 
-    // enable vertex array 0&1
-    l_shader->EnableVertexArray( 0);
-    l_shader->EnableVertexArray( 1);
-
-    Tilemap->Bind();
+    p_tilemap->Bind();
 
     // How to not code a draw function... well played alex
     if( config->GetSupersampling() ) {
@@ -462,7 +389,7 @@ void World::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
                 glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
 
                 // Zeichnen
-                drawTransparency(  graphic, l_shader, viewProjection, alpha_cut == 1 ? false : true, aa);
+                drawTransparency( l_shader, viewProjection, alpha_cut == 1 ? false : true, aa);
                 glAccum(i ? GL_ACCUM : GL_LOAD, 0.25f);
             }
             // zusammenrechnen
@@ -470,17 +397,17 @@ void World::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
         }
         // Zeichne Transperenz wenn gewünscht
         if( config->GetTransparency())
-            drawTransparency(  graphic, l_shader, viewProjection, false);
+            drawTransparency( l_shader, viewProjection, false);
     } else {
         if( config->GetTransparency() ) {
             // Transparent zeichnen
-            drawTransparency( graphic, l_shader, viewProjection, true);
-            drawTransparency( graphic, l_shader, viewProjection, false);
+            drawTransparency( l_shader, viewProjection, true);
+            drawTransparency( l_shader, viewProjection, false);
         } else {
             // Ohne Transperenz -> Sehr schnell
             graphic->getVoxelShader()->SetAlpha_cutoff( 0.0f);
             glDisable( GL_BLEND);
-            drawNode( graphic, l_shader, viewProjection);
+            drawNode( l_shader, viewProjection);
             glEnable( GL_BLEND);
         }
     }
@@ -490,7 +417,7 @@ void World::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
     glUseProgram( 0 );
 }
 
-void World::drawTransparency( graphic* graphic, Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
+void World::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
     // shader einstellen
     if( alpha_cutoff) {
         glDepthMask(true);
@@ -500,24 +427,23 @@ void World::drawTransparency( graphic* graphic, Shader* shader, glm::mat4 viewPr
         shader->SetAlpha_cutoff( 1.10f);
     }
     // Draw node
-    drawNode( graphic, shader, viewProjection, aa);
+    drawNode( shader,viewProjection, aa);
     glDepthMask(true);
 }
 
-void World::drawNode( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
+void World::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
             break;
         // Update Chunk if Change
-        if( node->GetArrayChange()) {
-            node->UpdateVbo();
-        }
+        if( node->GetArrayChange())
+            p_updateNodeList.push_back(node); // for later now we draw
         if( node->GetUpdateOnce() && node->getAmount() != 0 && node->GetUpdateVboOnce()) {
             if( SDL_GetTicks() - node->GetTimeIdle() > WORLD_TILE_IDLE_TIME ) {
                 deleteChunk( node );
             } else {
-                node->draw( graphic, shader, viewProjection, aa);
+                node->draw( shader, viewProjection, aa);
             }
         }
         node = node->next;

@@ -37,7 +37,7 @@ public:
     void Set( int Hz);
     void StartCount();
     void EndCount();
-    void CalcDelay();
+    void calcDelay( bool blocked = false);
     float getFramenrate();
     double getFrameratePrecisely() { return p_fps; }
     double getMSframe() { return p_msframe; }

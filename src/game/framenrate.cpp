@@ -25,7 +25,7 @@ void Framenrate::EndCount() {
     p_end = SDL_GetTicks();
 }
 
-void Framenrate::CalcDelay() {
+void Framenrate::calcDelay( bool blocked) {
     int p_currentTime = SDL_GetTicks();
     p_nbFrames++;
     if ( p_currentTime - p_lastTime >= 1000 ){ // If last prinf() was more than 1 sec ago
@@ -45,7 +45,8 @@ void Framenrate::CalcDelay() {
     // Zeit zu hoch
     if( p_delay > p_rate)
         return;
-    //SDL_Delay( (int)p_rate - p_delay); // Abwarten
+    if( !blocked)
+        SDL_Delay( (int)p_rate - p_delay); // Abwarten
     // delay abziehen
     float t_fps = (float)1000.0f/( SDL_GetTicks() - p_start);
     List.AddTime( (int)t_fps);

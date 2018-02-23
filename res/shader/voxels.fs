@@ -2,14 +2,14 @@
 
 uniform sampler2D sampler;
 
-in vec4 texcoord;
+in vec4 coord;
+in vec4 normal;
 in vec4 blockdata;
 
 in vec2 size;
 in vec4 backgroundcolor;
 in float alpha_cutoff;
 
-in vec4 o_sun;
 in mat3 o_normal;
 
 layout( location = 0 ) out vec4 fragColor;
@@ -59,10 +59,10 @@ SHC tomb = SHC(
     vec3( 0.5515260,  0.4222179,  0.4162488)
 );
 
-vec3 sh_light(vec3 normal, SHC l){
-    float x = normal.x;
-    float y = normal.y;
-    float z = normal.z;
+vec3 sh_light(vec3 normal2, SHC l){
+    float x = normal2.x;
+    float y = normal2.y;
+    float z = normal2.z;
 
     const float C1 = 0.429043;
     const float C2 = 0.511664;
@@ -84,21 +84,17 @@ vec3 sh_light(vec3 normal, SHC l){
     );
 }
 
-vec3 gamma(vec3 color){
-    return pow(color, vec3(1.0/2.0));
-}
-
 void main() {
     vec2 Texture;
     // Texture Position errechnen
     if(blockdata.x > 0) {
-        Texture.x = fract( texcoord.x);
-        Texture.y = fract( texcoord.z);
+        Texture.x = fract( coord.x);
+        Texture.y = fract( coord.z);
     } else {
-        Texture.x = fract( texcoord.x + texcoord.z );
-        Texture.y = fract( -texcoord.y);
+        Texture.x = fract( coord.x + coord.z );
+        Texture.y = fract( -coord.y);
     }
-    // Textur aus Tileset wählen
+    // Textur aus Tileset wï¿½hlen
     Texture.x = (Texture.x + blockdata.y)/size.x;
     Texture.y = (Texture.y + blockdata.z)/size.y;
     vec4 color = texture2D( sampler, Texture);
@@ -115,18 +111,7 @@ void main() {
         if(color.a < alpha_cutoff)
             discard;
 
-    /*vec3 normal1;
-      normal1.x = fract( texcoord.w );
-      normal1.y = fract( texcoord.w * 256.0f);
-      normal1.z = fract( texcoord.w * 65536.0f);
-
-      //Unpack to the -1..1 range
-      normal1.x = (normal1.x * 2.0f) - 1.1f;
-      normal1.y = (normal1.y * 2.0f) - 1.1f;
-      normal1.z = (normal1.z * 2.0f) - 1.1f;*/
-
-
 
     //fragColor = mix( fogcolor, color, fog) * vec4 ( sh_light( vec3(texnormal), beach) , 1);
-    fragColor = color; // * vec4 ( sh_light( normal1, tomb) , 1);
+    fragColor = color; // * vec4 ( sh_light( vec3(normal), beach) , 1);
 }

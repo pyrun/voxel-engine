@@ -10,9 +10,9 @@ Shader::Shader(const std::string& fileName) {
 	for(unsigned int i = 0; i < NUM_SHADERS; i++)
 		glAttachShader(p_program, p_shaders[i]);
 
-	glBindAttribLocation(p_program, 0, "position");
-	glBindAttribLocation(p_program, 1, "texCoord");
-	glBindAttribLocation(p_program, 2, "normal");
+	glBindAttribLocation(p_program, 0, "positions");
+	glBindAttribLocation(p_program, 1, "normals");
+	glBindAttribLocation(p_program, 2, "texcoords");
 
 
 	glLinkProgram(p_program);
@@ -29,12 +29,10 @@ Shader::Shader(const std::string& fileName) {
 	p_uniforms[5] = glGetUniformLocation(p_program, "g_alpha_cutoff");
 	p_uniforms[6] = glGetUniformLocation(p_program, "g_sun");
 
-
-
-    p_attribute[0] = glGetAttribLocation(p_program, "coord");
-    p_attribute[1] = glGetAttribLocation(p_program, "data");
-    p_attribute[2] = glGetAttribLocation(p_program, "normal");
-
+	p_attribute[0] = glGetAttribLocation(p_program, "positions");
+	p_attribute[1] = glGetAttribLocation(p_program, "normals");
+	p_attribute[2] = glGetAttribLocation(p_program, "texcoords");
+    p_attribute[3] = glGetAttribLocation(p_program, "data");
 
     // GL error anzeigen
     GLenum error =  glGetError(); if(error) {
@@ -116,12 +114,7 @@ void Shader::updateWithout(  Transform *t_transform, glm::mat4 mvp) {
 
 void Shader::BindArray( GLuint Data, int Type, GLenum Type_Attrib, int Attrib_size ) {
     glBindBuffer( GL_ARRAY_BUFFER, Data); //
-    switch( Type) {
-        case 0: glVertexAttribPointer( p_attribute[0], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
-        case 1: glVertexAttribPointer( p_attribute[1], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
-        case 2: glVertexAttribPointer( p_attribute[2], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0); break;
-        default: break;
-    }
+    glVertexAttribPointer( p_attribute[Type], Attrib_size, Type_Attrib, GL_FALSE, 0, (void*)0);
 }
 
 std::string Shader::LoadShader(const std::string& fileName) {

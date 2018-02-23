@@ -148,7 +148,7 @@ class Object {
 
 
             //vertices.push_back( glm::vec3( 0.0f, 1.0f, 0.0f) );0
-            p_texture = new Texture( "cube.bmp");
+            p_texture = new texture( "cube.bmp");
 
             glBindBuffer(GL_ARRAY_BUFFER, p_vbo);
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof( glm::vec3 ), &vertices[0], GL_STATIC_DRAW);
@@ -191,7 +191,7 @@ class Object {
         glm::vec3 p_pos;
         glm::vec3 p_view;
         int size;
-        Texture *p_texture;
+        texture *p_texture;
 };
 
 #endif // OBJECT_H

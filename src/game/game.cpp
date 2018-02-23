@@ -144,6 +144,8 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 }
 
 void game::viewCross() {
+    p_graphic->getVertexShader()->Bind();// Shader
+
     std::vector<glm::vec4> l_vertices;
     l_vertices.resize(4);
     l_vertices[0] = glm::vec4( -0.05, 0, 0, 14);
@@ -160,9 +162,9 @@ void game::viewCross() {
     float p_hight = p_graphic->getHeight();
     glm::mat4 one = glm::ortho( (float)-1, (float)1, (float)-1, (float)1);
 
+    p_graphic->getVertexShader()->disableFullVertexArray();
     // Shader einstellen
     p_graphic->getVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT, 4);
-    p_graphic->getVertexShader()->Bind();// Shader
     p_graphic->getVertexShader()->EnableVertexArray( 0);
     p_graphic->getVertexShader()->updateWithout( &f_form, one); //p_graphic->getCamera()->getViewProjection());
 
@@ -171,6 +173,8 @@ void game::viewCross() {
     glBufferData(GL_ARRAY_BUFFER, l_vertices.size() * sizeof(glm::vec4), &l_vertices[0], GL_DYNAMIC_DRAW);
 
     glDrawArrays( GL_LINES, 0, l_vertices.size());
+
+    glUseProgram( 0 );
 
 }
 
@@ -183,7 +187,7 @@ void game::render( glm::mat4 viewProjection) {
 
 
     // View Cross
-    //viewCross();
+    viewCross();
 
     // Debug
     //DrawBox( 1, 1, 1);
@@ -317,8 +321,10 @@ void game::Start() {
             Title = Title + " Chunks_" + NumberToString( (double)p_world->GetAmountChunks());
         p_graphic->getDisplay()->setTitle( Title);
 
+
         // Framenrate begrenzen
-        framenrate.CalcDelay();
+        framenrate.calcDelay( p_openvr?true:false);
+
 
     }
     delete obj;

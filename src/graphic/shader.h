@@ -48,12 +48,14 @@ public:
 	void update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
 	void updateWithout(  Transform *t_transform, glm::mat4 mvp) ;
 
-	inline GLuint& GetProgram() { return p_program; }
-	void BindArray( GLuint Data, int Type, GLenum Type_Attrib = GL_SHORT, int Attrib_size = 4);
+	inline GLint& GetProgram() { return p_program; }
+	void BindArray( GLuint Data, int Type, GLenum Type_Attrib = GL_FLOAT, int Attrib_size = 4);
 	virtual ~Shader();
+
+	GLuint getAntribute( int i) { return p_attribute[i]; }
 protected:
 private:
-    static const unsigned int NUM_ATTRIBUTE = 3;
+    static const unsigned int NUM_ATTRIBUTE = 4;
 	static const unsigned int NUM_SHADERS = 2;
 	static const unsigned int NUM_UNIFORMS = 7;
 	int p_attribute_flag[NUM_ATTRIBUTE];
@@ -64,10 +66,10 @@ private:
 	void CheckShaderError(GLuint shader, GLuint flag, bool isProgram, const std::string& errorMessage);
 	GLuint CreateShader(const std::string& text, unsigned int type);
 
-	GLuint p_attribute[NUM_ATTRIBUTE];
-	GLuint p_program;
-	GLuint p_shaders[NUM_SHADERS];
-	GLuint p_uniforms[NUM_UNIFORMS];
+	GLint p_attribute[NUM_ATTRIBUTE];
+	GLint p_program;
+	GLint p_shaders[NUM_SHADERS];
+	GLint p_uniforms[NUM_UNIFORMS];
 };
 
 #endif

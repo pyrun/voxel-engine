@@ -498,7 +498,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
     }
     // normal errechnen
     int v;
-    //p_normal.resize( p_vertex.size());
+    p_normal.resize( i);
     for( v = 0; v+3 <= i; v+=3) {
         glm::vec3 a(p_vertex[v].x, p_vertex[v].y, p_vertex[v].z);
         glm::vec3 b(p_vertex[v+1].x, p_vertex[v+1].y, p_vertex[v+1].z);
@@ -507,21 +507,19 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
         glm::vec3 edge2 = c-a;
         glm::vec3 normal = glm::normalize( glm::cross( edge1, edge2));
 
-        p_vertex[v+0].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
+        /*p_vertex[v+0].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
         p_vertex[v+1].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
-        p_vertex[v+2].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
+        p_vertex[v+2].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));*/
 
-        /*p_normal[v].x = normal.x;
-        p_normal[v].y = normal.y;
-        p_normal[v].z = normal.z;
-
-        p_normal[v+1].x = normal.x;
-        p_normal[v+1].y = normal.y;
-        p_normal[v+1].z = normal.z;
-
-        p_normal[v+2].x = normal.x;
-        p_normal[v+2].y = normal.y;
-        p_normal[v+2].z = normal.z;*/
+        p_normal[v] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v+1] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v+1] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v+1] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v+2] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v+2] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v+2] = block_data( normal.x, normal.y, normal.z, 0);
     }
     p_elements = i;
     p_changed = false;
@@ -540,12 +538,13 @@ void Chunk::DestoryVbo() {
     if( p_createvbo ) {
         p_createvbo = false;
         glDeleteBuffers(1, &p_vboVertex);
-//        glDeleteBuffers(1, &p_vboNormal);
+        glDeleteBuffers(1, &p_vboNormal);
         glDeleteBuffers(1, &p_vboData);
+        glDeleteVertexArrays( 1, &p_vboVao);
     }
 }
 
-void Chunk::UpdateVbo() {
+void Chunk::updateVbo( Shader *shader) {
     Timer timer;
     timer.Start();
 
@@ -557,9 +556,11 @@ void Chunk::UpdateVbo() {
 
     // VBO erstellen falls dieser fehlt
     if(p_createvbo == false) {
+        // create vao
+        glGenVertexArrays(1, &p_vboVao);
         // Create vbo
         glGenBuffers(1, &p_vboVertex);
-//        glGenBuffers(1, &p_vboNormal);
+        glGenBuffers(1, &p_vboNormal);
         glGenBuffers(1, &p_vboData);
         p_createvbo = true;
     }
@@ -571,18 +572,43 @@ void Chunk::UpdateVbo() {
     // anderweilig beschäftigt?
     while( p_updatevbo);
     p_updatevbo = true;
+
     // vbo updaten
+    // vertex
     glBindBuffer(GL_ARRAY_BUFFER, p_vboVertex);
     glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_vertex), &p_vertex[0], GL_STATIC_DRAW);
+    // normal
+    glBindBuffer(GL_ARRAY_BUFFER, p_vboNormal);
+    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_vertex), &p_normal[0], GL_STATIC_DRAW);
+    // data
     glBindBuffer(GL_ARRAY_BUFFER, p_vboData);
     glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_data), &p_data[0], GL_STATIC_DRAW);
+
+    // VAO
+    glBindVertexArray( p_vboVao);
+    // vertex
+    glEnableVertexAttribArray(0);
+    glBindBuffer( GL_ARRAY_BUFFER, p_vboVertex);
+    glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    // normal
+    glEnableVertexAttribArray(1);
+    glBindBuffer( GL_ARRAY_BUFFER, p_vboNormal);
+    glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    // data
+    glEnableVertexAttribArray(2);
+    glBindBuffer( GL_ARRAY_BUFFER, p_vboData);
+    glVertexAttribPointer( shader->getAntribute( 3), 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    glBindVertexArray(0);
 
     // print
     p_updatevbo = false;
     printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(block_vertex), getAmount(), getAmount() * sizeof(block_data));
 }
 
-void Chunk::draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
+void Chunk::draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
     // chunk wird grad gelöscht
     if( p_nomorevbo == true)
         return;
@@ -596,13 +622,17 @@ void Chunk::draw( graphic* graphic, Shader* shader, glm::mat4 viewProjection, gl
     // Shader einstellen
     shader->update( &p_form, viewProjection, aa);
 
-    // vbo pointer auf array setzen
-    shader->BindArray( p_vboVertex, 0, GL_FLOAT);
-    shader->BindArray( p_vboData, 1);
+    // use the vao
+    glBindVertexArray( p_vboVao);
 
-    // Dreiecke zeichnen
+    // draw the array
     glDrawArrays( GL_TRIANGLES, 0, (int)p_elements);
 
-    // Update war erfolgreich
+    // disable
+    glBindVertexArray( 0);
+
+    // update war erfolgreich
     p_updatevbo = false;
+
+
 }
