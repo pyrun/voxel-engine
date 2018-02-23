@@ -6,7 +6,7 @@
 #include "block.h"
 
 #define CHUNK_SIZE 32
-#define CHUNK_SCALE 1.0f
+#define CHUNK_SCALE 2.0f
 
 #define EMPTY_BLOCK_ID 0
 

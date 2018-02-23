@@ -31,8 +31,8 @@ display::display(int width, int height, const std::string& title) {
     }
 
 	// benötigt opengl 4.0
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
@@ -109,7 +109,7 @@ display::~display() {
 void display::clear() {
     // setzte background color und clear BUFFER
     glClearColor( p_red, p_green, p_blue, p_alpha);
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glViewport( 0, 0, getWidth(), getHeight());
 }
 

@@ -137,14 +137,13 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 
         // tile
         if( tile->ID) {
-            drawBox( viewProjection, glm::vec3( mx, my, mz)*glm::vec3( CHUNK_SCALE));
+            //drawBox( viewProjection, glm::vec3( mx, my, mz)*glm::vec3( CHUNK_SCALE));
             break;
         }
     }
 }
 
 void game::viewCross() {
-    p_graphic->getVertexShader()->Bind();// Shader
 
     std::vector<glm::vec4> l_vertices;
     l_vertices.resize(4);
@@ -162,17 +161,21 @@ void game::viewCross() {
     float p_hight = p_graphic->getHeight();
     glm::mat4 one = glm::ortho( (float)-1, (float)1, (float)-1, (float)1);
 
-    p_graphic->getVertexShader()->disableFullVertexArray();
-    // Shader einstellen
-    p_graphic->getVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT, 4);
-    p_graphic->getVertexShader()->EnableVertexArray( 0);
-    p_graphic->getVertexShader()->updateWithout( &f_form, one); //p_graphic->getCamera()->getViewProjection());
-
     // Vbo übertragen
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);
     glBufferData(GL_ARRAY_BUFFER, l_vertices.size() * sizeof(glm::vec4), &l_vertices[0], GL_DYNAMIC_DRAW);
 
-    glDrawArrays( GL_LINES, 0, l_vertices.size());
+    //p_graphic->getVertexShader()->disableFullVertexArray();
+    // Shader einstellen
+    p_graphic->getVertexShader()->Bind();// Shader
+    p_graphic->getVertexShader()->EnableVertexArray( 0);
+    //p_graphic->getVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT, 4);
+
+    p_graphic->getVertexShader()->updateWithout( &f_form, one); //p_graphic->getCamera()->getViewProjection());
+
+
+
+    //glDrawArrays( GL_LINES, 0, l_vertices.size());
 
     glUseProgram( 0 );
 
@@ -182,7 +185,6 @@ void game::render( glm::mat4 viewProjection) {
     // chunks zeichnen
     p_world->draw( p_graphic, &p_config, viewProjection);
 
-    //obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
     //obj2->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
     // Debug
@@ -201,9 +203,9 @@ void game::Start() {
     obj2->Init();
 
     if( p_world)
-        for( int i = 0; i < 15; i++)
-            for( int x = 0; x < 15; x++)
-                for( int z = -3; z < 3; z++)
+        for( int i = 0; i < 10; i++)
+            for( int x = 0; x < 10; x++)
+                for( int z = -2; z < 1; z++)
                     p_world->addChunk( glm::tvec3<int>( i, z, x) );
     //p_world->addChunk( glm::tvec3<int>( 0, -1, 0) );
 
@@ -292,12 +294,13 @@ void game::Start() {
 
         glm::mat4 l_mvp_cam = p_graphic->getCamera()->getViewProjection();
 
-        //
         render( l_mvp_cam);
 
         if( p_world) {
             // View Cross
-            viewCross();
+            //viewCross();
+
+            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
             viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
         }

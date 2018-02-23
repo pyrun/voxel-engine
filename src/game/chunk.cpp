@@ -597,7 +597,7 @@ void Chunk::updateVbo( Shader *shader) {
     glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     // data
-    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray( shader->getAntribute( 3));
     glBindBuffer( GL_ARRAY_BUFFER, p_vboData);
     glVertexAttribPointer( shader->getAntribute( 3), 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 

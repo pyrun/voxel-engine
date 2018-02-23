@@ -13,6 +13,7 @@ class Object {
 
         void Init() {
             std::vector<glm::vec3> vertices;
+            std::vector<glm::vec3> normal;
             std::vector<unsigned int> indices;
             std::vector< glm::vec2 > texcoords;
 
@@ -146,18 +147,53 @@ class Object {
             indices.push_back( 2 );
             indices.push_back( 6 );*/
 
+            // normal errechnen
+            int v;
+            normal.resize( vertices.size());
+            for( v = 0; v+3 <= vertices.size(); v+=3) {
+                glm::vec3 a(vertices[v].x, vertices[v].y, vertices[v].z);
+                glm::vec3 b(vertices[v+1].x, vertices[v+1].y, vertices[v+1].z);
+                glm::vec3 c(vertices[v+2].x, vertices[v+2].y, vertices[v+2].z);
+                glm::vec3 edge1 = b-a;
+                glm::vec3 edge2 = c-a;
+                glm::vec3 l_normal = glm::normalize( glm::cross( edge1, edge2));
+
+                normal[v] = l_normal;
+                normal[v+1] = l_normal;
+                normal[v+2] = l_normal;
+            }
+
 
             //vertices.push_back( glm::vec3( 0.0f, 1.0f, 0.0f) );0
             p_texture = new texture( "cube.bmp");
 
             glBindBuffer(GL_ARRAY_BUFFER, p_vbo);
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof( glm::vec3 ), &vertices[0], GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, p_vboNormal);
+            glBufferData(GL_ARRAY_BUFFER, normal.size() * sizeof( glm::vec3 ), &normal[0], GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, p_vboTexture);
             glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof( glm::vec2 ), &texcoords[0], GL_STATIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
             glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof( unsigned int ), &indices[0], GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             size = indices.size();
+
+            glBindVertexArray(p_vao);
+
+            glEnableVertexAttribArray(0);  // Vertex position
+            glEnableVertexAttribArray(1);  // Vertex normal
+            glEnableVertexAttribArray(2);  // Vertex color
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
+
+            glBindBuffer(GL_ARRAY_BUFFER, p_vbo);
+            glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
+            glBindBuffer(GL_ARRAY_BUFFER, p_vboNormal);
+            glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
+            glBindBuffer(GL_ARRAY_BUFFER, p_vboTexture);
+            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
+
+            glBindVertexArray(0);
         }
 
         void draw( Shader* l_shader, Camera* l_camera) {
@@ -166,26 +202,25 @@ class Object {
 
             Shader *shader = l_shader;
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
-            shader->BindArray( p_vbo, 0, GL_FLOAT, 3);
-            shader->BindArray( p_vboTexture, 1, GL_FLOAT, 2);
 
 
             shader->Bind();
-            shader->EnableVertexArray( 0);
-            shader->EnableVertexArray( 1);
+
+            glBindVertexArray( p_vao);
 
             p_texture->Bind();
 
             shader->update( &f_form, l_camera->getViewProjection());
 
             glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
         }
 
     protected:
     private:
+        GLuint p_vao;
         GLuint p_vbo;
+        GLuint p_vboNormal;
         GLuint p_vboIndex;
         GLuint p_vboTexture;
         glm::vec3 p_pos;
