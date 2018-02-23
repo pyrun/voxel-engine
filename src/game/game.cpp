@@ -185,10 +185,6 @@ void game::render( glm::mat4 viewProjection) {
     //obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
     //obj2->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
-
-    // View Cross
-    viewCross();
-
     // Debug
     //DrawBox( 1, 1, 1);
 
@@ -299,8 +295,12 @@ void game::Start() {
         //
         render( l_mvp_cam);
 
-        if( p_world)
+        if( p_world) {
+            // View Cross
+            viewCross();
+
             viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
+        }
 
         // Swap die Buffer um keine Renderfehler zu bekommen
         p_graphic->getDisplay()->swapBuffers();

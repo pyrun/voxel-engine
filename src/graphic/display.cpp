@@ -29,9 +29,10 @@ display::display(int width, int height, const std::string& title) {
         fprintf(stderr, "Could not init SDL");
         return;
     }
+
 	// benötigt opengl 4.0
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
@@ -47,6 +48,8 @@ display::display(int width, int height, const std::string& title) {
     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16);
     // Doublebuffer
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
+
+
 
     // SDL Init
     // Erstelle Fenster
@@ -76,9 +79,11 @@ display::display(int width, int height, const std::string& title) {
     // disable the build in vsync
     SDL_GL_SetSwapInterval(0);
 
-    int Depth;
+    int Depth, test;
     SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE, &Depth);
-    printf( "%d Depth\n", Depth);
+    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, &Depth);
+    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, &test);
+    printf( "%d.%d Depth\n", Depth, test);
     // Tiefe nützen
     glEnable( GL_DEPTH_TEST);
 
