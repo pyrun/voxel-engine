@@ -5,7 +5,7 @@
 #include "chunk.h"
 #include "block.h"
 #include "landscape_generator.h"
-#include "config.h"
+#include "../engine/config.h"
 //#include "../graphic/shadowmap.h"
 
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
@@ -40,7 +40,7 @@ public:
 
 class world {
 public:
-    world( std::string Tileset, BlockList* B_List);
+    world( texture *image, block_list* B_List);
     virtual ~world();
 
     Tile *GetTile( int x, int y, int z);
@@ -63,7 +63,7 @@ public:
     void addChunk( glm::tvec3<int> pos );
     void addDeleteChunk( glm::tvec3<int> pos );
 
-    void draw( graphic *graphic, Config *config, glm::mat4 viewProjection) ;
+    void draw( graphic *graphic, config *config, glm::mat4 viewProjection) ;
     void drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
     void drawNode( Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
 
@@ -74,14 +74,14 @@ public:
     inline int GetAmountChunks() const { return p_chunk_amount; }
 protected:
 private:
-    int Seed;
+    int p_seed;
     bool p_buysvector;
     bool p_world_tree_empty;
     int p_chunk_amount;
-    texture *p_tilemap;
     Chunk* Chunks;
-    BlockList *p_blocklist;
+    block_list *p_blocklist;
     bool p_destroy;
+    texture *p_image;
 
     SDL_Thread *p_thread;
 

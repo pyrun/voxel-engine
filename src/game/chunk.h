@@ -26,7 +26,7 @@ typedef glm::tvec4<GLfloat> block_data;
 
 class Chunk {
 public:
-    Chunk( int X, int Y, int Z, int Seed, BlockList* b_list);
+    Chunk( int X, int Y, int Z, int Seed, block_list* b_list);
     virtual ~Chunk();
 
     Chunk *front;
@@ -82,7 +82,7 @@ public:
 
     void updateForm();
 
-    void UpdateArray( BlockList *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
+    void UpdateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
     void updateVbo( Shader *shader);
     void draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));

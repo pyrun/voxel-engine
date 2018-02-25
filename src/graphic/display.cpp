@@ -1,13 +1,23 @@
 //#define GLEW_STATIC 1
 
 #include "display.h"
-#include <GL/glew.h>
 #include <stdio.h>
+#include <string>
 
-display::display(int width, int height, const std::string& title) {
-    Width = width;
-    Height = height;
+display::display( config *config) {
+    std::string l_title;
+    int l_pos_x, l_pos_y;
+    int l_glMayor, l_glMinor;
     Uint32 rmask, gmask, bmask, amask;
+
+    // set values
+    l_title = config->get( "title", "graphic", "selur");
+    p_width = atoi( config->get( "width", "graphic", "640").c_str());
+    p_height = atoi( config->get( "height", "graphic", "400").c_str());
+    l_pos_x = atoi( config->get( "window_x", "graphic", std::to_string(SDL_WINDOWPOS_CENTERED) ).c_str());
+    l_pos_y = atoi( config->get( "window_y", "graphic", std::to_string(SDL_WINDOWPOS_CENTERED) ).c_str());
+
+
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
     gmask = 0x00ff0000;
@@ -19,10 +29,11 @@ display::display(int width, int height, const std::string& title) {
     bmask = 0x00ff0000;
     amask = 0xff000000;
 #endif
+
     // This line is only needed, if you want debug the program
     SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
 
-    // disable V-Sync for openVR ( need more then 60Hz)
+    // disable V-Sync for openVR support( need more then 60Hz)
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
 
     if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
@@ -44,16 +55,15 @@ display::display(int width, int height, const std::string& title) {
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 3);
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 2);
     SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 1);
+
     // Tiefenbuffergröße
     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16);
+
     // Doublebuffer
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
 
-
-
-    // SDL Init
     // Erstelle Fenster
-	p_window = SDL_CreateWindow( title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Width, Height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	p_window = SDL_CreateWindow( l_title.c_str(), l_pos_x, l_pos_y, p_width, p_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	if( p_window == NULL)
         printf( "error\n");
 	p_glContext = SDL_GL_CreateContext(p_window);
@@ -79,11 +89,6 @@ display::display(int width, int height, const std::string& title) {
     // disable the build in vsync
     SDL_GL_SetSwapInterval(0);
 
-    int Depth, test;
-    SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE, &Depth);
-    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, &Depth);
-    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, &test);
-    printf( "%d.%d Depth\n", Depth, test);
     // Tiefe nützen
     glEnable( GL_DEPTH_TEST);
 
@@ -107,8 +112,10 @@ display::~display() {
 }
 
 void display::clear() {
-    // setzte background color und clear BUFFER
-    glClearColor( p_red, p_green, p_blue, p_alpha);
+    if( p_backgroundcolor_change) {
+        glClearColor( p_red, p_green, p_blue, p_alpha);
+        p_backgroundcolor_change = false;
+    }
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glViewport( 0, 0, getWidth(), getHeight());
 }

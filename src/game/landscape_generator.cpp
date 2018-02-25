@@ -85,7 +85,7 @@ float scaled_raw_noise_2d( const float loBound, const float hiBound, const float
     return raw_noise_2d(x, y) * (hiBound - loBound) / 2 + (hiBound + loBound) / 2;
 }
 
-void Landscape_Generator( Chunk* c_chunk, BlockList* b_list) {
+void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
     int i;
     int cx, cy, cz; // for schleife
     int posx, posy, posz; // ausgerechnete
@@ -96,9 +96,9 @@ void Landscape_Generator( Chunk* c_chunk, BlockList* b_list) {
     float border = -10;
 
     // List
-    int l_stone = b_list->GetBlockID( "stone")->getID();
-    int l_earth = b_list->GetBlockID( "earth")->getID();
-    int l_grass = b_list->GetBlockID( "grass")->getID();
+    int l_stone = b_list->getByID( "stone")->getID();
+    int l_earth = b_list->getByID( "earth")->getID();
+    int l_grass = b_list->getByID( "grass")->getID();
 
     for (int cz = 0; cz < CHUNK_SIZE; cz++) {
         for (int cx = 0; cx < CHUNK_SIZE; cx++) {

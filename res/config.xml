@@ -1,0 +1,16 @@
+<config>
+    <engine>
+        <tilemap>tileset.png</tilemap>
+    </engine>
+    <graphic>
+        <title>selur</title>
+        <width>640</width>
+        <height>640</height>
+        <window_x>805240832</window_x>
+        <window_y>805240832</window_y>
+    </graphic>
+    <network>
+        <port>27558</port>
+        <max_player>32</max_player>
+    </network>
+</config>

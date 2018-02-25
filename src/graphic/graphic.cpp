@@ -3,9 +3,9 @@
 
 #include <SDL2/SDL_image.h>
 
-graphic::graphic( int Width, int Height) {
+graphic::graphic( config *config) {
     //
-    p_display = new display( Width, Height, "Selur");
+    p_display = new display( config);
 
     // Shader laden
     p_voxel = new Shader( "shader/voxels");
@@ -20,7 +20,7 @@ graphic::graphic( int Width, int Height) {
     p_object = new Shader( "shader/object");
 
     // camera
-    p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)Width/(float)Height, graphic_znear, graphic_zfar);
+    p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
 }
 
 graphic::~graphic() {

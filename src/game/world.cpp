@@ -19,18 +19,16 @@ static int world_thread(void *data)
     return 0;
 }
 
-world::world( std::string Tileset, BlockList* B_List) {
-    Seed = (int)time(NULL); // Seed
+world::world( texture *image, block_list* B_List) {
+    p_seed = (int)time(NULL); // p_seed
     p_buysvector = false;
-    p_tilemap = new texture( Tileset);
     p_chunk_amount = 0;
-    // Kein Chunk am anfang
     Chunks = NULL;
     p_world_tree_empty = true;
-    // Blocklist link erstellen
     p_blocklist = B_List;
-
     p_destroy = false;
+    p_image = image;
+
     p_thread = SDL_CreateThread(world_thread, "TestThread", (void *)this);
 }
 
@@ -44,7 +42,6 @@ world::~world() {
     while( p_chunk_amount != 0) {
         SDL_Delay(1);
     }
-    delete p_tilemap;
 }
 
 Tile* world::GetTile( int x, int y, int z) {
@@ -360,7 +357,7 @@ Camera *cam;
 
 #define ota_size 200.0f
 
-void world::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
+void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
     int g_width = graphic->getWidth();
     int g_height = graphic->getHeight();
 
@@ -377,12 +374,12 @@ void world::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
 
     // einstellung des shaders
     l_shader->Bind();
-    l_shader->SetSize( (graphic->getDisplay()->getTilesetHeight()/16), ( graphic->getDisplay()->getTilesetWidth()/16) );
+    l_shader->SetSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
 
-    p_tilemap->Bind();
+    p_image->Bind();
 
     // How to not code a draw function... well played alex
-    if( config->GetSupersampling() ) {
+    /*if( config->GetSupersampling() ) {
         for( int alpha_cut = 0; alpha_cut < 1; alpha_cut++) {
             for(int i = 0; i < 4; i++) {
                 glm::vec3 shift = glm::vec3((i % 4) * 0.5 / g_width, (i / 2) * 0.5 / g_height, 0);
@@ -410,7 +407,12 @@ void world::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
             drawNode( l_shader, viewProjection);
             glEnable( GL_BLEND);
         }
-    }
+    }*/
+
+    // Transparent zeichnen
+    drawTransparency( l_shader, viewProjection, true);
+    drawTransparency( l_shader, viewProjection, false);
+
     // disable all Vertex arrays
     l_shader->disableArray( 0);
     l_shader->disableArray( 1);

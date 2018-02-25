@@ -14,33 +14,37 @@ std::string NumberToString( double Number) {
 }
 
 game::game() {
-
+    // set values
     p_openvr = NULL;
-
-    p_graphic = new graphic( 1024, 800);
-
-    // Runnig
-    p_isRunnig = true;
-    p_blocklist = new BlockList("objects");
-
-    // Framenrate setzten
-    framenrate.Set( 200);
-    p_blocklist->Draw( p_graphic);
-    p_world = NULL;
-    p_world = new world( "tileset.png", p_blocklist);
-
-    p_gui = new Gui;
-
     p_vboCursor = NULL;
+    p_isRunnig = true;
+
+    // start subystems
+    p_config = new config();
+    p_graphic = new graphic( p_config);
+    p_blocklist = new block_list("blocks");
+    p_tilemap = new texture( p_config->get( "tilemap", "engine", "tileset.png"));
+    p_world = new world( p_tilemap, p_blocklist);
+    p_gui = new Gui;
+    p_network = new network( p_config, p_tilemap, p_blocklist);
+
+    // set values after start
+    p_blocklist->Draw( p_graphic);
+    framenrate.Set( 200); // fps
 }
 
 game::~game() {
     glDeleteBuffers(1, &p_vboCursor);
     p_vboCursor = NULL;
+    if( p_openvr)
+        delete p_openvr;
+    delete p_tilemap;
     delete p_world;
     delete p_blocklist;
     delete p_gui;
     delete p_graphic;
+    delete p_network;
+    delete p_config;
 }
 
 void game::startVR() {
@@ -118,7 +122,7 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if( !p_world->GetTile( mX, mY, mZ)) {
                 Chunk *tmp = p_world->getChunkWithPos( mX, mY, mZ);
                 if( tmp)
-                    p_world->SetTile( tmp, mX, mY, mZ, p_blocklist->GetBlockID( "water")->getID());
+                    p_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
                 else
                     printf( "game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
@@ -183,7 +187,7 @@ void game::viewCross() {
 
 void game::render( glm::mat4 viewProjection) {
     // chunks zeichnen
-    p_world->draw( p_graphic, &p_config, viewProjection);
+    p_network->draw( p_graphic, p_config, viewProjection);
 
     //obj2->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
@@ -195,23 +199,17 @@ void game::render( glm::mat4 viewProjection) {
 }
 
 void game::Start() {
-    p_config.SetTransparency( true);
+    //p_config.SetTransparency( true);
 
     Object *obj = new Object;
     obj->Init();
     Object *obj2 = new Object;
     obj2->Init();
 
-    if( p_world)
-        for( int i = 0; i < 10; i++)
-            for( int x = 0; x < 10; x++)
-                for( int z = -2; z < 1; z++)
-                    p_world->addChunk( glm::tvec3<int>( i, z, x) );
-    //p_world->addChunk( glm::tvec3<int>( 0, -1, 0) );
-
-
     Timer l_timer;
     int number = 0;
+
+    //p_world->addChunk( glm::vec3( 0, -1, 0) );
 
     glm::mat4 l_mvp;
     while( p_isRunnig) { // Runniz
@@ -246,7 +244,6 @@ void game::Start() {
             cam->MoveUp( -Speed);
         if( p_input.Map.Inventory && !p_input.MapOld.Inventory) {
             /*if( p_config.GetSupersampling()) {
-
                 p_config.SetSupersampling( false);
 
                 printf( "game::Start Supersampling deactive\n");
@@ -265,6 +262,9 @@ void game::Start() {
 
         // Framenrate anfangen zu zählen
         framenrate.StartCount();
+
+        if( p_network->process())
+            p_isRunnig = false;
 
 		// World process
 		if( p_world)
@@ -327,8 +327,6 @@ void game::Start() {
 
         // Framenrate begrenzen
         framenrate.calcDelay( p_openvr?true:false);
-
-
     }
     delete obj;
 }

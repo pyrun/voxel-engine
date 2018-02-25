@@ -11,17 +11,18 @@
 #include <vector>
 #include <time.h>
 #include <math.h>
+
 #include "../graphic/graphic.h"
-#include "../system/tinyxml2.h"
+#include "../xml/tinyxml2.h"
 
-#define BLOCK_SIZE 16
-#define BLOCK_AMOUNT_SIDE 6
-#define RESERVE_BLOCKS 2048
+#define BLOCK_SIZE 16 // pxl image
+//#define BLOCK_AMOUNT_SIDE 16
+//#define RESERVE_BLOCKS 2048
 
-class BlockImage  {
+class block_image  {
 public:
-    BlockImage();
-    ~BlockImage();
+    block_image();
+    ~block_image();
     void LoadImage( graphic* graphic);
     void SetImageName( std::string name);
     int &getPosX() { return p_posx; }
@@ -35,10 +36,10 @@ private:
     std::string p_imagename;
 };
 
-class Block {
+class block {
 public:
-    Block();
-    ~Block();
+    block();
+    ~block();
 
     void LoadImage( graphic* t_graphic);
     void SetID( int id) { i_id = id; }
@@ -52,48 +53,48 @@ public:
         image_top.SetImageName(s_top);
         image_bottom.SetImageName(s_bottom);
     }
-    BlockImage* getFront() { return &image_front; }
-    BlockImage* getBack() { return &image_back; }
-    BlockImage* getLeft() { return &image_left; }
-    BlockImage* getRight() { return &image_right; }
-    BlockImage* getUp() { return &image_top; }
-    BlockImage* getDown() { return &image_bottom; }
+    block_image* getFront() { return &image_front; }
+    block_image* getBack() { return &image_back; }
+    block_image* getLeft() { return &image_left; }
+    block_image* getRight() { return &image_right; }
+    block_image* getUp() { return &image_top; }
+    block_image* getDown() { return &image_bottom; }
     bool getLoadedImage() { return p_imageloaded; }
     int getID() { return i_id; }
     std::string getName() { return n_name; }
     bool getAlpha() { return p_alpha; }
 protected:
 private:
-    // Block
+    // block
     int i_id;
     std::string n_name;
     bool p_alpha;
-    BlockImage image_front;
-    BlockImage image_back;
-    BlockImage image_left;
-    BlockImage image_right;
-    BlockImage image_top;
-    BlockImage image_bottom;
+    block_image image_front;
+    block_image image_back;
+    block_image image_left;
+    block_image image_right;
+    block_image image_top;
+    block_image image_bottom;
     bool p_imageloaded;
 };
 
-class BlockList {
+class block_list {
 public:
-    BlockList( std::string Path);
-    ~BlockList();
+    block_list( std::string Path);
+    ~block_list();
     void Draw( graphic* graphic);
     // Umrechnen wo welche textur liegt
     glm::vec2 GetTexturByType( int Type, int Side);
-    Block* GetBlock( int ID);
-    Block* GetBlockID( std::string name);
-    int GetAmountBlocks() { return (int)List.size(); }
+    block* get( int ID);
+    block* getByID( std::string name);
+    int GetAmountblocks() { return (int)List.size(); }
 private:
     std::string Path;
-    std::vector<Block> List;
+    std::vector<block> List;
 protected:
     bool GetSuffix(const std::string &file, const std::string &suffix);
     bool GetSuffix6502(const std::string& str, const std::string& end);
     bool FileExists(std::string StrFilename);
-    void LoadBlock (std::string Path, std::string Name);
+    void Loadblock (std::string Path, std::string Name);
 };
 #endif // BLOCK_H

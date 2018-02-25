@@ -4,7 +4,7 @@
 
 #define printf if
 
-Chunk::Chunk( int X, int Y, int Z, int Seed, BlockList* b_list) {
+Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
     // node reset
     next = NULL;
 
@@ -158,7 +158,7 @@ void Chunk::updateForm()
     p_form.setScale( glm::vec3( CHUNK_SCALE));
 }
 
-void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left, Chunk *Right, Chunk *Up, Chunk *Down) {
+void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Left, Chunk *Right, Chunk *Up, Chunk *Down) {
     int i = 0;
     glm::vec2 Side_Textur_Pos;
     Timer timer;
@@ -193,7 +193,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     continue;
                 }
                 // Line of sight blocked?
-                if(  x != 0 && CheckTile(x-1, y, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x-1, y, z)->ID )->getAlpha() )
+                if(  x != 0 && CheckTile(x-1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x-1, y, z)->ID )->getAlpha() )
                 {
                     b_visibility = false;
                     continue;
@@ -247,7 +247,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     b_visibility = false;
                     continue;
                 }
-                if(  x != CHUNK_SIZE-1 && CheckTile(x+1, y, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x+1, y, z)->ID)->getAlpha() ) {
+                if(  x != CHUNK_SIZE-1 && CheckTile(x+1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x+1, y, z)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
@@ -301,7 +301,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     b_visibility = false;
                     continue;
                 }
-                if( y != 0 && CheckTile(x, y-1, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y-1, z)->ID)->getAlpha() ) {
+                if( y != 0 && CheckTile(x, y-1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y-1, z)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
@@ -352,7 +352,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     b_visibility = false;
                     continue;
                 }
-                if(  y != CHUNK_SIZE-1 && CheckTile(x, y+1, z) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y+1, z)->ID)->getAlpha() ) {
+                if(  y != CHUNK_SIZE-1 && CheckTile(x, y+1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y+1, z)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
@@ -403,7 +403,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     b_visibility = false;
                     continue;
                 }
-                if(  z != 0 && CheckTile(x, y, z-1) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y, z-1)->ID)->getAlpha() ) {
+                if(  z != 0 && CheckTile(x, y, z-1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z-1)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
@@ -454,7 +454,7 @@ void Chunk::UpdateArray( BlockList *List, Chunk *Back, Chunk *Front, Chunk *Left
                     b_visibility = false;
                     continue;
                 }
-                if( z != CHUNK_SIZE-1 && CheckTile(x, y, z+1) && List->GetBlock( type)->getAlpha() == List->GetBlock( getTile( x, y, z+1)->ID)->getAlpha() ) {
+                if( z != CHUNK_SIZE-1 && CheckTile(x, y, z+1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z+1)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }

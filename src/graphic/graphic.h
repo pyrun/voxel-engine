@@ -13,7 +13,7 @@
 
 class graphic {
 public:
-    graphic( int Width = 640, int Height = 400);
+    graphic( config *config);
     virtual ~graphic();
 
     void resizeWindow( int screen_width, int screen_height);

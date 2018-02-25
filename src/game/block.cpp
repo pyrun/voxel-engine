@@ -1,39 +1,39 @@
 #include "block.h"
 
-/**< Block image */
+/**< block image */
 
-BlockImage::BlockImage() {
+block_image::block_image() {
     // Null setzen
     p_surface = NULL;
 }
 
-BlockImage::~BlockImage() {
+block_image::~block_image() {
     // falls was geladen wurde wieder freigeben
     if( p_surface != NULL)
         SDL_FreeSurface( p_surface);
 }
 
-void BlockImage::LoadImage( graphic* graphic) {
+void block_image::LoadImage( graphic* graphic) {
     // Lade Image
     //printf( "%s loaded\n", p_imagename.c_str());
     p_surface = graphic->loadSurface( p_imagename);
 }
 
-void BlockImage::SetImageName( std::string name) {
+void block_image::SetImageName( std::string name) {
     p_imagename = name;
 }
 
 /**< block */
 
-Block::Block() {
+block::block() {
     p_imageloaded = false;
 }
 
-Block::~Block() {
+block::~block() {
 
 }
 
-void Block::LoadImage( graphic* t_graphic) {
+void block::LoadImage( graphic* t_graphic) {
     // Lade die Seiten
     image_front.LoadImage( t_graphic);
     image_back.LoadImage( t_graphic);
@@ -45,14 +45,14 @@ void Block::LoadImage( graphic* t_graphic) {
 }
 
 /**< block list */
-BlockList::BlockList( std::string Path) {
+block_list::block_list( std::string Path) {
     this->Path = Path;
     DIR* dHandle;
     struct dirent* dirEntry;
     std::vector<std::string> ObjectList;
 
     List.clear();
-    List.reserve( RESERVE_BLOCKS);
+    //List.reserve( RESERVE_BLOCKS);
 
     // Versuche verzeichnis zu Öffnen
     dHandle = opendir( Path.c_str());
@@ -63,33 +63,33 @@ BlockList::BlockList( std::string Path) {
             //if( GetSuffix6502( name, "xml")) {
             if( FileExists( block_path + "definition.xml" ) ) {
                 printf("%s\n", block_path.c_str());
-                LoadBlock( block_path, name);
+                Loadblock( block_path, name);
             }
         }
     } else {
         // Fehler beim öffnen
-        printf( "BlockList: Ordner \"%s\" ist nicht vorhanden!\n", Path.c_str());
+        printf( "block_list: Ordner \"%s\" ist nicht vorhanden!\n", Path.c_str());
     }
     closedir( dHandle );
     printf ( "finish\n");
 }
 
-BlockList::~BlockList() {
+block_list::~block_list() {
     List.clear();
 }
 
-void BlockList::Draw( graphic* graphic) {
+void block_list::Draw( graphic* graphic) {
     int t_x = 0;
     int t_y = 0;
     const int t_maxwidth = TILESET_WIDTH/BLOCK_SIZE;
     // asu allen blöcken eine Grafik erstellen
     for( int i = 0; i < (int)List.size(); i++) {
-        Block *block = &List[i];
+        block *block = &List[i];
         if( block->getLoadedImage() == false ) {
             block->LoadImage( graphic);
         }
         // Alle Seiten Zeichnen
-        BlockImage* side;
+        block_image* side;
         for( int n = 0; n < 6; n++) {
             // Seiten
             switch(n) {
@@ -114,11 +114,11 @@ void BlockList::Draw( graphic* graphic) {
     graphic->saveImageBMP( "tileset");
 }
 
-glm::vec2 BlockList::GetTexturByType( int Type, int Side) {
-    Block* t_block = GetBlock(Type);
+glm::vec2 block_list::GetTexturByType( int Type, int Side) {
+    block* t_block = get(Type);
     if( t_block == NULL)
-       printf( "Block not found\n");
-    BlockImage* t_image;
+       printf( "block not found\n");
+    block_image* t_image;
     glm::vec2 v_possition;
     // aus dein Seiten lesen
     switch( Side) {
@@ -130,7 +130,7 @@ glm::vec2 BlockList::GetTexturByType( int Type, int Side) {
         case 5: t_image = t_block->getDown(); break;
         default:
             t_image = t_block->getFront();
-            printf("BlockList::GetTexturByType Hier läuft was DEFINITIV falsch <3\n");
+            printf("block_list::GetTexturByType Hier läuft was DEFINITIV falsch <3\n");
         break; // falls mal was DEFINITIV falsch läuft mal melden <3
     }
     // Position vom bild auslesen
@@ -139,27 +139,27 @@ glm::vec2 BlockList::GetTexturByType( int Type, int Side) {
     return v_possition;
 }
 
-Block* BlockList::GetBlock( int ID) {
+block* block_list::get( int ID) {
     for( int i = 0; i < (int)List.size(); i++)
         if( List[i].getID() == ID)
             return &List[i];
     return NULL;
 }
 
-Block* BlockList::GetBlockID( std::string name) {
+block* block_list::getByID( std::string name) {
     for( int i = 0; i < (int)List.size(); i++) {
-        Block *block = &List[i];
+        block *block = &List[i];
         if( block->getName() == name)
             return block;
     }
     return NULL;
 }
 
-bool BlockList::GetSuffix(const std::string &file, const std::string &suffix) {
+bool block_list::GetSuffix(const std::string &file, const std::string &suffix) {
     return file.size() >= suffix.size() && file.compare(file.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-bool BlockList::GetSuffix6502(const std::string& str, const std::string& end) {
+bool block_list::GetSuffix6502(const std::string& str, const std::string& end) {
     size_t slen = str.size(), elen = end.size();
     if (slen <= elen) return false;
     while (elen) {
@@ -168,7 +168,7 @@ bool BlockList::GetSuffix6502(const std::string& str, const std::string& end) {
     return true;
 }
 
-bool BlockList::FileExists(std::string StrFilename) {
+bool block_list::FileExists(std::string StrFilename) {
     std::ifstream file;
     // file open
     file.open ( StrFilename.c_str());
@@ -181,7 +181,7 @@ bool BlockList::FileExists(std::string StrFilename) {
     return false;
 }
 
-void BlockList::LoadBlock (std::string Path, std::string Name) {
+void block_list::Loadblock (std::string Path, std::string Name) {
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement *pRoot;
     std::string File_Definition = Path + "definition.xml";
@@ -189,7 +189,7 @@ void BlockList::LoadBlock (std::string Path, std::string Name) {
     doc.LoadFile( File_Definition.c_str()); // Datei laden
     bool success = doc.LoadFile( File_Definition.c_str()); // Datei laden
     if( success == true ) {
-        printf( "LoadBlock: Fehler bei der Datei \"%s\"\n", File_Definition.c_str());
+        printf( "Loadblock: Fehler bei der Datei \"%s\"\n", File_Definition.c_str());
         return;
     }
     // Root verzeichnis wählen
@@ -204,9 +204,9 @@ void BlockList::LoadBlock (std::string Path, std::string Name) {
 
     Alpha = atoi(pgraphic->Attribute("alpha"));
 
-    printf( "LoadBlock: %d %d %s\n", (int)List.size(), i_id, Name.c_str());
-    // Block erstellen
-    Block p_id;
+    printf( "Loadblock: %d %d %s\n", (int)List.size(), i_id, Name.c_str());
+    // block erstellen
+    block p_id;
     p_id.SetFile( Path + pgraphic->FirstChildElement( "front")->Attribute("image"),
                   Path + pgraphic->FirstChildElement( "back")->Attribute("image"),
                   Path + pgraphic->FirstChildElement( "left")->Attribute("image"),
