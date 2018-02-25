@@ -52,7 +52,6 @@ private:
     texture *p_tilemap;
 
     std::string Title;
-    world *p_world;
     GLuint p_vboCursor;
 };
 

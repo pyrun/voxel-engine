@@ -253,6 +253,8 @@ class network
         bool process();
 
         void draw( graphic *graphic, config *config, glm::mat4 viewmatrix);
+
+        world *getWorld() { return p_starchip; }
     protected:
 
     private:

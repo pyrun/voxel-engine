@@ -24,7 +24,6 @@ game::game() {
     p_graphic = new graphic( p_config);
     p_blocklist = new block_list("blocks");
     p_tilemap = new texture( p_config->get( "tilemap", "engine", "tileset.png"));
-    p_world = new world( p_tilemap, p_blocklist);
     p_gui = new Gui;
     p_network = new network( p_config, p_tilemap, p_blocklist);
 
@@ -39,7 +38,6 @@ game::~game() {
     if( p_openvr)
         delete p_openvr;
     delete p_tilemap;
-    delete p_world;
     delete p_blocklist;
     delete p_gui;
     delete p_graphic;
@@ -53,6 +51,8 @@ void game::startVR() {
 
 void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
     float depth;
+
+    world *l_world = p_network->getWorld();
 
     // Voxel Anzeigen
     glReadPixels( p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
@@ -77,7 +77,7 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
         mz = floorf(testpos.z/CHUNK_SCALE);
 
         // falls wir ein block finden das kein "Air" ist dann sind wir fertig
-        Tile *tile = p_world->GetTile( mx, my, mz);
+        Tile *tile = l_world->GetTile( mx, my, mz);
         if( !tile )
             continue;
 
@@ -119,10 +119,10 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if(face == 5)
                 mZ--;
 
-            if( !p_world->GetTile( mX, mY, mZ)) {
-                Chunk *tmp = p_world->getChunkWithPos( mX, mY, mZ);
+            if( !l_world->GetTile( mX, mY, mZ)) {
+                Chunk *tmp = l_world->getChunkWithPos( mX, mY, mZ);
                 if( tmp)
-                    p_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
+                    l_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
                 else
                     printf( "game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
@@ -131,9 +131,9 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             break;
         }
         if( tile->ID && p_input.Map.Destory && !p_input.MapOld.Destory) {
-            Chunk *tmp = p_world->getChunkWithPos( mx, my, mz);
+            Chunk *tmp = l_world->getChunkWithPos( mx, my, mz);
             if( tmp)
-                p_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
+                l_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
             else
                 printf( "game::ViewCurrentBlock Chunk nicht vorhanden\n");
             break;
@@ -209,8 +209,6 @@ void game::Start() {
     Timer l_timer;
     int number = 0;
 
-    //p_world->addChunk( glm::vec3( 0, -1, 0) );
-
     glm::mat4 l_mvp;
     while( p_isRunnig) { // Runniz
         l_timer.Start();
@@ -226,8 +224,7 @@ void game::Start() {
         cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
 
         if( p_input.Map.Inventory ) {
-            if( p_world)
-                p_world->addChunk( { number++, -1, 0});
+
         }
 
         if( p_input.Map.Up )
@@ -257,18 +254,17 @@ void game::Start() {
             cam->zoom( 1.5);
         }
 
-        if( p_input.getResize())
+        if( p_input.getResize()) {
             p_graphic->resizeWindow( p_input.getResizeW(), p_input.getResizeH());
+            p_config->set( "width", "graphic", std::to_string( p_input.getResizeW()));
+            p_config->set( "height", "graphic", std::to_string( p_input.getResizeH()));
+        }
 
         // Framenrate anfangen zu zählen
         framenrate.StartCount();
 
         if( p_network->process())
             p_isRunnig = false;
-
-		// World process
-		if( p_world)
-            p_world->process();
 
 
         /// Render
@@ -296,7 +292,7 @@ void game::Start() {
 
         render( l_mvp_cam);
 
-        if( p_world) {
+        if( p_network->getWorld()) {
             // View Cross
             //viewCross();
 
@@ -320,8 +316,8 @@ void game::Start() {
         Title = "FPS_" + NumberToString( framenrate.getFrameratePrecisely() );
         Title = Title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
-        if( p_world)
-            Title = Title + " Chunks_" + NumberToString( (double)p_world->GetAmountChunks());
+        if(  p_network->getWorld())
+            Title = Title + " Chunks_" + NumberToString( (double) p_network->getWorld()->GetAmountChunks());
         p_graphic->getDisplay()->setTitle( Title);
 
 

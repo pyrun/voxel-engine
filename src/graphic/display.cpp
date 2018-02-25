@@ -17,7 +17,6 @@ display::display( config *config) {
     l_pos_x = atoi( config->get( "window_x", "graphic", std::to_string(SDL_WINDOWPOS_CENTERED) ).c_str());
     l_pos_y = atoi( config->get( "window_y", "graphic", std::to_string(SDL_WINDOWPOS_CENTERED) ).c_str());
 
-
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
     gmask = 0x00ff0000;

@@ -9,14 +9,7 @@ graphic::graphic( config *config) {
 
     // Shader laden
     p_voxel = new Shader( "shader/voxels");
-
-    // Shadow
-    p_shadow = new Shader( "shader/shadow");
-
-    // Vertex shader
     p_vertex = new Shader( "shader/vertex");
-
-    // object shader
     p_object = new Shader( "shader/object");
 
     // camera
@@ -25,7 +18,6 @@ graphic::graphic( config *config) {
 
 graphic::~graphic() {
     delete p_camera;
-    delete p_shadow;
     delete p_voxel;
     delete p_vertex;
     delete p_display;

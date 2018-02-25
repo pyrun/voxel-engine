@@ -7,7 +7,7 @@
 #include "shader.h"
 #include "texture.h"
 
-#define graphic_fov 2.0f
+#define graphic_fov 1.2f
 #define graphic_znear 0.01f
 #define graphic_zfar 1000.0f
 
@@ -31,7 +31,6 @@ public:
 
     inline Shader *getVoxelShader() { if(p_voxel == NULL) printf( "graphic::GetVoxelShader dont exist\n"); return p_voxel; }
     inline Shader *getVertexShader() { if(p_vertex== NULL) printf( "graphic::getVertexShader dont exist\n"); return p_vertex; }
-    inline Shader *getShadowShader() { if(p_shadow== NULL) printf( "graphic::GetShadowShader dont exist\n"); return p_shadow; }
     inline Shader *getObjectShader() { if(p_object== NULL) printf( "graphic::GetObjectShader dont exist\n"); return p_object; }
     inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
 protected:
@@ -40,7 +39,6 @@ private:
     display* p_display;
     Shader* p_voxel;
     Shader* p_vertex;
-    Shader *p_shadow;
     Shader *p_object;
 };
 

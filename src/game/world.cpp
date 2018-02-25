@@ -19,7 +19,7 @@ static int world_thread(void *data)
     return 0;
 }
 
-world::world( texture *image, block_list* B_List) {
+world::world( texture *image, block_list* B_List, bool clear) {
     p_seed = (int)time(NULL); // p_seed
     p_buysvector = false;
     p_chunk_amount = 0;
@@ -28,6 +28,7 @@ world::world( texture *image, block_list* B_List) {
     p_blocklist = B_List;
     p_destroy = false;
     p_image = image;
+    p_clear = clear;
 
     p_thread = SDL_CreateThread(world_thread, "TestThread", (void *)this);
 }
@@ -206,9 +207,8 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
     node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
 
     // Landscape erstellen
-
-    Landscape_Generator( node, p_blocklist);
-    //printf( "Create Chunk %dms %dkb\n", timer.GetTicks(), CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_DEPTH*sizeof( Tile)/1024);
+    if( !p_clear)
+        Landscape_Generator( node, p_blocklist);
 
     // seiten finden
     Chunk *snode;
@@ -242,8 +242,7 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
         snode->right = node;
         node->left = snode;
     }
-    //printf( "Add Chunk %d %d %d %d\n", p_chunk_amount+1, node.chunk->GetX(), node.chunk->GetY(), node.chunk->GetZ());
-    //printf( "Add Chunk %d: %d %d %d\n", p_chunk_amount+1, node->GetX(), node->GetY(), node->GetZ());
+
     p_chunk_amount++; // Chunks mitzählen
 
     Chunk *tmp = Chunks;

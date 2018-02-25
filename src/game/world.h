@@ -40,7 +40,7 @@ public:
 
 class world {
 public:
-    world( texture *image, block_list* B_List);
+    world( texture *image, block_list* B_List, bool clear = false);
     virtual ~world();
 
     Tile *GetTile( int x, int y, int z);
@@ -77,6 +77,7 @@ private:
     int p_seed;
     bool p_buysvector;
     bool p_world_tree_empty;
+    bool p_clear;
     int p_chunk_amount;
     Chunk* Chunks;
     block_list *p_blocklist;

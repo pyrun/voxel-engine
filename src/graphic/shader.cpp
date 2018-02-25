@@ -14,7 +14,6 @@ Shader::Shader(const std::string& fileName) {
 	glBindAttribLocation(p_program, 1, "vertexNormals");
 	glBindAttribLocation(p_program, 2, "vertexColor");
 
-
 	glLinkProgram(p_program);
 	CheckShaderError(p_program, GL_LINK_STATUS, true, "Error linking shader program");
 

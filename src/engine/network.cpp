@@ -143,7 +143,7 @@ network::network( config *config, texture* image, block_list *block_list)
 
     p_client = false;
 
-    p_starchip = new world( image, block_list);
+    p_starchip = new world( image, block_list, true);
 }
 
 network::~network()

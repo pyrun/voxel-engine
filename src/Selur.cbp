@@ -15,6 +15,7 @@
 				<Option compiler="gcc" />
 				<Option parameters="-p2p" />
 				<Compiler>
+					<Add option="-std=c++1y" />
 					<Add option="-g" />
 					<Add directory="../../SDL2/include" />
 					<Add directory="../../OpenGL" />
