@@ -7,7 +7,7 @@ static int world_thread(void *data)
     int cnt;
 
     for ( ;; ) {
-        World *l_world = (World*)data;
+        world *l_world = (world*)data;
         l_world->process_thrend();
 
         if( l_world->getDestory() )
@@ -19,7 +19,7 @@ static int world_thread(void *data)
     return 0;
 }
 
-World::World( std::string Tileset, BlockList* B_List) {
+world::world( std::string Tileset, BlockList* B_List) {
     Seed = (int)time(NULL); // Seed
     p_buysvector = false;
     p_tilemap = new texture( Tileset);
@@ -34,7 +34,7 @@ World::World( std::string Tileset, BlockList* B_List) {
     p_thread = SDL_CreateThread(world_thread, "TestThread", (void *)this);
 }
 
-World::~World() {
+world::~world() {
     int l_return;
     p_destroy = true;
     SDL_WaitThread( p_thread, &l_return);
@@ -47,7 +47,7 @@ World::~World() {
     delete p_tilemap;
 }
 
-Tile* World::GetTile( int x, int y, int z) {
+Tile* world::GetTile( int x, int y, int z) {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
@@ -92,7 +92,7 @@ Tile* World::GetTile( int x, int y, int z) {
     return NULL;
 }
 
-Chunk* World::getChunkWithPos( int x, int y, int z) {
+Chunk* world::getChunkWithPos( int x, int y, int z) {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
@@ -133,7 +133,7 @@ Chunk* World::getChunkWithPos( int x, int y, int z) {
     return NULL;
 }
 
-void World::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
+void world::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
     if( chunk == NULL) {
         printf( "SetTile: Cant set tile!\n");
         return;
@@ -147,7 +147,7 @@ void World::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
     chunk->set( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
 }
 
-void World::process_thrend() {
+void world::process_thrend() {
     for( int i = 0; i < (int)p_creatingList.size(); i++)
     {
         Chunk *l_node = getChunk( p_creatingList[i].x, p_creatingList[i].y, p_creatingList[i].z);
@@ -171,7 +171,7 @@ void World::process_thrend() {
     UpdateArray();
 }
 
-void World::process() {
+void world::process() {
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = Chunks;
     for( ;; ) {
@@ -182,7 +182,7 @@ void World::process() {
     }
 }
 
-void World::deleteChunks( Chunk* chunk) {
+void world::deleteChunks( Chunk* chunk) {
     if( chunk == NULL )
         return;
     if( chunk->next )
@@ -190,7 +190,7 @@ void World::deleteChunks( Chunk* chunk) {
     deleteChunk( chunk);
 }
 
-void World::deleteChunk( Chunk* node) {
+void world::deleteChunk( Chunk* node) {
     if( node == NULL)
         return;
     if( node->GetVbo() )
@@ -200,7 +200,7 @@ void World::deleteChunk( Chunk* node) {
     //DeletingChunkList.push_back( Vector);
 }
 
-Chunk *World::createChunk( int pos_x, int pos_y, int pos_z) {
+Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
     Chunk *node;
 
     // Chunk erstellen
@@ -264,7 +264,7 @@ Chunk *World::createChunk( int pos_x, int pos_y, int pos_z) {
     return node;
 }
 
-void World::destoryChunk( int pos_x, int pos_y, int pos_z) {
+void world::destoryChunk( int pos_x, int pos_y, int pos_z) {
     Timer timer;
     timer.Start();
     Chunk *tmp = Chunks;
@@ -316,7 +316,7 @@ void World::destoryChunk( int pos_x, int pos_y, int pos_z) {
     }
 }
 
-bool World::CheckChunk( int X, int Y, int Z) {
+bool world::CheckChunk( int X, int Y, int Z) {
     Chunk *tmp = Chunks;
     for( ;; ) {
         if( tmp == NULL)
@@ -332,7 +332,7 @@ bool World::CheckChunk( int X, int Y, int Z) {
 
 
 
-Chunk* World::getChunk( int X, int Y, int Z) {
+Chunk* world::getChunk( int X, int Y, int Z) {
     Chunk *tmp = Chunks;
     for( ;; ) {
         if( tmp == NULL)
@@ -346,10 +346,10 @@ Chunk* World::getChunk( int X, int Y, int Z) {
     return NULL;
 }
 
-void World::addChunk( glm::tvec3<int> pos ) {
+void world::addChunk( glm::tvec3<int> pos ) {
     p_creatingList.push_back( pos);
 }
-void World::addDeleteChunk( glm::tvec3<int> pos ) {
+void world::addDeleteChunk( glm::tvec3<int> pos ) {
     p_deletingList.push_back( pos);
 }
 
@@ -360,7 +360,7 @@ Camera *cam;
 
 #define ota_size 200.0f
 
-void World::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
+void world::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
     int g_width = graphic->getWidth();
     int g_height = graphic->getHeight();
 
@@ -417,7 +417,7 @@ void World::draw( graphic *graphic, Config *config, glm::mat4 viewProjection) {
     glUseProgram( 0 );
 }
 
-void World::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
+void world::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
     // shader einstellen
     if( alpha_cutoff) {
         glDepthMask(true);
@@ -431,7 +431,7 @@ void World::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alp
     glDepthMask(true);
 }
 
-void World::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
+void world::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
@@ -449,11 +449,11 @@ void World::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
         node = node->next;
     }
 }
-void World::UpdateArray() {
+void world::UpdateArray() {
     UpdateArrayNode();
 }
 
-void World::UpdateArrayNode() {
+void world::UpdateArrayNode() {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)

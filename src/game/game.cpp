@@ -27,7 +27,7 @@ game::game() {
     framenrate.Set( 200);
     p_blocklist->Draw( p_graphic);
     p_world = NULL;
-    p_world = new World( "tileset.png", p_blocklist);
+    p_world = new world( "tileset.png", p_blocklist);
 
     p_gui = new Gui;
 

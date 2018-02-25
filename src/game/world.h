@@ -12,24 +12,24 @@
 
 #define WORLD_TEST_FACTOR 0
 
-Uint32 thrend_WorldGenerator( Uint32 interval, void *Paramenter);
+Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
-class World_Position {
+class world_Position {
 public:
     int x;
     int y;
     int z;
-    bool operator< ( const World_Position& rhs) {
+    bool operator< ( const world_Position& rhs) {
         if( x + y + z > rhs.x + rhs.y + rhs.z)
             return true;
         return false;
     }
-    bool operator> (const World_Position& rhs){
+    bool operator> (const world_Position& rhs){
         if( x + y + z < rhs.x + rhs.y + rhs.z)
             return true;
         return false;
     }
-    bool operator==(const World_Position& r) {
+    bool operator==(const world_Position& r) {
         if( x == r.x)
             if( y  == r.y)
                 if( z == r.z)
@@ -38,10 +38,10 @@ public:
     }
 };
 
-class World {
+class world {
 public:
-    World( std::string Tileset, BlockList* B_List);
-    virtual ~World();
+    world( std::string Tileset, BlockList* B_List);
+    virtual ~world();
 
     Tile *GetTile( int x, int y, int z);
     Chunk *getChunkWithPos( int x, int y, int z);

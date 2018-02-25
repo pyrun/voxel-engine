@@ -45,7 +45,7 @@ private:
     openvr *p_openvr;
 
     std::string Title;
-    World *p_world;
+    world *p_world;
     GLuint p_vboCursor;
 };
 
