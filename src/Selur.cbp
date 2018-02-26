@@ -127,6 +127,8 @@
 		<Unit filename="graphic/glerror.h" />
 		<Unit filename="graphic/graphic.cpp" />
 		<Unit filename="graphic/graphic.h" />
+		<Unit filename="graphic/md2.cpp" />
+		<Unit filename="graphic/md2.h" />
 		<Unit filename="graphic/shader.cpp" />
 		<Unit filename="graphic/shader.h" />
 		<Unit filename="graphic/shadowmap.cpp" />

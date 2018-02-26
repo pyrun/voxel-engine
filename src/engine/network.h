@@ -75,29 +75,6 @@ struct network_object : public Replica3
 		// Lost messages will flag each variable sent in that update as dirty, meaning the next Serialize() call will resend them with the current values
 		variableDeltaSerializer.OnMessageReceipt(guid,receiptId,messageArrived);
 	}
-	void RandomizeVariables(void)
-	{
-		if (randomMT()%2)
-		{
-			var1Unreliable=randomMT();
-			printf("var1Unreliable changed to %i\n", var1Unreliable);
-		}
-		if (randomMT()%2)
-		{
-			var2Unreliable=randomMT();
-			printf("var2Unreliable changed to %i\n", var2Unreliable);
-		}
-		if (randomMT()%2)
-		{
-			var3Reliable=randomMT();
-			printf("var3Reliable changed to %i\n", var3Reliable);
-		}
-		if (randomMT()%2)
-		{
-			var4Reliable=randomMT();
-			printf("var4Reliable changed to %i\n", var4Reliable);
-		}
-	}
 
 	// Demonstrate per-variable synchronization
 	// We manually test each variable to the last synchronized value and only send those values that change
