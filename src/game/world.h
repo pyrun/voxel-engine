@@ -43,7 +43,7 @@ public:
     world( texture *image, block_list* B_List, bool clear = false);
     virtual ~world();
 
-    Tile *GetTile( int x, int y, int z);
+    tile *GetTile( int x, int y, int z);
     Chunk *getChunkWithPos( int x, int y, int z);
     void SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID);
 
@@ -72,6 +72,7 @@ public:
 
     bool getDestory() { return p_destroy; }
     inline int GetAmountChunks() const { return p_chunk_amount; }
+    Chunk *getNode() { return Chunks; }
 protected:
 private:
     int p_seed;

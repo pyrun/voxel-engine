@@ -77,7 +77,7 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
         mz = floorf(testpos.z/CHUNK_SCALE);
 
         // falls wir ein block finden das kein "Air" ist dann sind wir fertig
-        Tile *tile = l_world->GetTile( mx, my, mz);
+        tile *tile = l_world->GetTile( mx, my, mz);
         if( !tile )
             continue;
 
@@ -121,10 +121,12 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 
             if( !l_world->GetTile( mX, mY, mZ)) {
                 Chunk *tmp = l_world->getChunkWithPos( mX, mY, mZ);
-                if( tmp)
-                    l_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
-                else
+                if( tmp) {
+                    p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByID( "water")->getID());
+                    //l_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
+                } else {
                     printf( "game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
+                }
             }
 
             printf( "game::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile->ID);
@@ -132,10 +134,12 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
         }
         if( tile->ID && p_input.Map.Destory && !p_input.MapOld.Destory) {
             Chunk *tmp = l_world->getChunkWithPos( mx, my, mz);
-            if( tmp)
-                l_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
-            else
-                printf( "game::ViewCurrentBlock Chunk nicht vorhanden\n");
+            if( tmp) {
+                p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
+                //l_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
+            } else {
+                printf( "game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
+            }
             break;
         }
 
@@ -256,8 +260,8 @@ void game::Start() {
 
         if( p_input.getResize()) {
             p_graphic->resizeWindow( p_input.getResizeW(), p_input.getResizeH());
-            p_config->set( "width", "graphic", std::to_string( p_input.getResizeW()));
-            p_config->set( "height", "graphic", std::to_string( p_input.getResizeH()));
+            p_config->set( "width", std::to_string( p_input.getResizeW()), "graphic");
+            p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
 
         // Framenrate anfangen zu zählen

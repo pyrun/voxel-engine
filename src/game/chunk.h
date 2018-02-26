@@ -5,14 +5,18 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_SIZE 32
+#include "RakPeerInterface.h"
+#include <string.h>
+#include "BitStream.h"
+
+#define CHUNK_SIZE 16
 #define CHUNK_SCALE 2.0f
 
 #define EMPTY_BLOCK_ID 0
 
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
-struct Tile {
+struct tile {
     int ID;
 };
 
@@ -37,27 +41,18 @@ public:
     Chunk *down;
 
     Chunk *next;
-    bool IsDrawable() {
-        /*if( front == NULL)
-            return false;
-        if( back == NULL)
-            return false;
-        if( right == NULL)
-            return false;
-        if( left == NULL)
-            return false;
-        if( up == NULL)
-            return false;
-        if( down == NULL)
-            return false;*/
-        return true;
-    }
 
     bool SetDeleting() {
         if( p_deleting)
             return false;
         p_deleting = true;
         return true;
+    }
+
+    void serialize(bool writeToBitstream, RakNet::BitStream *bitstream)
+    {
+        for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+            bitstream->Serialize( writeToBitstream, p_tile[i]);
     }
 
     inline int getX() { return p_pos.x; }
@@ -77,7 +72,7 @@ public:
 
     void CreateTile( int X, int Y, int Z, int ID);
     void set( int X, int Y, int Z, int ID);
-    Tile *getTile( int X, int Y, int Z);
+    tile *getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
     void updateForm();
@@ -86,6 +81,9 @@ public:
     void DestoryVbo();
     void updateVbo( Shader *shader);
     void draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
+
+    tile getArray( int i) { return p_tile[i]; }
+    int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }
 protected:
 private:
     glm::tvec3<int> p_pos;
@@ -104,7 +102,7 @@ private:
     GLuint p_vboVertex;
     GLuint p_vboNormal;
     GLuint p_vboData;
-    Tile* p_tile;
+    tile* p_tile;
     int p_seed;
 
     std::vector<block_vertex> p_vertex;

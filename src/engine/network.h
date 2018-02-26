@@ -13,6 +13,7 @@
 
 #include "config.h"
 #include "../game/world.h"
+#include "network_ids.h"
 
 // ReplicaManager3 is in the namespace RakNet
 using namespace RakNet;
@@ -20,8 +21,7 @@ using namespace RakNet;
 enum
 {
 	CLIENT,
-	SERVER,
-	P2P
+	SERVER
 } network_topology;
 
 struct network_object : public Replica3
@@ -223,7 +223,6 @@ public:
 		if (typeName=="ServerCreated_ClientSerialized") return new ServerCreated_ClientSerialized;
 		if (typeName=="ClientCreatible_ServerSerialized") return new ClientCreatible_ServerSerialized;
 		if (typeName=="ServerCreated_ServerSerialized") return new ServerCreated_ServerSerialized;
-		if (typeName=="P2PReplica") return new P2PReplica;
 		return 0;
 	}
 protected:
@@ -248,13 +247,21 @@ class network
         void start();
         void start_sever();
         void start_client( std::string ip = "127.0.0.1");
-        void start_p2p();
+
+        void sendBlockChange( Chunk *chunk, glm::vec3 pos, int id);
+        void readBlockChange( BitStream *bitstream);
+
+        void readChunk( BitStream *bitstream);
+        void sendChunk( Chunk *chunk, RakNet::AddressOrGUID address);
+        void sendAllChunks( world *world,RakNet::AddressOrGUID address);
 
         bool process();
 
         void draw( graphic *graphic, config *config, glm::mat4 viewmatrix);
 
         world *getWorld() { return p_starchip; }
+        bool isServer() { return p_isServer; }
+        bool isClient() { return p_isClient; }
     protected:
 
     private:
@@ -264,7 +271,8 @@ class network
         network_mananger p_replicaManager;
 
         RakNet::Packet *p_packet;
-        bool p_client;
+        bool p_isClient;
+        bool p_isServer;
 
         int p_port;
         int p_maxamountplayer;

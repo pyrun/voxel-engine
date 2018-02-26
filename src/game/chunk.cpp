@@ -38,7 +38,7 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
 
     int t = SDL_GetTicks();
 
-    p_tile = (Tile *)malloc(sizeof(Tile) * CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE); //new (std::nothrow) Tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
+    p_tile = (tile *)malloc(sizeof(tile) * CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE); //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
 
     if (p_tile == nullptr) {
       // error assigning memory. Take measures.
@@ -90,7 +90,7 @@ Chunk::~Chunk() {
 }
 
 void Chunk::CreateTile( int X, int Y, int Z, int ID) {
-    Tile* l_tile;
+    tile* l_tile;
     l_tile = getTile( X, Y, Z);
 
     // cant happen but make sure
@@ -105,7 +105,7 @@ void Chunk::CreateTile( int X, int Y, int Z, int ID) {
 }
 
 void Chunk::set( int X, int Y, int Z, int ID) {
-    Tile* l_tile;
+    tile* l_tile;
     l_tile = getTile( X, Y, Z);
     if( l_tile == NULL)
         return;
@@ -117,7 +117,7 @@ void Chunk::set( int X, int Y, int Z, int ID) {
     p_changed = true;
 }
 
-Tile *Chunk::getTile( int X, int Y, int Z) {
+tile *Chunk::getTile( int X, int Y, int Z) {
     if( X < 0)
         return NULL;
     if( Y < 0)
@@ -126,7 +126,7 @@ Tile *Chunk::getTile( int X, int Y, int Z) {
         return NULL;
     // X Y Z
     // Z X Y -> https://www.youtube.com/watch?v=B4DuT61lIPU
-    Tile *l_tile = &p_tile[ TILE_REGISTER( X, Y, Z)];
+    tile *l_tile = &p_tile[ TILE_REGISTER( X, Y, Z)];
     return l_tile;
 }
 
@@ -173,7 +173,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
 
     bool b_visibility = false;
 
-    Tile * l_tile = NULL;
+    tile * l_tile = NULL;
 
     // View from negative x
     for(int z = 0; z < CHUNK_SIZE; z++) {
@@ -183,7 +183,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                 if( !l_tile)
                     continue;
 
-                if( l_tile->ID == EMPTY_BLOCK_ID) {// Tile nicht vorhanden
+                if( l_tile->ID == EMPTY_BLOCK_ID) {// tile nicht vorhanden
                     b_visibility = false;
                     continue;
                 }
@@ -240,7 +240,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = 0; x < CHUNK_SIZE; x++)  {
             for(int y = 0; y < CHUNK_SIZE; y++) {
-                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
                 uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
@@ -294,7 +294,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
         for(int y = CHUNK_SIZE - 1; y >= 0; y--)
             for(int x = 0; x < CHUNK_SIZE; x++) {
               {
-                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
                 uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
@@ -345,7 +345,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     for(int z = 0; z < CHUNK_SIZE; z++) {
          for(int y = 0; y < CHUNK_SIZE; y++){
              for(int x = 0; x < CHUNK_SIZE; x++) {
-                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
                 uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
@@ -396,7 +396,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     for(int z = CHUNK_SIZE - 1; z >= 0; z--) {
          for(int x = 0; x < CHUNK_SIZE; x++){
             for(int y = 0; y < CHUNK_SIZE; y++) {
-                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
                 uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {
@@ -447,7 +447,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = 0; x < CHUNK_SIZE; x++) {
             for(int y = 0; y < CHUNK_SIZE; y++) {
-                if( getTile( x, y, z) == NULL) // Tile nicht vorhanden
+                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
                 uint8_t type = getTile( x, y, z)->ID;
                 if( type == 0) {

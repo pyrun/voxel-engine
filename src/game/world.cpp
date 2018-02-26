@@ -45,7 +45,7 @@ world::~world() {
     }
 }
 
-Tile* world::GetTile( int x, int y, int z) {
+tile* world::GetTile( int x, int y, int z) {
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
@@ -82,7 +82,7 @@ Tile* world::GetTile( int x, int y, int z) {
             continue;
         }
         //printf("%d %d %d | ", p_chunk_x, p_chunk_y, p_chunk_z);
-        Tile *l_tile = node->getTile( p_chunk_x, p_chunk_y, p_chunk_z );
+        tile *l_tile = node->getTile( p_chunk_x, p_chunk_y, p_chunk_z );
         if( l_tile && l_tile->ID == EMPTY_BLOCK_ID)
             break;
         return l_tile;
@@ -205,6 +205,8 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
     Timer timer;
     timer.Start();
     node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
+
+    Landscape_Generator( node, p_blocklist);
 
     // Landscape erstellen
     if( !p_clear)
@@ -460,7 +462,7 @@ void world::UpdateArrayNode() {
         if( node == NULL)
             break;
         // Update Chunk if Change
-        if( (node->GetChanged() || !node->GetUpdateOnce() ) && node->IsDrawable()) {// Update Chunk -> es hat sich was verändert
+        if( node->GetChanged() || !node->GetUpdateOnce() ) {// Update Chunk -> es hat sich was verändert
             node->UpdateArray( p_blocklist); //, node->back, node->front, node->left, node->right, node->up, node->down);
         }
         node = node->next;

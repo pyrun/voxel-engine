@@ -13,7 +13,7 @@
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-p2p" />
+				<Option parameters="-server" />
 				<Compiler>
 					<Add option="-std=c++1y" />
 					<Add option="-g" />
@@ -89,6 +89,8 @@
 		<Unit filename="engine/config.h" />
 		<Unit filename="engine/network.cpp" />
 		<Unit filename="engine/network.h" />
+		<Unit filename="engine/network_ids.cpp" />
+		<Unit filename="engine/network_ids.h" />
 		<Unit filename="engine/openvr.cpp" />
 		<Unit filename="engine/openvr.h" />
 		<Unit filename="engine/openvr_models.cpp" />
