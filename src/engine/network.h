@@ -10,10 +10,18 @@
 #include "VariableDeltaSerializer.h"
 #include "RakSleep.h"
 #include "GetTime.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "../game/world.h"
 #include "network_ids.h"
+
+#define STATICLIB
+
+#include "miniupnpc.h"
+#include "upnpcommands.h"
+#include "upnperrors.h"
 
 // ReplicaManager3 is in the namespace RakNet
 using namespace RakNet;
@@ -220,6 +228,8 @@ class network
     public:
         network( config *config, texture* image, block_list *block_list);
         virtual ~network();
+
+        void init_upnp();
 
         void start();
         void start_sever();

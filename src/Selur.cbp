@@ -17,12 +17,14 @@
 				<Compiler>
 					<Add option="-std=c++1y" />
 					<Add option="-g" />
+					<Add option="-DWIN32" />
 					<Add directory="../../SDL2/include" />
 					<Add directory="../../OpenGL" />
 					<Add directory="../../glm/" />
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../assimp/include" />
 					<Add directory="../../RakNet/Source" />
+					<Add directory="../../Miniupnpc/source/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -31,11 +33,16 @@
 					<Add option="-lopenvr_dll" />
 					<Add option="-lassimp" />
 					<Add option="-lRakNet" />
+					<Add option="-DMINIUPNP_STATICLIB" />
+					<Add option="-lminiupnpc" />
+					<Add library="ws2_32" />
+					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
 					<Add directory="../../OpenGL/lib" />
 					<Add directory="../../openvr-mingw/lib" />
 					<Add directory="../../assimp/lib" />
 					<Add directory="../../RakNet/Lib" />
+					<Add directory="../../Miniupnpc/lib" />
 				</Linker>
 			</Target>
 			<Target title="linux">
@@ -127,8 +134,6 @@
 		<Unit filename="graphic/glerror.h" />
 		<Unit filename="graphic/graphic.cpp" />
 		<Unit filename="graphic/graphic.h" />
-		<Unit filename="graphic/md2.cpp" />
-		<Unit filename="graphic/md2.h" />
 		<Unit filename="graphic/shader.cpp" />
 		<Unit filename="graphic/shader.h" />
 		<Unit filename="graphic/shadowmap.cpp" />

@@ -153,6 +153,71 @@ network::~network()
     }
 }
 
+void network::init_upnp()
+{
+    struct UPNPDev * devlist = 0;
+    devlist = upnpDiscover( 2000, 0, 0, 0, 0, 0);
+    if (devlist)
+    {
+        printf("List of UPNP devices found on the network :\n");
+        struct UPNPDev * device;
+        for( device = devlist; device; device = device->pNext)
+        {
+            printf(" desc: %s\n st: %s\n\n",
+                device->descURL, device->st);
+        }
+
+        char lanaddr[64];	/* my ip address on the LAN */
+        struct UPNPUrls urls;
+        struct IGDdatas data;
+        if ( UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr))==1)
+        {
+            // Use same external and internal ports
+            DataStructures::List<RakNetSocket2* > sockets;
+
+            p_rakPeerInterface->GetSockets(sockets);
+
+            std::string l_iport;
+            l_iport = std::to_string( sockets[0]->GetBoundAddress().GetPort());
+            char eport[32];
+            strcpy(eport, l_iport.c_str());
+
+            // Version miniupnpc-1.6.20120410
+            int r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
+                                        eport, l_iport.c_str(), lanaddr, 0, "UDP", 0, "0");
+
+            if(r!=UPNPCOMMAND_SUCCESS)
+                printf("AddPortMapping(%s, %s, %s) failed with code %d (%s)\n",
+                eport, l_iport.c_str(), lanaddr, r, strupnperror(r));
+
+            char intPort[6];
+            char intClient[16];
+
+            // Version 1.5
+// 				r = UPNP_GetSpecificPortMappingEntry(urls.controlURL,
+// 					data.first.servicetype,
+// 					eport, "UDP",
+// 					intClient, intPort);
+
+            // Version miniupnpc-1.6.20120410
+            char desc[128];
+            char enabled[128];
+            char leaseDuration[128];
+            r = UPNP_GetSpecificPortMappingEntry(urls.controlURL,
+                data.first.servicetype,
+                eport, "UDP",
+                intClient, intPort,
+                desc, enabled, leaseDuration);
+
+            if(r!=UPNPCOMMAND_SUCCESS)
+            {
+                printf("GetSpecificPortMappingEntry() failed with code %d (%s)\n",
+                r, strupnperror(r));
+            }
+        }
+    }
+}
+
 void network::start()
 {
     // Start RakNet
@@ -167,7 +232,8 @@ void network::start()
 	// connect if client
 	if (network_topology == CLIENT)
 	{
-		p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
+	    init_upnp();
+	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
 		printf("network::start Connecting...\n");
 	}
 
