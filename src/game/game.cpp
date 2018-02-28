@@ -205,10 +205,10 @@ void game::render( glm::mat4 viewProjection) {
 void game::Start() {
     //p_config.SetTransparency( true);
 
-    Object *obj = new Object;
+/*    Object *obj = new Object;
     obj->Init();
     Object *obj2 = new Object;
-    obj2->Init();
+    obj2->Init();*/
 
     Timer l_timer;
     int number = 0;
@@ -300,7 +300,7 @@ void game::Start() {
             // View Cross
             //viewCross();
 
-            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
+//            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
             viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
         }
@@ -328,7 +328,6 @@ void game::Start() {
         // Framenrate begrenzen
         framenrate.calcDelay( p_openvr?true:false);
     }
-    delete obj;
 }
 
 void game::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {

@@ -13,4 +13,7 @@
         <port>27558</port>
         <max_player>32</max_player>
     </network>
+    <objects>
+        <folder>objects/</folder>
+    </objects>
 </config>

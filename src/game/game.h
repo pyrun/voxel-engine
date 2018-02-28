@@ -14,7 +14,6 @@
 #include "world.h"
 #include "../engine/config.h"
 #include "gui.h"
-#include "object.h"
 #include "../engine/openvr.h"
 #include "../engine/network.h"
 

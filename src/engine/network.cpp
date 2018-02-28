@@ -136,6 +136,7 @@ network::network( config *config, texture* image, block_list *block_list)
 {
     p_rakPeerInterface = NULL;
 
+    p_types = new object_handle();
     // broadcast on 255.255.255.255 at IPv4
     p_socketdescriptor.socketFamily=AF_INET;
     p_port = atoi( config->get( "port", "network", "27558").c_str() );
@@ -143,6 +144,7 @@ network::network( config *config, texture* image, block_list *block_list)
     p_isClient = false;
     p_isServer = false;
     p_starchip = new world( image, block_list, true);
+    p_types->load( config);
 }
 
 network::~network()
@@ -151,10 +153,12 @@ network::~network()
         p_rakPeerInterface->Shutdown( 100, 0);
         RakNet::RakPeerInterface::DestroyInstance( p_rakPeerInterface);
     }
+    delete p_types;
 }
 
-void network::init_upnp()
+bool network::init_upnp()
 {
+    bool l_successful = true;
     struct UPNPDev * devlist = 0;
     devlist = upnpDiscover( 2000, 0, 0, 0, 0, 0);
     if (devlist)
@@ -193,12 +197,6 @@ void network::init_upnp()
             char intPort[6];
             char intClient[16];
 
-            // Version 1.5
-// 				r = UPNP_GetSpecificPortMappingEntry(urls.controlURL,
-// 					data.first.servicetype,
-// 					eport, "UDP",
-// 					intClient, intPort);
-
             // Version miniupnpc-1.6.20120410
             char desc[128];
             char enabled[128];
@@ -214,8 +212,13 @@ void network::init_upnp()
                 printf("GetSpecificPortMappingEntry() failed with code %d (%s)\n",
                 r, strupnperror(r));
             }
+        } else {
+            l_successful = false;
         }
+    } else {
+        l_successful = false;
     }
+    return l_successful;
 }
 
 void network::start()
@@ -230,10 +233,11 @@ void network::start()
 	printf("network::start: GUID is %s\n", p_rakPeerInterface->GetMyGUID().ToString());
 
 	// connect if client
-	if (network_topology == CLIENT)
+	if( network_topology == CLIENT)
 	{
-	    init_upnp();
 	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
+	    if( !init_upnp())
+            printf ( "network::start upnp didnt work\n");
 		printf("network::start Connecting...\n");
 	}
 
@@ -343,7 +347,6 @@ void network::readChunk( BitStream *bitstream) {
 
 
 void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
-    tile *l_tile;
     BitStream l_bitstream;
 
     l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK);

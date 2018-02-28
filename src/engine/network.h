@@ -16,6 +16,7 @@
 #include "config.h"
 #include "../game/world.h"
 #include "network_ids.h"
+#include "object.h"
 
 #define STATICLIB
 
@@ -229,7 +230,7 @@ class network
         network( config *config, texture* image, block_list *block_list);
         virtual ~network();
 
-        void init_upnp();
+        bool init_upnp();
 
         void start();
         void start_sever();
@@ -264,7 +265,9 @@ class network
         int p_port;
         int p_maxamountplayer;
         std::string p_ip;
+
         world *p_starchip;
+        object_handle *p_types;
 };
 
 #endif // NETWORK_H
