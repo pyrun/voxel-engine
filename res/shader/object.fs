@@ -49,5 +49,5 @@ vec3 sh_light(vec3 normal2, SHC l){
 uniform sampler2D sampler;
 
 void main() {
-    fragColor = texture2D( sampler, color) * vec4 ( sh_light( vec3(normal), groove) , 1); //vec4( UV.x, 1, 1, 1); //texture( sampler, UV ).rgb; //vec4 ( 0.1, 0.1, 0.1, 1);
+    fragColor = texture2D( sampler, color); // * vec4 ( sh_light( vec3(normal), groove) , 1); //vec4( UV.x, 1, 1, 1); //texture( sampler, UV ).rgb; //vec4 ( 0.1, 0.1, 0.1, 1);
 }

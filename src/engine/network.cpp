@@ -2,10 +2,9 @@
 
 network_object::network_object()
 {
-    var1Unreliable=0;
-    var2Unreliable=0;
-    var3Reliable=0;
-    var4Reliable=0;
+    p_type = NULL;
+    p_name = "";
+
 }
 
 network_object::~network_object()
@@ -28,9 +27,9 @@ void network_object::PrintStringInBitstream(RakNet::BitStream *bs)
 
 void network_object::SerializeConstruction(RakNet::BitStream *constructionBitstream, RakNet::Connection_RM3 *destinationConnection)	{
 
-    // variableDeltaSerializer is a helper class that tracks what variables were sent to what remote system
+    // p_variableDeltaSerializer is a helper class that tracks what variables were sent to what remote system
     // This call adds another remote system to track
-    variableDeltaSerializer.AddRemoteSystemVariableHistory(destinationConnection->GetRakNetGUID());
+    p_variableDeltaSerializer.AddRemoteSystemVariableHistory(destinationConnection->GetRakNetGUID());
 
     constructionBitstream->Write(GetName() + RakNet::RakString(" SerializeConstruction"));
 }
@@ -42,9 +41,9 @@ bool network_object::DeserializeConstruction(RakNet::BitStream *constructionBits
 
 void network_object::SerializeDestruction(RakNet::BitStream *destructionBitstream, RakNet::Connection_RM3 *destinationConnection)	{
 
-    // variableDeltaSerializer is a helper class that tracks what variables were sent to what remote system
+    // p_variableDeltaSerializer is a helper class that tracks what variables were sent to what remote system
     // This call removes a remote system
-    variableDeltaSerializer.RemoveRemoteSystemVariableHistory(destinationConnection->GetRakNetGUID());
+    p_variableDeltaSerializer.RemoveRemoteSystemVariableHistory(destinationConnection->GetRakNetGUID());
 
     destructionBitstream->Write(GetName() + RakNet::RakString(" SerializeDestruction"));
 }
@@ -61,71 +60,77 @@ void network_object::DeallocReplica(RakNet::Connection_RM3 *sourceConnection) {
 void network_object::OnUserReplicaPreSerializeTick(void)
 {
     /// Required by VariableDeltaSerializer::BeginIdenticalSerialize()
-    variableDeltaSerializer.OnPreSerializeTick();
+    p_variableDeltaSerializer.OnPreSerializeTick();
 }
 
 RM3SerializationResult network_object::Serialize(SerializeParameters *serializeParameters)	{
 
     VariableDeltaSerializer::SerializationContext serializationContext;
-
-    // Put all variables to be sent unreliably on the same channel, then specify the send type for that channel
     serializeParameters->pro[0].reliability=UNRELIABLE_WITH_ACK_RECEIPT;
-    // Sending unreliably with an ack receipt requires the receipt number, and that you inform the system of ID_SND_RECEIPT_ACKED and ID_SND_RECEIPT_LOSS
     serializeParameters->pro[0].sendReceipt=replicaManager->GetRakPeerInterface()->IncrementNextSendReceipt();
     serializeParameters->messageTimestamp=RakNet::GetTime();
 
     // Begin writing all variables to be sent UNRELIABLE_WITH_ACK_RECEIPT
-    variableDeltaSerializer.BeginUnreliableAckedSerialize(
+    p_variableDeltaSerializer.BeginUnreliableAckedSerialize(
         &serializationContext,
         serializeParameters->destinationConnection->GetRakNetGUID(),
         &serializeParameters->outputBitstream[0],
         serializeParameters->pro[0].sendReceipt
         );
-    // Write each variable
-    variableDeltaSerializer.SerializeVariable(&serializationContext, var1Unreliable);
-    // Write each variable
-    variableDeltaSerializer.SerializeVariable(&serializationContext, var2Unreliable);
-    // Tell the system this is the last variable to be written
-    variableDeltaSerializer.EndSerialize(&serializationContext);
 
-    // All variables to be sent using a different mode go on different channels
+    // Write each variable
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_pos.x);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_pos.y);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_pos.z);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_rot.x);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_rot.y);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_rot.z);
+    p_variableDeltaSerializer.EndSerialize(&serializationContext);
+
     serializeParameters->pro[1].reliability=RELIABLE_ORDERED;
-
-    // Same as above, all variables to be sent with a particular reliability are sent in a batch
-    // We use BeginIdenticalSerialize instead of BeginSerialize because the reliable variables have the same values sent to all systems. This is memory-saving optimization
-    variableDeltaSerializer.BeginIdenticalSerialize(
+    p_variableDeltaSerializer.BeginIdenticalSerialize(
         &serializationContext,
         serializeParameters->whenLastSerialized==0,
         &serializeParameters->outputBitstream[1]
         );
-    variableDeltaSerializer.SerializeVariable(&serializationContext, var3Reliable);
-    variableDeltaSerializer.SerializeVariable(&serializationContext, var4Reliable);
-    variableDeltaSerializer.EndSerialize(&serializationContext);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_scale.x);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_scale.y);
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_scale.z);
+    p_variableDeltaSerializer.EndSerialize(&serializationContext);
 
-    // This return type makes is to ReplicaManager3 itself does not do a memory compare. we entirely control serialization ourselves here.
-    // Use RM3SR_SERIALIZED_ALWAYS instead of RM3SR_SERIALIZED_ALWAYS_IDENTICALLY to support sending different data to different system, which is needed when using unreliable and dirty variable resends
+    serializeParameters->pro[2].reliability=RELIABLE_ORDERED;
+    p_variableDeltaSerializer.BeginIdenticalSerialize(
+        &serializationContext,
+        serializeParameters->whenLastSerialized==0,
+        &serializeParameters->outputBitstream[2]
+        );
+    p_variableDeltaSerializer.SerializeVariable(&serializationContext, p_name);
+    p_variableDeltaSerializer.EndSerialize(&serializationContext);
+
     return RM3SR_SERIALIZED_ALWAYS;
 }
 void network_object::Deserialize(RakNet::DeserializeParameters *deserializeParameters) {
 
     VariableDeltaSerializer::DeserializationContext deserializationContext;
 
-    // Deserialization is written similar to serialization
-    // Note that the Serialize() call above uses two different reliability types. This results in two separate Send calls
-    // So Deserialize is potentially called twice from a single Serialize
-    variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[0]);
-    if (variableDeltaSerializer.DeserializeVariable(&deserializationContext, var1Unreliable))
-        printf("var1Unreliable changed to %i\n", var1Unreliable);
-    if (variableDeltaSerializer.DeserializeVariable(&deserializationContext, var2Unreliable))
-        printf("var2Unreliable changed to %i\n", var2Unreliable);
-    variableDeltaSerializer.EndDeserialize(&deserializationContext);
+    p_variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[0]);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_pos.x),
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_pos.y);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_pos.z);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_rot.x),
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_rot.y);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_rot.z);
+    p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
 
-    variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[1]);
-    if (variableDeltaSerializer.DeserializeVariable(&deserializationContext, var3Reliable))
-        printf("var3Reliable changed to %i\n", var3Reliable);
-    if (variableDeltaSerializer.DeserializeVariable(&deserializationContext, var4Reliable))
-        printf("var4Reliable changed to %i\n", var4Reliable);
-    variableDeltaSerializer.EndDeserialize(&deserializationContext);
+    p_variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[1]);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_scale.x);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_scale.y);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_scale.z);
+    p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
+
+    p_variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[2]);
+    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_name);
+    p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
 }
 
 /** \brief network main class
@@ -241,8 +246,13 @@ void network::start()
 		printf("network::start Connecting...\n");
 	}
 
-	if( isServer() )
+	if( isServer() ) {
         p_starchip->addChunk( glm::vec3( 0, -1, 0) );
+
+        ServerCreated_ServerSerialized* l_obj = new ServerCreated_ServerSerialized();
+
+        p_replicaManager.Reference( l_obj);
+	}
 }
 
 void network::start_sever()
@@ -448,5 +458,9 @@ bool network::process()
 
 void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 {
+    Transform test;
+    test.setScale( p_types->get( "eagle")->getScale());
+    if( p_types->get( "eagle") != NULL)
+        p_types->get( "eagle")->draw( &test, graphic->getObjectShader(), viewmatrix);
     p_starchip->draw( graphic, config, viewmatrix);
 }

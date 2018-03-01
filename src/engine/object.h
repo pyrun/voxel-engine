@@ -7,8 +7,8 @@
 #include "../xml/tinyxml2.h"
 
 #include "../graphic/graphic.h"
-#include "../graphic/tiny_obj_loader.h"
 #include "../graphic/texture.h"
+#include "../game/objectcreator.h"
 
 #define DEFINITION_FILE "definition.xml"
 
@@ -18,20 +18,27 @@ class object_type {
         ~object_type();
 
         bool load_type( config *config, std::string l_path, std::string l_name);
+        bool load_file( std::string file);
 
         void updateVbo();
         void updateVao();
 
         void draw( Transform* transform, Shader* shader, glm::mat4 viewprojection);
 
+        std::string getName() { return p_name; };
+        glm::vec3 getScale() { return p_size; }
     private:
-        std::string l_name;
+        std::string p_name;
+        std::string p_file;
+        std::string p_texture_file;
         texture *p_texture;
 
         std::vector<glm::vec3> p_vertices;
         std::vector< glm::vec2 > p_texcoords;
         std::vector<glm::vec3> p_normal;
         std::vector<unsigned int> p_indices;
+
+        glm::vec3 p_size;
 
         GLuint p_vao;
         GLuint p_vbo_vertices;
@@ -64,6 +71,8 @@ class object_handle
 
         bool load( config *config);
         bool load_folder( std::string folder, config *config);
+
+        object_type *get( std::string name);
     private:
 
         std::vector<object_type*> p_types;

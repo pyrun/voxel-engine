@@ -1,4 +1,5 @@
 <object name="eagle" script="script.lua" timer="200" gravity="40">
-
+	<file size="0.03">eagle.obj</file>
+	<texture>eagle.jpg</texture>
 </object>
 

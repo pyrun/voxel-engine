@@ -74,25 +74,24 @@ struct network_object : public Replica3
 
 	virtual void OnPoppedConnection(RakNet::Connection_RM3 *droppedConnection)
 	{
-		// Same as in SerializeDestruction(), no longer track this system
-		variableDeltaSerializer.RemoveRemoteSystemVariableHistory(droppedConnection->GetRakNetGUID());
+		p_variableDeltaSerializer.RemoveRemoteSystemVariableHistory(droppedConnection->GetRakNetGUID());
 	}
 	void NotifyReplicaOfMessageDeliveryStatus(RakNetGUID guid, uint32_t receiptId, bool messageArrived)
 	{
-		// When using UNRELIABLE_WITH_ACK_RECEIPT, the system tracks which variables were updated with which sends
-		// So it is then necessary to inform the system of messages arriving or lost
-		// Lost messages will flag each variable sent in that update as dirty, meaning the next Serialize() call will resend them with the current values
-		variableDeltaSerializer.OnMessageReceipt(guid,receiptId,messageArrived);
+		p_variableDeltaSerializer.OnMessageReceipt(guid,receiptId,messageArrived);
 	}
 
-	// Demonstrate per-variable synchronization
-	// We manually test each variable to the last synchronized value and only send those values that change
-	int var1Unreliable,var2Unreliable,var3Reliable,var4Reliable;
+	glm::vec3 p_pos;
+	glm::vec3 p_rot;
+	glm::vec3 p_scale;
 
-	// Class to save and compare the states of variables this Serialize() to the last Serialize()
-	// If the value is different, true is written to the bitStream, followed by the value. Otherwise false is written.
-	// It also tracks which variables changed which Serialize() call, so if an unreliable message was lost (ID_SND_RECEIPT_LOSS) those variables are flagged 'dirty' and resent
-	VariableDeltaSerializer variableDeltaSerializer;
+	RakNet::RakString p_name;
+
+	VariableDeltaSerializer p_variableDeltaSerializer;
+
+    Transform p_transform;
+
+    object_type *p_type;
 };
 
 struct ClientCreatible_ClientSerialized : public network_object {

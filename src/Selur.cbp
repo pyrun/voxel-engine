@@ -22,7 +22,6 @@
 					<Add directory="../../OpenGL" />
 					<Add directory="../../glm/" />
 					<Add directory="../../openvr-mingw/headers" />
-					<Add directory="../../assimp/include" />
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 				</Compiler>
@@ -31,7 +30,6 @@
 					<Add option="-lopengl32" />
 					<Add option="-lglew32" />
 					<Add option="-lopenvr_dll" />
-					<Add option="-lassimp" />
 					<Add option="-lRakNet" />
 					<Add option="-DMINIUPNP_STATICLIB" />
 					<Add option="-lminiupnpc" />
@@ -40,7 +38,6 @@
 					<Add directory="../../SDL2/lib" />
 					<Add directory="../../OpenGL/lib" />
 					<Add directory="../../openvr-mingw/lib" />
-					<Add directory="../../assimp/lib" />
 					<Add directory="../../RakNet/Lib" />
 					<Add directory="../../Miniupnpc/lib" />
 				</Linker>
@@ -98,6 +95,8 @@
 		<Unit filename="engine/network.h" />
 		<Unit filename="engine/network_ids.cpp" />
 		<Unit filename="engine/network_ids.h" />
+		<Unit filename="engine/object.cpp" />
+		<Unit filename="engine/object.h" />
 		<Unit filename="engine/openvr.cpp" />
 		<Unit filename="engine/openvr.h" />
 		<Unit filename="engine/openvr_models.cpp" />
@@ -118,8 +117,6 @@
 		<Unit filename="game/input.h" />
 		<Unit filename="game/landscape_generator.cpp" />
 		<Unit filename="game/landscape_generator.h" />
-		<Unit filename="game/object.cpp" />
-		<Unit filename="game/object.h" />
 		<Unit filename="game/objectcreator.cpp" />
 		<Unit filename="game/objectcreator.h" />
 		<Unit filename="game/sun.cpp" />
