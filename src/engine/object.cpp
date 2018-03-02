@@ -34,6 +34,10 @@ object_type::~object_type()
     glDeleteBuffers(1, &p_vbo_index);
 }
 
+void object_type::init( Transform *transform) {
+    transform->setScale( p_size);
+}
+
 bool object_type::load_type( config *config, std::string l_path, std::string l_name) {
     XMLDocument l_file;
     bool l_idle = false;
@@ -201,7 +205,7 @@ void object_type::updateVao()
     glBindVertexArray(0);
 }
 
-void object_type::draw( Transform* transform, Shader* shader, glm::mat4 viewprojection)
+void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection)
 {
     updateVbo();
     updateVao();
@@ -211,7 +215,7 @@ void object_type::draw( Transform* transform, Shader* shader, glm::mat4 viewproj
     if( p_texture)
         p_texture->Bind();
 
-    shader->update( transform, viewprojection);
+    shader->update( model, viewprojection);
     // draw
     glBindVertexArray( p_vao);
 
@@ -237,7 +241,7 @@ void object::init()
 
 void object::draw( Shader* shader, glm::mat4 viewprojection) {
     if( p_type)
-        p_type->draw( getTransform(), shader, viewprojection);
+        ;//p_type->draw( getTransform(), shader, viewprojection);
 }
 
 object_handle::object_handle()

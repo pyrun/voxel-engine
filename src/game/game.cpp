@@ -376,7 +376,7 @@ void game::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
     p_graphic->getVertexShader()->BindArray( p_vboCursor, 0);
     p_graphic->getVertexShader()->Bind();// Shader
     p_graphic->getVertexShader()->EnableVertexArray( 0);
-    p_graphic->getVertexShader()->update( &f_form, viewProjection);
+    p_graphic->getVertexShader()->update( f_form.getModel(), viewProjection);
 
     // Vbo übertragen
     glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);

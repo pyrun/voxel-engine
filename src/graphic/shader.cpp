@@ -91,8 +91,8 @@ void Shader::SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a) {
     glUniform4f( p_uniforms[4], r, g, b, a);
 }
 
-void Shader::update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {
-    glm::mat4 MVP = getCurrentViewProjectionMatrix * transform->getModel() * aa;
+void Shader::update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {
+    glm::mat4 MVP = getCurrentViewProjectionMatrix * model * aa;
 
     glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &MVP[0][0]);
 }

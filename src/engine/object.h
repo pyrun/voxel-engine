@@ -17,13 +17,15 @@ class object_type {
         object_type();
         ~object_type();
 
+        void init(  Transform *transform);
+
         bool load_type( config *config, std::string l_path, std::string l_name);
         bool load_file( std::string file);
 
         void updateVbo();
         void updateVao();
 
-        void draw( Transform* transform, Shader* shader, glm::mat4 viewprojection);
+        void draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
 
         std::string getName() { return p_name; };
         glm::vec3 getScale() { return p_size; }

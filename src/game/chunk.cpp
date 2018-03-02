@@ -620,7 +620,7 @@ void Chunk::draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
     p_updatevbo = true;
 
     // Shader einstellen
-    shader->update( &p_form, viewProjection, aa);
+    shader->update( p_form.getModel(), viewProjection, aa);
 
     // use the vao
     glBindVertexArray( p_vboVao);

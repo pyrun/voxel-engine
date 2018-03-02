@@ -5,11 +5,27 @@ network_object::network_object()
     p_type = NULL;
     p_name = "";
 
+    p_scale = glm::vec3( 1, 1, 1);
+
+    p_model_change = false;
+
 }
 
 network_object::~network_object()
 {
 
+}
+
+void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
+    if( p_type == NULL)
+        p_type = types->get( p_name.C_String());
+    if( !p_type)
+        return;
+    // look if wee need to update the model matrix
+    update_model();
+
+    // draw
+    p_type->draw( p_model, shader, vp);
 }
 
 void network_object::WriteAllocationID(RakNet::Connection_RM3 *destinationConnection, RakNet::BitStream *allocationIdBitstream) const {
@@ -64,7 +80,6 @@ void network_object::OnUserReplicaPreSerializeTick(void)
 }
 
 RM3SerializationResult network_object::Serialize(SerializeParameters *serializeParameters)	{
-
     VariableDeltaSerializer::SerializationContext serializationContext;
     serializeParameters->pro[0].reliability=UNRELIABLE_WITH_ACK_RECEIPT;
     serializeParameters->pro[0].sendReceipt=replicaManager->GetRakPeerInterface()->IncrementNextSendReceipt();
@@ -131,6 +146,23 @@ void network_object::Deserialize(RakNet::DeserializeParameters *deserializeParam
     p_variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[2]);
     p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_name);
     p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
+
+    p_model_change = true;
+}
+
+void network_object::update_model() {
+    if( !p_model_change)
+        return;
+
+    p_model_change = false;
+
+    glm::mat4 l_posMat = glm::translate( p_pos);
+    glm::mat4 l_scaleMat = glm::scale( p_scale);
+    glm::mat4 l_rotX = glm::rotate( p_rot.x, glm::vec3(1.0, 0.0, 0.0));
+    glm::mat4 l_rotY = glm::rotate( p_rot.y, glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 l_rotZ = glm::rotate( p_rot.z, glm::vec3(0.0, 0.0, 1.0));
+    glm::mat4 l_rotMat = l_rotX * l_rotY * l_rotZ;
+    p_model = l_posMat * l_rotMat * l_scaleMat;
 }
 
 /** \brief network main class
@@ -247,9 +279,17 @@ void network::start()
 	}
 
 	if( isServer() ) {
-        p_starchip->addChunk( glm::vec3( 0, -1, 0) );
 
-        ServerCreated_ServerSerialized* l_obj = new ServerCreated_ServerSerialized();
+        for( int x = -2; x <= 2; x++)
+            for( int y = -2; y <= 2; y++)
+                p_starchip->addChunk( glm::vec3( x, -1, y) );
+
+        ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
+        l_obj->p_name = "eagle";
+        l_obj->p_type = p_types->get( l_obj->getTypeName().C_String());
+        //l_obj->p_type->init();
+
+        //p_transform.setPos( p_transform.getPos()+glm::vec3( 0, 0, 0.01));
 
         p_replicaManager.Reference( l_obj);
 	}
@@ -458,9 +498,20 @@ bool network::process()
 
 void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 {
-    Transform test;
-    test.setScale( p_types->get( "eagle")->getScale());
-    if( p_types->get( "eagle") != NULL)
-        p_types->get( "eagle")->draw( &test, graphic->getObjectShader(), viewmatrix);
+
+    Shader *l_object = graphic->getObjectShader();
+    l_object->Bind();
+    unsigned int idx;
+    for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
+        network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
+        l_obj->draw( l_object, viewmatrix, p_types);
+        if( isServer()) {
+
+
+            l_obj->setPos( l_obj->getPos() + glm::vec3( 0, 0, 0.01));
+
+            //((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)))->p_transform.setPos( ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)))->p_transform.getPos() + glm::vec3( 0, 0, 0.01f));
+        }
+    }
     p_starchip->draw( graphic, config, viewmatrix);
 }

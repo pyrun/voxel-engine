@@ -45,7 +45,7 @@ public:
 	void SetTextureUnit(unsigned int TextureUnit);
 	void SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a);
 
-	void update(Transform *transform, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
+	void update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
 	void updateWithout(  Transform *t_transform, glm::mat4 mvp) ;
 
 	inline GLint& GetProgram() { return p_program; }
