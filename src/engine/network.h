@@ -24,6 +24,8 @@
 #include "upnpcommands.h"
 #include "upnperrors.h"
 
+#include "btBulletDynamicsCommon.h"
+
 // ReplicaManager3 is in the namespace RakNet
 using namespace RakNet;
 
@@ -38,6 +40,8 @@ struct network_object : public Replica3
     public:
         network_object();
         ~network_object();
+
+        void init( btDiscreteDynamicsWorld *world);
 
         void draw( Shader *shader, glm::mat4 vp, object_handle *types);
 
@@ -83,6 +87,10 @@ struct network_object : public Replica3
         void update_model();
         void setPos( glm::vec3 pos) { p_pos = pos; p_model_change = true; }
         glm::vec3 getPos() { return p_pos; };
+
+    public:
+        btRigidBody *p_body;
+        btTransform p_transform;
 
         bool p_model_change;
         glm::vec3 p_pos;
@@ -250,12 +258,16 @@ class network
 
         void draw( graphic *graphic, config *config, glm::mat4 viewmatrix);
 
+        void create_object();
+
         world *getWorld() { return p_starchip; }
         bool isServer() { return p_isServer; }
         bool isClient() { return p_isClient; }
     protected:
 
     private:
+        btDiscreteDynamicsWorld *p_physic_world;
+
         RakNet::SocketDescriptor p_socketdescriptor;
         NetworkIDManager p_networkIdManager;
         RakNet::RakPeerInterface *p_rakPeerInterface;

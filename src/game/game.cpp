@@ -18,6 +18,8 @@ game::game() {
     p_openvr = NULL;
     p_vboCursor = NULL;
     p_isRunnig = true;
+    p_framecap = true;
+    p_timecap = 12; // ms -> 90hz
 
     // start subystems
     p_config = new config();
@@ -29,7 +31,6 @@ game::game() {
 
     // set values after start
     p_blocklist->Draw( p_graphic);
-    framenrate.Set( 200); // fps
 }
 
 game::~game() {
@@ -47,6 +48,7 @@ game::~game() {
 
 void game::startVR() {
     p_openvr = new openvr();
+    p_framecap = false;
 }
 
 void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
@@ -203,17 +205,14 @@ void game::render( glm::mat4 viewProjection) {
 }
 
 void game::Start() {
-    //p_config.SetTransparency( true);
-
-/*    Object *obj = new Object;
-    obj->Init();
-    Object *obj2 = new Object;
-    obj2->Init();*/
-
+    // set variables
     Timer l_timer;
+    struct clock l_clock;
     int number = 0;
-
     glm::mat4 l_mvp;
+
+    // set up clock
+    l_clock.tick();
     while( p_isRunnig) { // Runniz
         l_timer.Start();
 
@@ -264,8 +263,6 @@ void game::Start() {
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
 
-        // Framenrate anfangen zu zählen
-        framenrate.StartCount();
 
         if( p_network->process())
             p_isRunnig = false;
@@ -317,16 +314,31 @@ void game::Start() {
 
 
         // Titel setzten
-        Title = "FPS_" + NumberToString( framenrate.getFrameratePrecisely() );
+        p_framerate.push_back( l_clock.delta);
+        if( p_framerate.size() > 100)
+            p_framerate.erase( p_framerate.begin());
+        float l_average_delta_time = 0;
+        for( int i = 0; i < (int)p_framerate.size(); i++)
+            l_average_delta_time += (float)p_framerate[i];
+        l_average_delta_time = l_average_delta_time/(float)p_framerate.size();
+
+        double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
+        Title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         Title = Title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
         if(  p_network->getWorld())
             Title = Title + " Chunks_" + NumberToString( (double) p_network->getWorld()->GetAmountChunks());
         p_graphic->getDisplay()->setTitle( Title);
 
+        // one at evry frame
+        l_clock.tick();
 
-        // Framenrate begrenzen
-        framenrate.calcDelay( p_openvr?true:false);
+        // frame rate
+        if( l_clock.delta < p_timecap && p_framecap) {
+            int l_sleep = p_timecap - l_clock.delta;
+            SDL_Delay( l_sleep==0?1:l_sleep);
+            l_clock.tick();
+        }
     }
 }
 

@@ -4,6 +4,8 @@
 #include <dirent.h>
 #include <algorithm>
 
+#include "btBulletDynamicsCommon.h"
+
 #include "../xml/tinyxml2.h"
 
 #include "../graphic/graphic.h"
@@ -26,6 +28,8 @@ class object_type {
         void updateVao();
 
         void draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
+
+        btRigidBody *makeBulletMesh();
 
         std::string getName() { return p_name; };
         glm::vec3 getScale() { return p_size; }

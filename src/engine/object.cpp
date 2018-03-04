@@ -224,6 +224,56 @@ void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojectio
     glBindVertexArray(0);
 }
 
+btRigidBody *object_type::makeBulletMesh() {
+    btRigidBody * body = nullptr;
+
+    // Handy lambda for converting from irr::vector to btVector
+    auto toBtVector = [ &]( const glm::vec3 & vec ) -> btVector3
+    {
+        btVector3 bt( vec.x, vec.y, vec.z );
+
+        return bt;
+    };
+
+    // Make bullet rigid body
+    if ( ! p_vertices.empty() && ! p_indices.empty() )
+    {
+        // Working numbers
+        const size_t numIndices     = p_indices.size();
+        const size_t numTriangles   = numIndices / 3;
+
+        // Create triangles
+        btTriangleMesh * btmesh = new btTriangleMesh();
+
+        // Build btTriangleMesh
+        for ( size_t i=0; i<numIndices; i+=3 )
+        {
+            const btVector3 &A = toBtVector( p_vertices[ p_indices[ i+0 ] ] );
+            const btVector3 &B = toBtVector( p_vertices[ p_indices[ i+1 ] ] );
+            const btVector3 &C = toBtVector( p_vertices[ p_indices[ i+2 ] ] );
+
+            bool removeDuplicateVertices = true;
+            btmesh->addTriangle( A, B, C, removeDuplicateVertices );
+        }
+
+        // Give it a default MotionState
+        btTransform transform;
+        transform.setIdentity();
+        transform.setOrigin( btVector3 ( 0, 0, 0) );
+        btDefaultMotionState *motionState = new btDefaultMotionState( transform );
+
+        // Create the shape
+        btCollisionShape *btShape = new btBvhTriangleMeshShape( btmesh, true );
+        btShape->setMargin( 0.05f );
+
+        // Create the rigid body object
+        btScalar mass = 0.0f;
+        body = new btRigidBody( mass, motionState, btShape );
+
+    }
+    return body;
+}
+
 object::object()
 {
     p_type = NULL;

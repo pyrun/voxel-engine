@@ -8,12 +8,18 @@ network_object::network_object()
     p_scale = glm::vec3( 1, 1, 1);
 
     p_model_change = false;
-
 }
 
 network_object::~network_object()
 {
 
+}
+
+void network_object::init( btDiscreteDynamicsWorld *world) {
+	// Create the shape
+	btRigidBody *RigidBody = p_type->makeBulletMesh();
+
+	world->addRigidBody(RigidBody);
 }
 
 void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
@@ -278,6 +284,13 @@ void network::start()
 		printf("network::start Connecting...\n");
 	}
 
+    // Initialize bullet
+	btBroadphaseInterface *BroadPhase = new btAxisSweep3(btVector3(-1000, -1000, -1000), btVector3(1000, 1000, 1000));
+	btDefaultCollisionConfiguration *CollisionConfiguration = new btDefaultCollisionConfiguration();
+	btCollisionDispatcher *Dispatcher = new btCollisionDispatcher(CollisionConfiguration);
+	btSequentialImpulseConstraintSolver *Solver = new btSequentialImpulseConstraintSolver();
+	p_physic_world = new btDiscreteDynamicsWorld(Dispatcher, BroadPhase, Solver, CollisionConfiguration);
+
 	if( isServer() ) {
 
         for( int x = -2; x <= 2; x++)
@@ -287,7 +300,7 @@ void network::start()
         ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
         l_obj->p_name = "eagle";
         l_obj->p_type = p_types->get( l_obj->getTypeName().C_String());
-        //l_obj->p_type->init();
+        l_obj->init( p_physic_world);
 
         //p_transform.setPos( p_transform.getPos()+glm::vec3( 0, 0, 0.01));
 
@@ -514,4 +527,8 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
         }
     }
     p_starchip->draw( graphic, config, viewmatrix);
+}
+
+void network::create_object() {
+
 }

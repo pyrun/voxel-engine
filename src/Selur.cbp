@@ -24,6 +24,7 @@
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
+					<Add directory="../../bullet3/src" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -33,6 +34,9 @@
 					<Add option="-lRakNet" />
 					<Add option="-DMINIUPNP_STATICLIB" />
 					<Add option="-lminiupnpc" />
+					<Add option="-lBulletDynamics" />
+					<Add option="-lBulletCollision" />
+					<Add option="-lLinearMath" />
 					<Add library="ws2_32" />
 					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
@@ -40,6 +44,7 @@
 					<Add directory="../../openvr-mingw/lib" />
 					<Add directory="../../RakNet/Lib" />
 					<Add directory="../../Miniupnpc/lib" />
+					<Add directory="../../bullet3/lib" />
 				</Linker>
 			</Target>
 			<Target title="linux">
@@ -65,23 +70,36 @@
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-openvr" />
+				<Option parameters="-openvr -server" />
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="../../SDL2/include" />
 					<Add directory="../../OpenGL" />
 					<Add directory="../../glm/" />
 					<Add directory="../../openvr-mingw/headers" />
-					<Add directory="engine/" />
+					<Add directory="../../RakNet/Source" />
+					<Add directory="../../Miniupnpc/source/" />
+					<Add directory="../../bullet3/src" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
 					<Add option="-lopengl32" />
 					<Add option="-lglew32" />
 					<Add option="-lopenvr_dll" />
+					<Add option="-lRakNet" />
+					<Add option="-DMINIUPNP_STATICLIB" />
+					<Add option="-lminiupnpc" />
+					<Add option="-lBulletDynamics" />
+					<Add option="-lBulletCollision" />
+					<Add option="-lLinearMath" />
+					<Add library="ws2_32" />
+					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
 					<Add directory="../../OpenGL/lib" />
 					<Add directory="../../openvr-mingw/lib" />
+					<Add directory="../../RakNet/Lib" />
+					<Add directory="../../Miniupnpc/lib" />
+					<Add directory="../../bullet3/lib" />
 				</Linker>
 			</Target>
 		</Build>
@@ -107,8 +125,6 @@
 		<Unit filename="game/block.h" />
 		<Unit filename="game/chunk.cpp" />
 		<Unit filename="game/chunk.h" />
-		<Unit filename="game/framenrate.cpp" />
-		<Unit filename="game/framenrate.h" />
 		<Unit filename="game/game.cpp" />
 		<Unit filename="game/game.h" />
 		<Unit filename="game/gui.cpp" />
