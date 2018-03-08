@@ -25,6 +25,7 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bullet3/src" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -57,6 +58,7 @@
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="engine/" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lSDL2  -lSDL2_image" />
@@ -80,6 +82,7 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bullet3/src" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -141,6 +144,8 @@
 		<Unit filename="game/world.h" />
 		<Unit filename="graphic/camera.cpp" />
 		<Unit filename="graphic/camera.h" />
+		<Unit filename="graphic/debug_draw.cpp" />
+		<Unit filename="graphic/debug_draw.h" />
 		<Unit filename="graphic/display.cpp" />
 		<Unit filename="graphic/display.h" />
 		<Unit filename="graphic/glerror.cpp" />

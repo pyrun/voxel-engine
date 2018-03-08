@@ -17,9 +17,21 @@ network_object::~network_object()
 
 void network_object::init( btDiscreteDynamicsWorld *world) {
 	// Create the shape
-	btRigidBody *RigidBody = p_type->makeBulletMesh();
+	p_body = p_type->makeBulletMesh();
 
-	world->addRigidBody(RigidBody);
+	world->addRigidBody(p_body);
+}
+
+glm::vec3 QuatToEuler(btQuaternion quat){
+    double sqw = quat.w() * quat.w();
+    double sqx = quat.x() * quat.x();
+    double sqy = quat.y() * quat.y();
+    double sqz = quat.z() * quat.z();
+
+    return glm::vec3(
+        (float)atan2l(2.0 * ( quat.y() * quat.z() + quat.x() * quat.w() ) , ( -sqx - sqy + sqz + sqw )),
+        (float)asinl(-2.0 * ( quat.x() * quat.z() - quat.y() * quat.w() )),
+        (float)atan2l(2.0 * ( quat.x() * quat.y() + quat.z() * quat.w() ) , ( sqx - sqy - sqz + sqw )));
 }
 
 void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
@@ -27,6 +39,12 @@ void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
         p_type = types->get( p_name.C_String());
     if( !p_type)
         return;
+
+        btVector3 Point = p_body->getCenterOfMassPosition();
+        glm::vec3 l_rotate = QuatToEuler( p_body->getOrientation() );
+        setPos( glm::vec3( (float)Point[0], (float)Point[1], (float)Point[2]));
+        setRotate( l_rotate);
+
     // look if wee need to update the model matrix
     update_model();
 
@@ -179,6 +197,15 @@ network::network( config *config, texture* image, block_list *block_list)
 {
     p_rakPeerInterface = NULL;
 
+    // Initialize bullet
+    btBroadphaseInterface* broadphase = new btDbvtBroadphase();
+	btDefaultCollisionConfiguration *CollisionConfiguration = new btDefaultCollisionConfiguration();
+	btCollisionDispatcher *Dispatcher = new btCollisionDispatcher(CollisionConfiguration);
+	//btGImpactCollisionAlgorithm::registerAlgorithm(Dispatcher);
+	btSequentialImpulseConstraintSolver *Solver = new btSequentialImpulseConstraintSolver;
+	p_physic_world = new btDiscreteDynamicsWorld(Dispatcher, broadphase, Solver, CollisionConfiguration);
+	p_physic_world->setGravity(btVector3(0, -10, 0));
+
     p_types = new object_handle();
     // broadcast on 255.255.255.255 at IPv4
     p_socketdescriptor.socketFamily=AF_INET;
@@ -284,12 +311,7 @@ void network::start()
 		printf("network::start Connecting...\n");
 	}
 
-    // Initialize bullet
-	btBroadphaseInterface *BroadPhase = new btAxisSweep3(btVector3(-1000, -1000, -1000), btVector3(1000, 1000, 1000));
-	btDefaultCollisionConfiguration *CollisionConfiguration = new btDefaultCollisionConfiguration();
-	btCollisionDispatcher *Dispatcher = new btCollisionDispatcher(CollisionConfiguration);
-	btSequentialImpulseConstraintSolver *Solver = new btSequentialImpulseConstraintSolver();
-	p_physic_world = new btDiscreteDynamicsWorld(Dispatcher, BroadPhase, Solver, CollisionConfiguration);
+    p_physic_world->setDebugDrawer(&p_debugdraw);
 
 	if( isServer() ) {
 
@@ -429,7 +451,7 @@ void network::sendAllChunks( world *world,RakNet::AddressOrGUID address) {
     }
 }
 
-bool network::process()
+bool network::process( int delta)
 {
     bool l_quit = false;
 
@@ -506,12 +528,13 @@ bool network::process()
 
     p_starchip->process();
 
+    p_physic_world->stepSimulation( (float)delta * 0.001f);
+
     return l_quit;
 }
 
 void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 {
-
     Shader *l_object = graphic->getObjectShader();
     l_object->Bind();
     unsigned int idx;
@@ -520,13 +543,24 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
         l_obj->draw( l_object, viewmatrix, p_types);
         if( isServer()) {
 
-
-            l_obj->setPos( l_obj->getPos() + glm::vec3( 0, 0, 0.01));
-
-            //((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)))->p_transform.setPos( ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)))->p_transform.getPos() + glm::vec3( 0, 0, 0.01f));
         }
     }
     p_starchip->draw( graphic, config, viewmatrix);
+
+    graphic->getDebugShader()->Bind();
+    p_debugdraw.draw( viewmatrix);
+    p_physic_world->debugDrawWorld();
+
+    // check if physic change
+    Chunk *l_node = p_starchip->getNode();
+    while( l_node != NULL) {
+        if( !l_node->isPhysicSet() && l_node->GetUpdateVboOnce() && l_node->getPhysicBody() != NULL) {
+            l_node->setPhysic( true);
+            p_physic_world->addRigidBody( l_node->getPhysicBody() );
+        }
+
+        l_node = l_node->next;
+    }
 }
 
 void network::create_object() {

@@ -18,6 +18,8 @@
 #include "network_ids.h"
 #include "object.h"
 
+#include "../graphic/debug_draw.h"
+
 #define STATICLIB
 
 #include "miniupnpc.h"
@@ -25,6 +27,7 @@
 #include "upnperrors.h"
 
 #include "btBulletDynamicsCommon.h"
+#include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
 // ReplicaManager3 is in the namespace RakNet
 using namespace RakNet;
@@ -86,6 +89,7 @@ struct network_object : public Replica3
 
         void update_model();
         void setPos( glm::vec3 pos) { p_pos = pos; p_model_change = true; }
+        void setRotate( glm::vec3 rotate) { p_rot = rotate; p_model_change = true; }
         glm::vec3 getPos() { return p_pos; };
 
     public:
@@ -254,7 +258,7 @@ class network
         void sendChunk( Chunk *chunk, RakNet::AddressOrGUID address);
         void sendAllChunks( world *world,RakNet::AddressOrGUID address);
 
-        bool process();
+        bool process( int delta);
 
         void draw( graphic *graphic, config *config, glm::mat4 viewmatrix);
 
@@ -263,10 +267,12 @@ class network
         world *getWorld() { return p_starchip; }
         bool isServer() { return p_isServer; }
         bool isClient() { return p_isClient; }
+        debug_draw *getDebugDraw() { return &p_debugdraw; }
     protected:
 
     private:
         btDiscreteDynamicsWorld *p_physic_world;
+        debug_draw p_debugdraw;
 
         RakNet::SocketDescriptor p_socketdescriptor;
         NetworkIDManager p_networkIdManager;

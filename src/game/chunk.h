@@ -1,13 +1,16 @@
 #ifndef CHUNK_H
 #define CHUNK_H 1
 
+#include <string.h>
 #include <vector>
-#include "../graphic/graphic.h"
-#include "block.h"
 
 #include "RakPeerInterface.h"
-#include <string.h>
 #include "BitStream.h"
+#include "btBulletDynamicsCommon.h"
+#include "BulletCollision/CollisionShapes/btShapeHull.h"
+
+#include "../graphic/graphic.h"
+#include "block.h"
 
 #define CHUNK_SIZE 16
 #define CHUNK_SCALE 2.0f
@@ -42,6 +45,8 @@ public:
 
     Chunk *next;
 
+    btRigidBody *makeBulletMesh();
+
     bool SetDeleting() {
         if( p_deleting)
             return false;
@@ -65,7 +70,7 @@ public:
     inline bool GetUpdateOnce() { return p_updateonce; }
     inline bool GetVbo() { return p_createvbo; }
     inline bool GetArrayChange() { return p_arraychange; }
-    inline int getAmount() { return p_vertex.size(); }
+    inline int getAmount() { return p_vertices.size(); }
     inline bool GetUpdateVboOnce() { return p_updatevboonce; }
     inline int GetTimeIdle() { return p_time_idle; }
     void ResetTimeIdle() { p_time_idle = SDL_GetTicks(); }
@@ -84,6 +89,10 @@ public:
 
     tile getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }
+
+    void setPhysic( bool set) { p_physicSet = set; }
+    bool isPhysicSet() { return p_physicSet; }
+    btRigidBody *getPhysicBody() { return p_rigidBody; }
 protected:
 private:
     glm::tvec3<int> p_pos;
@@ -104,13 +113,15 @@ private:
     GLuint p_vboData;
     tile* p_tile;
     int p_seed;
+    bool p_physicSet;
+    btRigidBody *p_rigidBody;
 
-    std::vector<block_vertex> p_vertex;
+    std::vector<block_vertex> p_vertices;
     std::vector<block_vertex> p_normal;
     std::vector<block_vertex> p_data;
     //block_data p_data[ CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6];
 
-    /*std::vector<ChunkVboVertexStruct> p_vertex;
+    /*std::vector<ChunkVboVertexStruct> p_vertices;
     std::vector<ChunkVboDataStruct> p_data;*/
 };
 

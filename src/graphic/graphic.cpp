@@ -1,6 +1,4 @@
 #include "graphic.h"
-
-
 #include <SDL2/SDL_image.h>
 
 graphic::graphic( config *config) {
@@ -11,12 +9,14 @@ graphic::graphic( config *config) {
     p_voxel = new Shader( "shader/voxels");
     p_vertex = new Shader( "shader/vertex");
     p_object = new Shader( "shader/object");
+    p_debug = new Shader( "shader/debug");
 
     // camera
     p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
 }
 
 graphic::~graphic() {
+    delete p_debug;
     delete p_camera;
     delete p_voxel;
     delete p_vertex;

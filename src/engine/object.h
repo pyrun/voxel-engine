@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "btBulletDynamicsCommon.h"
+#include "BulletCollision/CollisionShapes/btShapeHull.h"
 
 #include "../xml/tinyxml2.h"
 

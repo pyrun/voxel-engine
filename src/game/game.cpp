@@ -31,6 +31,8 @@ game::game() {
 
     // set values after start
     p_blocklist->Draw( p_graphic);
+
+    p_network->getDebugDraw()->init( p_graphic);
 }
 
 game::~game() {
@@ -211,6 +213,8 @@ void game::Start() {
     int number = 0;
     glm::mat4 l_mvp;
 
+    int l_delta = 0;
+
     // set up clock
     l_clock.tick();
     while( p_isRunnig) { // Runniz
@@ -231,17 +235,17 @@ void game::Start() {
         }
 
         if( p_input.Map.Up )
-            cam->MoveForwardCross( Speed);
+            cam->MoveForwardCross( Speed*l_delta);
         if( p_input.Map.Down )
-            cam->MoveForwardCross(-Speed);
+            cam->MoveForwardCross(-Speed*l_delta);
         if( p_input.Map.Right )
-            cam->MoveRight(-Speed);
+            cam->MoveRight(-Speed*l_delta);
         if( p_input.Map.Left )
-            cam->MoveRight( Speed);
+            cam->MoveRight( Speed*l_delta);
         if( p_input.Map.Jump )
-            cam->MoveUp( Speed);
+            cam->MoveUp( Speed*l_delta);
         if( p_input.Map.Shift )
-            cam->MoveUp( -Speed);
+            cam->MoveUp( -Speed*l_delta);
         if( p_input.Map.Inventory && !p_input.MapOld.Inventory) {
             /*if( p_config.GetSupersampling()) {
                 p_config.SetSupersampling( false);
@@ -264,7 +268,7 @@ void game::Start() {
         }
 
 
-        if( p_network->process())
+        if( p_network->process( l_delta))
             p_isRunnig = false;
 
 
@@ -283,7 +287,7 @@ void game::Start() {
             p_openvr->renderEndRightEye();
 
 
-            l_timer.Start();
+            //l_timer.Start();
             p_openvr->renderFrame();
         }
 
@@ -337,8 +341,10 @@ void game::Start() {
         if( l_clock.delta < p_timecap && p_framecap) {
             int l_sleep = p_timecap - l_clock.delta;
             SDL_Delay( l_sleep==0?1:l_sleep);
-            l_clock.tick();
+
         }
+
+        l_delta = l_timer.GetTicks();
     }
 }
 

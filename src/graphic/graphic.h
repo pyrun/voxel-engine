@@ -32,6 +32,7 @@ public:
     inline Shader *getVoxelShader() { if(p_voxel == NULL) printf( "graphic::GetVoxelShader dont exist\n"); return p_voxel; }
     inline Shader *getVertexShader() { if(p_vertex== NULL) printf( "graphic::getVertexShader dont exist\n"); return p_vertex; }
     inline Shader *getObjectShader() { if(p_object== NULL) printf( "graphic::GetObjectShader dont exist\n"); return p_object; }
+    inline Shader *getDebugShader() { if(p_debug== NULL) printf( "graphic::getDebugShader dont exist\n"); return p_debug; }
     inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
 protected:
 private:
@@ -40,6 +41,7 @@ private:
     Shader* p_voxel;
     Shader* p_vertex;
     Shader *p_object;
+    Shader *p_debug;
 };
 
 #endif // graphic_H

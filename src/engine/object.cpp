@@ -257,18 +257,20 @@ btRigidBody *object_type::makeBulletMesh() {
         }
 
         // Give it a default MotionState
-        btTransform transform;
-        transform.setIdentity();
-        transform.setOrigin( btVector3 ( 0, 0, 0) );
-        btDefaultMotionState *motionState = new btDefaultMotionState( transform );
+        btDefaultMotionState* fallMotionState =
+                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 100, 0)));
 
-        // Create the shape
-        btCollisionShape *btShape = new btBvhTriangleMeshShape( btmesh, true );
-        btShape->setMargin( 0.05f );
+        btConvexShape  *tmpshape = new btConvexTriangleMeshShape( btmesh );
+        btShapeHull *hull = new btShapeHull(tmpshape);
+        btScalar margin = tmpshape->getMargin();
+        hull->buildHull(margin);
+        btConvexHullShape* simplifiedConvexShape = new btConvexHullShape( (btScalar*)hull->getVertexPointer(), hull->numVertices());
 
-        // Create the rigid body object
-        btScalar mass = 0.0f;
-        body = new btRigidBody( mass, motionState, btShape );
+        btScalar mass = 10;
+        btVector3 fallInertia(0, 0, 0);
+        //btShape->calculateLocalInertia(mass, fallInertia);
+        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, simplifiedConvexShape, fallInertia);
+        body = new btRigidBody(fallRigidBodyCI);
 
     }
     return body;
