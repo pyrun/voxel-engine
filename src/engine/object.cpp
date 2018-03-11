@@ -69,9 +69,14 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
 
     // load file
     XMLElement* l_xml_file = l_object->FirstChildElement( "file" );
+    if( !l_xml_file)
+        return false;
     p_file = l_xml_file->GetText();
+    printf( "test %s\n", ( l_path + p_file).c_str() );
     if( !load_file( l_path + p_file))
         return false;
+
+    printf( "test\n");
 
     double l_size = std::strtod( l_xml_file->Attribute( "size"), 0);
     p_size = glm::vec3( (float)l_size, (float)l_size, (float)l_size);
@@ -124,9 +129,11 @@ bool object_type::load_file( std::string file) {
           tinyobj::real_t vx = l_attrib.vertices[3*idx.vertex_index+0];
           tinyobj::real_t vy = l_attrib.vertices[3*idx.vertex_index+1];
           tinyobj::real_t vz = l_attrib.vertices[3*idx.vertex_index+2];
-          tinyobj::real_t nx = l_attrib.normals[3*idx.normal_index+0];
-          tinyobj::real_t ny = l_attrib.normals[3*idx.normal_index+1];
-          tinyobj::real_t nz = l_attrib.normals[3*idx.normal_index+2];
+
+          tinyobj::real_t nx = 0; //l_attrib.normals[3*idx.normal_index+0];
+          tinyobj::real_t ny = 0; //l_attrib.normals[3*idx.normal_index+1];
+          tinyobj::real_t nz = 0; //l_attrib.normals[3*idx.normal_index+2];
+
           tinyobj::real_t tx = l_attrib.texcoords[2*idx.texcoord_index+0];
           tinyobj::real_t ty = 1.0f - l_attrib.texcoords[2*idx.texcoord_index+1];
 
@@ -142,7 +149,7 @@ bool object_type::load_file( std::string file) {
         index_offset += fv;
 
         // per-face material
-        l_shapes[s].mesh.material_ids[f];
+        //l_shapes[s].mesh.material_ids[f];
       }
     }
 
@@ -258,7 +265,7 @@ btRigidBody *object_type::makeBulletMesh() {
 
         // Give it a default MotionState
         btDefaultMotionState* fallMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 100, 0)));
+                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(10, 10, 0)));
 
         btConvexShape  *tmpshape = new btConvexTriangleMeshShape( btmesh );
         btShapeHull *hull = new btShapeHull(tmpshape);
@@ -266,10 +273,14 @@ btRigidBody *object_type::makeBulletMesh() {
         hull->buildHull(margin);
         btConvexHullShape* simplifiedConvexShape = new btConvexHullShape( (btScalar*)hull->getVertexPointer(), hull->numVertices());
 
-        btScalar mass = 10;
+        //btConvexTriangleMeshShape *tmpshape2 = new btConvexTriangleMeshShape( btmesh);
+        btGImpactMeshShape *tmpshape2 = new btGImpactMeshShape( btmesh);
+        tmpshape2->updateBound();
+
+        btScalar mass = 100;
         btVector3 fallInertia(0, 0, 0);
         //btShape->calculateLocalInertia(mass, fallInertia);
-        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, simplifiedConvexShape, fallInertia);
+        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, tmpshape2, fallInertia);
         body = new btRigidBody(fallRigidBodyCI);
 
     }

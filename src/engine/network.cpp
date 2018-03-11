@@ -198,12 +198,15 @@ network::network( config *config, texture* image, block_list *block_list)
     p_rakPeerInterface = NULL;
 
     // Initialize bullet
-    btBroadphaseInterface* broadphase = new btDbvtBroadphase();
+    btBroadphaseInterface* broadphase = new btDbvtBroadphase;
+
 	btDefaultCollisionConfiguration *CollisionConfiguration = new btDefaultCollisionConfiguration();
 	btCollisionDispatcher *Dispatcher = new btCollisionDispatcher(CollisionConfiguration);
-	//btGImpactCollisionAlgorithm::registerAlgorithm(Dispatcher);
+
+	btGImpactCollisionAlgorithm::registerAlgorithm( Dispatcher);
 	btSequentialImpulseConstraintSolver *Solver = new btSequentialImpulseConstraintSolver;
-	p_physic_world = new btDiscreteDynamicsWorld(Dispatcher, broadphase, Solver, CollisionConfiguration);
+
+	p_physic_world = new btDiscreteDynamicsWorld( Dispatcher, broadphase, Solver, CollisionConfiguration);
 	p_physic_world->setGravity(btVector3(0, -10, 0));
 
     p_types = new object_handle();
@@ -320,7 +323,7 @@ void network::start()
                 p_starchip->addChunk( glm::vec3( x, -1, y) );
 
         ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
-        l_obj->p_name = "eagle";
+        l_obj->p_name = "box";
         l_obj->p_type = p_types->get( l_obj->getTypeName().C_String());
         l_obj->init( p_physic_world);
 
@@ -541,26 +544,44 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
     for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
         network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
         l_obj->draw( l_object, viewmatrix, p_types);
-        if( isServer()) {
-
-        }
     }
+
+
     p_starchip->draw( graphic, config, viewmatrix);
 
     graphic->getDebugShader()->Bind();
     p_debugdraw.draw( viewmatrix);
     p_physic_world->debugDrawWorld();
 
+   bool l_push = false;
+
     // check if physic change
     Chunk *l_node = p_starchip->getNode();
     while( l_node != NULL) {
-        if( !l_node->isPhysicSet() && l_node->GetUpdateVboOnce() && l_node->getPhysicBody() != NULL) {
+        if( !l_node->isPhysicSet() && l_node->GetUpdateVboOnce()) {
+            if( l_node->getPhysicBody()) {
+                p_physic_world->removeCollisionObject( l_node->getPhysicBody());
+                l_push = true;
+            }
+            l_node->makeBulletMesh(); //->applyCentralImpulse();
             l_node->setPhysic( true);
+            l_node->getPhysicBody()->updateInertiaTensor();
             p_physic_world->addRigidBody( l_node->getPhysicBody() );
         }
-
         l_node = l_node->next;
     }
+
+    if( l_push) {
+        for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
+            network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
+
+            if( l_obj->getPhysicBody() ) {
+                l_obj->getPhysicBody()->setActivationState(DISABLE_DEACTIVATION);
+                l_obj->getPhysicBody()->applyCentralImpulse( btVector3( 10, 100, 0));
+            }
+        }
+    }
+
 }
 
 void network::create_object() {

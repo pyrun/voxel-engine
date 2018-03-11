@@ -7,6 +7,7 @@
 #include "RakPeerInterface.h"
 #include "BitStream.h"
 #include "btBulletDynamicsCommon.h"
+#include <BulletCollision/Gimpact/btGImpactShape.h>
 #include "BulletCollision/CollisionShapes/btShapeHull.h"
 
 #include "../graphic/graphic.h"

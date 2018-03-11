@@ -91,6 +91,7 @@ struct network_object : public Replica3
         void setPos( glm::vec3 pos) { p_pos = pos; p_model_change = true; }
         void setRotate( glm::vec3 rotate) { p_rot = rotate; p_model_change = true; }
         glm::vec3 getPos() { return p_pos; };
+        btRigidBody *getPhysicBody() { return p_body; }
 
     public:
         btRigidBody *p_body;

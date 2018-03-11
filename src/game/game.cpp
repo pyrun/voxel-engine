@@ -224,7 +224,7 @@ void game::Start() {
         p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
         // Input einsehen
 //        float Speed = 0.1f * framenrate.getMSframe() *framenrate.getLimit()/ 1000.0f;
-        float Speed = 0.1f;
+        float Speed = 0.01f;
         //printf( "%f %f \n", Speed, framenrate.getMSframe());
         Camera *cam = p_graphic->getCamera();
         cam->horizontalAngle ( -p_input.Map.MousePos.x * 2);

@@ -6,6 +6,7 @@
 
 #include "btBulletDynamicsCommon.h"
 #include "BulletCollision/CollisionShapes/btShapeHull.h"
+#include <BulletCollision/Gimpact/btGImpactShape.h>
 
 #include "../xml/tinyxml2.h"
 

@@ -131,10 +131,10 @@ btRigidBody *Chunk::makeBulletMesh() {
         transform.setRotation( btQuaternion(0, 0, 0, 1) );
 
         /*
-        btDefaultMotionState *motionState = new btDefaultMotionState( transform );
+        btDefaultMotionState *motionState = new btDefaultMotionState( transform );*/
 
         btCollisionShape *btShape = new btBvhTriangleMeshShape( btmesh, true );
-
+/*
         btRigidBody::btRigidBodyConstructionInfo
                 groundRigidBodyCI(0, motionState, btShape, btVector3(0, 0, 0));
         body = new btRigidBody(groundRigidBodyCI);*/
@@ -143,18 +143,25 @@ btRigidBody *Chunk::makeBulletMesh() {
         btDefaultMotionState* fallMotionState =
                 new btDefaultMotionState( transform);
 
-        btConvexShape  *tmpshape = new btConvexTriangleMeshShape( btmesh );
+        //btConvexHullShape *tmpshape = new btConvexHullShape( btmesh);
+
+        /*btConvexShape  *tmpshape = new btConvexTriangleMeshShape( btmesh );
         btShapeHull *hull = new btShapeHull(tmpshape);
         btScalar margin = tmpshape->getMargin();
-        hull->buildHull(margin);
-        btConvexHullShape* simplifiedConvexShape = new btConvexHullShape( (btScalar*)hull->getVertexPointer(), hull->numVertices());
+        hull->buildHull(margin);*/
+        //btGImpactMeshShape* simplifiedConvexShape = new btGImpactMeshShape( btmesh);
 
         btScalar mass = 0;
         btVector3 fallInertia(0, 0, 0);
         //btShape->calculateLocalInertia(mass, fallInertia);
-        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, tmpshape, fallInertia);
+        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, btShape, fallInertia);
         body = new btRigidBody(fallRigidBodyCI);
     }
+
+    if( p_rigidBody)
+        delete p_rigidBody;
+
+    p_rigidBody = body;
     return body;
 }
 
@@ -597,8 +604,7 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
         return;
     }
     p_arraychange = true;
-
-    p_rigidBody = makeBulletMesh();
+    p_physicSet = false;
 
     printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
 }

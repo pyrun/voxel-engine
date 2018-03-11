@@ -1,5 +1,5 @@
 <object name="box" script="script.lua" timer="200" gravity="40">
 	<file size="0.03">box.obj</file>
-	<2texture>bricks.jpg</texture>
+	<texture>bricks.jpg</texture>
 </object>
 
