@@ -26,14 +26,20 @@ class debug_draw : public btIDebugDraw {
     private:
         int p_modus;
 
-        std::vector<glm::vec3> p_lines;
-        std::vector<glm::vec3> p_color;
+        bool p_change;
+
+        int p_vector_length;
+        int p_vector_size;
+        std::vector<btVector3> p_lines;
+        std::vector<btVector3> p_color;
 
         Shader *p_shader;
 
         GLuint p_vbo_lines;
         GLuint p_vbo_color;
         GLuint p_vao;
+
+        GLuint p_mvp;
 };
 
 #endif // DEBUG_DRAW_H

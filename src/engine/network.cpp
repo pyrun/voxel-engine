@@ -19,6 +19,8 @@ void network_object::init( btDiscreteDynamicsWorld *world) {
 	// Create the shape
 	p_body = p_type->makeBulletMesh();
 
+	p_body->setActivationState(DISABLE_DEACTIVATION);
+
 	world->addRigidBody(p_body);
 }
 
@@ -553,15 +555,12 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
     p_debugdraw.draw( viewmatrix);
     p_physic_world->debugDrawWorld();
 
-   bool l_push = false;
-
     // check if physic change
     Chunk *l_node = p_starchip->getNode();
     while( l_node != NULL) {
         if( !l_node->isPhysicSet() && l_node->GetUpdateVboOnce()) {
             if( l_node->getPhysicBody()) {
                 p_physic_world->removeCollisionObject( l_node->getPhysicBody());
-                l_push = true;
             }
             l_node->makeBulletMesh(); //->applyCentralImpulse();
             l_node->setPhysic( true);
@@ -569,17 +568,6 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
             p_physic_world->addRigidBody( l_node->getPhysicBody() );
         }
         l_node = l_node->next;
-    }
-
-    if( l_push) {
-        for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
-            network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
-
-            if( l_obj->getPhysicBody() ) {
-                l_obj->getPhysicBody()->setActivationState(DISABLE_DEACTIVATION);
-                l_obj->getPhysicBody()->applyCentralImpulse( btVector3( 10, 100, 0));
-            }
-        }
     }
 
 }
