@@ -106,8 +106,6 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
             posx = cx + ( c_chunk->getX()*CHUNK_SIZE);
             posz = cz + ( c_chunk->getZ()*CHUNK_SIZE);
             // Noise generieren
-            float interval = scaled_raw_noise_2d( -0.5, 7, (float)posx/interval_range, (float)posz/interval_range);
-            interval += scaled_raw_noise_2d( 0, -0.5, (float)posx/interval_range_form, (float)posz/interval_range_form);
             float high = scaled_raw_noise_2d( 0.5, 0.25, (float)posx/interval_range, (float)posz/interval_range);
             high += scaled_raw_noise_2d( 0, -0.02, (float)posx/interval_range_form, (float)posz/interval_range_form);
 

@@ -5,6 +5,7 @@
 		<Option title="Selur" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
+		<Option virtualFolders="game\;" />
 		<Build>
 			<Target title="win_debug_32">
 				<Option platforms="Windows;" />
@@ -110,12 +111,24 @@
 			<Add option="-Wall" />
 			<Add option="-std=c++1y" />
 		</Compiler>
+		<Unit filename="engine/block.cpp" />
+		<Unit filename="engine/block.h" />
+		<Unit filename="engine/chunk.cpp" />
+		<Unit filename="engine/chunk.h" />
 		<Unit filename="engine/config.cpp" />
 		<Unit filename="engine/config.h" />
+		<Unit filename="engine/engine.cpp" />
+		<Unit filename="engine/engine.h" />
+		<Unit filename="engine/input.cpp" />
+		<Unit filename="engine/input.h" />
+		<Unit filename="engine/landscape_generator.cpp" />
+		<Unit filename="engine/landscape_generator.h" />
 		<Unit filename="engine/network.cpp" />
 		<Unit filename="engine/network.h" />
 		<Unit filename="engine/network_ids.cpp" />
 		<Unit filename="engine/network_ids.h" />
+		<Unit filename="engine/obj_loader.cpp" />
+		<Unit filename="engine/obj_loader.h" />
 		<Unit filename="engine/object.cpp" />
 		<Unit filename="engine/object.h" />
 		<Unit filename="engine/openvr.cpp" />
@@ -124,27 +137,13 @@
 		<Unit filename="engine/openvr_models.h" />
 		<Unit filename="engine/openvr_rendermodel.cpp" />
 		<Unit filename="engine/openvr_rendermodel.h" />
-		<Unit filename="game/block.cpp" />
-		<Unit filename="game/block.h" />
-		<Unit filename="game/chunk.cpp" />
-		<Unit filename="game/chunk.h" />
-		<Unit filename="game/game.cpp" />
-		<Unit filename="game/game.h" />
-		<Unit filename="game/gui.cpp" />
-		<Unit filename="game/gui.h" />
-		<Unit filename="game/input.cpp" />
-		<Unit filename="game/input.h" />
-		<Unit filename="game/landscape_generator.cpp" />
-		<Unit filename="game/landscape_generator.h" />
-		<Unit filename="game/objectcreator.cpp" />
-		<Unit filename="game/objectcreator.h" />
-		<Unit filename="game/sun.cpp" />
-		<Unit filename="game/sun.h" />
-		<Unit filename="game/world.cpp" />
-		<Unit filename="game/world.h" />
+		<Unit filename="engine/world.cpp" />
+		<Unit filename="engine/world.h" />
 		<Unit filename="graphic/camera.cpp" />
 		<Unit filename="graphic/camera.h" />
-		<Unit filename="graphic/debug_draw.cpp" />
+		<Unit filename="graphic/debug_draw.cpp">
+			<Option virtualFolder="game/" />
+		</Unit>
 		<Unit filename="graphic/debug_draw.h" />
 		<Unit filename="graphic/display.cpp" />
 		<Unit filename="graphic/display.h" />

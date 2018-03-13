@@ -206,10 +206,10 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
     timer.Start();
     node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
 
-    Landscape_Generator( node, p_blocklist);
+    //Landscape_Generator( node, p_blocklist);
 
     // Landscape erstellen
-    if( !p_clear)
+    if( p_clear)
         Landscape_Generator( node, p_blocklist);
 
     // seiten finden

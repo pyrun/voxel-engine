@@ -1,5 +1,5 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef ENGINE_H
+#define ENGINE_H
 
 #include <SDL2/SDL.h>
 #include <string>
@@ -13,7 +13,6 @@
 #include "input.h"
 #include "world.h"
 #include "../engine/config.h"
-#include "gui.h"
 #include "../engine/openvr.h"
 #include "../engine/network.h"
 
@@ -32,10 +31,10 @@ struct clock
     }
 };
 
-class game {
+class engine {
 public:
-    game();
-    virtual ~game();
+    engine();
+    virtual ~engine();
 
     void startVR();
 
@@ -44,7 +43,9 @@ public:
 
     void render( glm::mat4 viewProjection);
 
-    void Start();
+    void fly( int l_delta);
+
+    void run();
 
     network *getNetwork() { return p_network; }
 protected:
@@ -56,7 +57,6 @@ private:
     block_list* p_blocklist;
     graphic* p_graphic;
     config *p_config;
-    Gui *p_gui;
     openvr *p_openvr;
     network *p_network;
 
@@ -71,4 +71,4 @@ private:
 };
 
 
-#endif // GAME_H
+#endif // ENGINE_H

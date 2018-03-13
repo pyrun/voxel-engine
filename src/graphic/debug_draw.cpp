@@ -45,12 +45,6 @@ void debug_draw::draw( glm::mat4 viewmatrix) {
 
         glBindVertexArray(p_vao);
 
-        /*glBindBuffer( GL_ARRAY_BUFFER, p_vbo_lines);
-        glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( glm::vec3 ), &p_lines[0], GL_STATIC_DRAW);
-
-        glBindBuffer( GL_ARRAY_BUFFER, p_vbo_color);
-        glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( glm::vec3 ), &p_color[0], GL_STATIC_DRAW);*/
-
         glEnableVertexAttribArray(0);
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_lines);
         glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );

@@ -320,16 +320,15 @@ void network::start()
 
 	if( isServer() ) {
 
-        for( int x = -2; x <= 2; x++)
-            for( int y = -2; y <= 2; y++)
+        int l_size = 4;
+        for( int x = -l_size; x <= l_size; x++)
+            for( int y = -l_size; y <= l_size; y++)
                 p_starchip->addChunk( glm::vec3( x, -1, y) );
 
         ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
         l_obj->p_name = "box";
         l_obj->p_type = p_types->get( l_obj->getTypeName().C_String());
         l_obj->init( p_physic_world);
-
-        //p_transform.setPos( p_transform.getPos()+glm::vec3( 0, 0, 0.01));
 
         p_replicaManager.Reference( l_obj);
 	}
@@ -551,9 +550,11 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 
     p_starchip->draw( graphic, config, viewmatrix);
 
-    graphic->getDebugShader()->Bind();
-    p_debugdraw.draw( viewmatrix);
-    p_physic_world->debugDrawWorld();
+    if( config->get( "debug_physic", "engine", "false") == "true") {
+        graphic->getDebugShader()->Bind();
+        p_debugdraw.draw( viewmatrix);
+        p_physic_world->debugDrawWorld();
+    }
 
     // check if physic change
     Chunk *l_node = p_starchip->getNode();

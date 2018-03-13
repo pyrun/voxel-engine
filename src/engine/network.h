@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 #include "config.h"
-#include "../game/world.h"
+#include "world.h"
 #include "network_ids.h"
 #include "object.h"
 

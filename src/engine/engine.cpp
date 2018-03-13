@@ -1,4 +1,4 @@
-#include "game.h"
+#include "engine.h"
 #include "../graphic/glerror.h"
 #include "../system/timer.h"
 #include <stdio.h>
@@ -13,7 +13,7 @@ std::string NumberToString( double Number) {
     return temp;
 }
 
-game::game() {
+engine::engine() {
     // set values
     p_openvr = NULL;
     p_vboCursor = NULL;
@@ -26,7 +26,6 @@ game::game() {
     p_graphic = new graphic( p_config);
     p_blocklist = new block_list("blocks");
     p_tilemap = new texture( p_config->get( "tilemap", "engine", "tileset.png"));
-    p_gui = new Gui;
     p_network = new network( p_config, p_tilemap, p_blocklist);
 
     // set values after start
@@ -35,25 +34,24 @@ game::game() {
     p_network->getDebugDraw()->init( p_graphic);
 }
 
-game::~game() {
+engine::~engine() {
     glDeleteBuffers(1, &p_vboCursor);
     p_vboCursor = NULL;
     if( p_openvr)
         delete p_openvr;
     delete p_tilemap;
     delete p_blocklist;
-    delete p_gui;
     delete p_graphic;
     delete p_network;
     delete p_config;
 }
 
-void game::startVR() {
+void engine::startVR() {
     p_openvr = new openvr();
     p_framecap = false;
 }
 
-void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
+void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
     float depth;
 
     world *l_world = p_network->getWorld();
@@ -129,11 +127,11 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                     p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByID( "water")->getID());
                     //l_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
                 } else {
-                    printf( "game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
+                    printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
                 }
             }
 
-            printf( "game::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile->ID);
+            printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile->ID);
             break;
         }
         if( tile->ID && p_input.Map.Destory && !p_input.MapOld.Destory) {
@@ -142,7 +140,7 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
                 //l_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
             } else {
-                printf( "game::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
+                printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
             break;
         }
@@ -155,7 +153,7 @@ void game::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
     }
 }
 
-void game::viewCross() {
+void engine::viewCross() {
 
     std::vector<glm::vec4> l_vertices;
     l_vertices.resize(4);
@@ -193,7 +191,7 @@ void game::viewCross() {
 
 }
 
-void game::render( glm::mat4 viewProjection) {
+void engine::render( glm::mat4 viewProjection) {
     // chunks zeichnen
     p_network->draw( p_graphic, p_config, viewProjection);
 
@@ -206,7 +204,24 @@ void game::render( glm::mat4 viewProjection) {
     // Block anzeigen was in der Sichtweite ist
 }
 
-void game::Start() {
+void engine::fly( int l_delta) {
+    float Speed = 0.01f;
+    Camera *cam = p_graphic->getCamera();
+    if( p_input.Map.Up )
+        cam->MoveForwardCross( Speed*l_delta);
+    if( p_input.Map.Down )
+        cam->MoveForwardCross(-Speed*l_delta);
+    if( p_input.Map.Right )
+        cam->MoveRight(-Speed*l_delta);
+    if( p_input.Map.Left )
+        cam->MoveRight( Speed*l_delta);
+    if( p_input.Map.Jump )
+        cam->MoveUp( Speed*l_delta);
+    if( p_input.Map.Shift )
+        cam->MoveUp( -Speed*l_delta);
+}
+
+void engine::run() {
     // set variables
     Timer l_timer;
     struct clock l_clock;
@@ -230,36 +245,8 @@ void game::Start() {
         cam->horizontalAngle ( -p_input.Map.MousePos.x * 2);
         cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
 
-        if( p_input.Map.Inventory ) {
-
-        }
-
-        if( p_input.Map.Up )
-            cam->MoveForwardCross( Speed*l_delta);
-        if( p_input.Map.Down )
-            cam->MoveForwardCross(-Speed*l_delta);
-        if( p_input.Map.Right )
-            cam->MoveRight(-Speed*l_delta);
-        if( p_input.Map.Left )
-            cam->MoveRight( Speed*l_delta);
-        if( p_input.Map.Jump )
-            cam->MoveUp( Speed*l_delta);
-        if( p_input.Map.Shift )
-            cam->MoveUp( -Speed*l_delta);
-        if( p_input.Map.Inventory && !p_input.MapOld.Inventory) {
-            /*if( p_config.GetSupersampling()) {
-                p_config.SetSupersampling( false);
-
-                printf( "game::Start Supersampling deactive\n");
-            } else {
-                printf( "game::Start Supersampling active\n");
-                p_config.SetSupersampling( true);
-            }*/
-            cam->zoom( -1.5);
-        }
-        if( !p_input.Map.Inventory && p_input.MapOld.Inventory) {
-            cam->zoom( 1.5);
-        }
+        if( p_config->get( "fly", "engine", "false") == "true")
+            fly( l_delta);
 
         if( p_input.getResize()) {
             p_graphic->resizeWindow( p_input.getResizeW(), p_input.getResizeH());
@@ -348,7 +335,7 @@ void game::Start() {
     }
 }
 
-void game::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
+void engine::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
     std::vector<block_data> t_box;
 
     // Chunk Vbo Data Struct

@@ -1,6 +1,8 @@
 <config>
     <engine>
         <tilemap>tileset.png</tilemap>
+        <fly>false</fly>
+        <debug_physic>false</debug_physic>
     </engine>
     <graphic>
         <title>selur</title>
