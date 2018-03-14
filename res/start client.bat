@@ -1,1 +1,1 @@
-"../bin/win/debug32/Selur.exe" -client localhost
+"../bin/win/debug32/Selur.exe" -client 46.92.142.190

@@ -31,7 +31,7 @@ engine::engine() {
     // set values after start
     p_blocklist->Draw( p_graphic);
 
-    p_network->getDebugDraw()->init( p_graphic);
+    //p_network->getDebugDraw()->init( p_graphic);
 }
 
 engine::~engine() {

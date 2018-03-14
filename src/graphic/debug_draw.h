@@ -8,7 +8,9 @@
 #include "shader.h"
 #include "graphic.h"
 
-class debug_draw : public btIDebugDraw {
+#include <LinearMath/btIDebugDraw.h>
+
+/*class debug_draw : public btIDebugDraw {
     public:
         void init( graphic *graphic);
 
@@ -40,6 +42,6 @@ class debug_draw : public btIDebugDraw {
         GLuint p_vao;
 
         GLuint p_mvp;
-};
+};*/
 
 #endif // DEBUG_DRAW_H

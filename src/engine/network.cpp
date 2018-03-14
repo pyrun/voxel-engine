@@ -319,9 +319,9 @@ void network::start()
 		printf("network::start Connecting...\n");
 	}
 
-    p_physic_world->setDebugDrawer(&p_debugdraw);
+//    p_physic_world->setDebugDrawer(&p_debugdraw);
 
-	if( isServer() ) {
+	if( isServer()) {
 
         int l_size = 4;
         for( int x = -l_size; x <= l_size; x++)
@@ -442,11 +442,11 @@ void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
     BitStream l_bitstream;
 
     l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK);
-    l_bitstream.Write( chunk->getX());
-    l_bitstream.Write( chunk->getY());
-    l_bitstream.Write( chunk->getZ());
+    l_bitstream.Write( (int)chunk->getX());
+    l_bitstream.Write( (int)chunk->getY());
+    l_bitstream.Write( (int)chunk->getZ());
     chunk->serialize( true, &l_bitstream);
-    p_rakPeerInterface->Send( &l_bitstream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, address, false);
+    p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 0, address, false);
 }
 
 void network::sendAllChunks( world *world,RakNet::AddressOrGUID address) {
@@ -560,7 +560,7 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 
     if( config->get( "debug_physic", "engine", "false") == "true") {
         graphic->getDebugShader()->Bind();
-        p_debugdraw.draw( viewmatrix);
+        //p_debugdraw.draw( viewmatrix);
         p_physic_world->debugDrawWorld();
     }
 
