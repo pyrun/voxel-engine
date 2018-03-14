@@ -10,7 +10,7 @@
 
 #include <LinearMath/btIDebugDraw.h>
 
-/*class debug_draw : public btIDebugDraw {
+class debug_draw : public btIDebugDraw {
     public:
         void init( graphic *graphic);
 
@@ -42,6 +42,6 @@
         GLuint p_vao;
 
         GLuint p_mvp;
-};*/
+};
 
 #endif // DEBUG_DRAW_H

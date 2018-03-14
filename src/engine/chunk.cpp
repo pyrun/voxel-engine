@@ -2,7 +2,7 @@
 #include "../system/timer.h"
 #include <stdio.h>
 
-#define printf if
+//#define printf if
 
 Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
     // node reset
@@ -15,21 +15,16 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
     left = NULL;
     up = NULL;
     down = NULL;
-    p_time_idle = SDL_GetTicks();
+
+
     p_rigidBody = NULL;
 
-    // falgs
-    p_nomorevbo = false;
-    p_updateonce = false;
-    p_changed = false;
+    p_vboVertex = 0;
+
     p_elements = 0;
-    p_createvbo = false;
-    p_arraychange = false;
-    p_updatevboonce = false;
-    p_updatevbo = false;
-    p_deleting = false;
-    p_physicSet = false;
-    p_seed = Seed;
+
+    p_changed = false;
+    p_updateVbo = false;
 
     // Set Position
     p_pos.x = X;
@@ -84,15 +79,21 @@ Chunk::~Chunk() {
 
     //printf( "~Chunk(): remove p_tile in %dms\n", timer.GetTicks());
     timer.Start();
+
     // vbo daten löschen
-/*    p_data.clear();
-    p_vertices.clear();*/
-    //p_normal.clear();
+    glDeleteBuffers(1, &p_vboVertex);
+    glDeleteBuffers(1, &p_vboNormal);
+    glDeleteBuffers(1, &p_vboData);
+    glDeleteVertexArrays( 1, &p_vboVao);
+
     printf( "~Chunk(): remove vbo data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
 }
 
-btRigidBody *Chunk::makeBulletMesh() {
-    btRigidBody * body = nullptr;
+btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
+    btRigidBody *body = nullptr;
+
+    if( !p_updateRigidBody)
+        return body;
 
     // Handy lambda for converting from irr::vector to btVector
     auto toBtVector = [ &]( const block_vertex & vec ) -> btVector3
@@ -158,10 +159,18 @@ btRigidBody *Chunk::makeBulletMesh() {
         body = new btRigidBody(fallRigidBodyCI);
     }
 
-    if( p_rigidBody)
+    if( p_rigidBody) {
+        world->removeCollisionObject( p_rigidBody);
         delete p_rigidBody;
+    }
+
+    p_updateRigidBody = false;
 
     p_rigidBody = body;
+
+    printf( "Chunk::makeBulletMesh RigidBody update\n");
+
+    world->addRigidBody( p_rigidBody );
     return body;
 }
 
@@ -234,18 +243,18 @@ void Chunk::updateForm()
     p_form.setScale( glm::vec3( CHUNK_SCALE));
 }
 
-void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Left, Chunk *Right, Chunk *Up, Chunk *Down) {
+void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Left, Chunk *Right, Chunk *Up, Chunk *Down) {
     int i = 0;
     glm::vec2 Side_Textur_Pos;
     Timer timer;
+
+    if( !p_changed)
+        return;
+
     timer.Start();
 
     p_vertices.reserve( 2048);
     p_data.reserve( 2048);
-
-    // wird gelöscht
-    if( p_deleting)
-        return;
 
     bool b_visibility = false;
 
@@ -598,28 +607,16 @@ void Chunk::UpdateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
         p_normal[v+2] = block_data( normal.x, normal.y, normal.z, 0);
     }
     p_elements = i;
+
     p_changed = false;
-    p_updateonce = true;
+    p_updateVbo = true;
+    p_updateRigidBody = true;
+
     if( p_elements == 0) {// Kein Speicher resavieren weil leer
         return;
     }
-    p_arraychange = true;
-    p_physicSet = false;
 
-    printf( "UpdateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
-}
-
-void Chunk::DestoryVbo() {
-    p_nomorevbo = true;
-    while( p_updatevbo);
-
-    if( p_createvbo ) {
-        p_createvbo = false;
-        glDeleteBuffers(1, &p_vboVertex);
-        glDeleteBuffers(1, &p_vboNormal);
-        glDeleteBuffers(1, &p_vboData);
-        glDeleteVertexArrays( 1, &p_vboVao);
-    }
+    printf( "Chunk::updateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
 }
 
 void Chunk::updateVbo( Shader *shader) {
@@ -627,29 +624,17 @@ void Chunk::updateVbo( Shader *shader) {
     timer.Start();
 
     // Nicht bearbeiten falls es anderweilig bearbeitet wird
-    if( p_deleting)
-        return;
-    if( p_elements == 0 || p_updateonce == false || p_nomorevbo == true)
+    if( p_elements == 0)
         return;
 
-    // VBO erstellen falls dieser fehlt
-    if(p_createvbo == false) {
+    if( getVbo() == 0) {
         // create vao
         glGenVertexArrays(1, &p_vboVao);
         // Create vbo
         glGenBuffers(1, &p_vboVertex);
         glGenBuffers(1, &p_vboNormal);
         glGenBuffers(1, &p_vboData);
-        p_createvbo = true;
     }
-
-    // flags ändern
-    p_arraychange = false;
-    p_updatevboonce = true;
-
-    // anderweilig beschäftigt?
-    while( p_updatevbo);
-    p_updatevbo = true;
 
     // vbo updaten
     // vertex
@@ -681,21 +666,17 @@ void Chunk::updateVbo( Shader *shader) {
 
     glBindVertexArray(0);
 
+    p_updateVbo = false;
+
     // print
-    p_updatevbo = false;
     printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(block_vertex), getAmount(), getAmount() * sizeof(block_data));
 }
 
 void Chunk::draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
-    // chunk wird grad gelöscht
-    if( p_nomorevbo == true)
+    if( p_vboVertex == 0 && !p_updateVbo)
         return;
-    // wird gelöscht
-    if( p_deleting)
-        return;
-    if( p_updatevbo)
-        return;
-    p_updatevbo = true;
+    if( p_updateVbo)
+        updateVbo( shader);
 
     // Shader einstellen
     shader->update( p_form.getModel(), viewProjection, aa);
@@ -708,9 +689,4 @@ void Chunk::draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
 
     // disable
     glBindVertexArray( 0);
-
-    // update war erfolgreich
-    p_updatevbo = false;
-
-
 }

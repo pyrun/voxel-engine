@@ -319,11 +319,11 @@ void network::start()
 		printf("network::start Connecting...\n");
 	}
 
-//    p_physic_world->setDebugDrawer(&p_debugdraw);
+    p_physic_world->setDebugDrawer(&p_debugdraw);
 
 	if( isServer()) {
 
-        int l_size = 4;
+        int l_size = 10;
         for( int x = -l_size; x <= l_size; x++)
             for( int y = -l_size; y <= l_size; y++)
                 p_starchip->addChunk( glm::vec3( x, -1, y) );
@@ -367,9 +367,9 @@ void network::sendBlockChange( Chunk *chunk, glm::vec3 pos, int id) {
     l_address = RakNet::UNASSIGNED_SYSTEM_ADDRESS;
     l_broadcast = true;
     l_bitstream.Write((RakNet::MessageID)ID_SET_BLOCK);
-    l_bitstream.Write( (float)chunk->getX());
-    l_bitstream.Write( (float)chunk->getY());
-    l_bitstream.Write( (float)chunk->getZ());
+    l_bitstream.Write( (float)chunk->getPos().x);
+    l_bitstream.Write( (float)chunk->getPos().y);
+    l_bitstream.Write( (float)chunk->getPos().z);
     l_bitstream.Write( (float)pos.x);
     l_bitstream.Write( (float)pos.y);
     l_bitstream.Write( (float)pos.z);
@@ -409,9 +409,9 @@ void network::readBlockChange( BitStream *bitstream) {
         bool l_broadcast = true;
         BitStream l_bitstream;
         l_bitstream.Write((RakNet::MessageID)ID_SET_BLOCK);
-        l_bitstream.Write( (float)l_chunk->getX());
-        l_bitstream.Write( (float)l_chunk->getY());
-        l_bitstream.Write( (float)l_chunk->getZ());
+        l_bitstream.Write( (float)l_chunk->getPos().x);
+        l_bitstream.Write( (float)l_chunk->getPos().y);
+        l_bitstream.Write( (float)l_chunk->getPos().z);
         l_bitstream.Write( (float)l_pos.x);
         l_bitstream.Write( (float)l_pos.y);
         l_bitstream.Write( (float)l_pos.z);
@@ -442,9 +442,9 @@ void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
     BitStream l_bitstream;
 
     l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK);
-    l_bitstream.Write( (int)chunk->getX());
-    l_bitstream.Write( (int)chunk->getY());
-    l_bitstream.Write( (int)chunk->getZ());
+    l_bitstream.Write( (int)chunk->getPos().x);
+    l_bitstream.Write( (int)chunk->getPos().y);
+    l_bitstream.Write( (int)chunk->getPos().z);
     chunk->serialize( true, &l_bitstream);
     p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 0, address, false);
 }
@@ -533,7 +533,7 @@ bool network::process( int delta)
         }
     }
 
-    p_starchip->process();
+    p_starchip->process( p_physic_world);
 
     p_physic_world->stepSimulation( (float)delta * 0.001f);
 
@@ -550,8 +550,8 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
     for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
         network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
 
-        if( l_obj->getPhysicBody() == NULL)
-            l_obj->init( p_physic_world);
+        //if( l_obj->getPhysicBody() == NULL)
+        //    l_obj->init( p_physic_world);
 
         l_obj->draw( l_object, viewmatrix, p_types);
     }
@@ -560,14 +560,13 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 
     if( config->get( "debug_physic", "engine", "false") == "true") {
         graphic->getDebugShader()->Bind();
-        //p_debugdraw.draw( viewmatrix);
+        p_debugdraw.draw( viewmatrix);
         p_physic_world->debugDrawWorld();
     }
 
-    // check if physic change
-    Chunk *l_node = p_starchip->getNode();
+/*    Chunk *l_node = p_starchip->getNode();
     while( l_node != NULL) {
-        if( !l_node->isPhysicSet() && l_node->GetUpdateVboOnce()) {
+        if( !l_node->isPhysicSet()) {
             if( l_node->getPhysicBody()) {
                 p_physic_world->removeCollisionObject( l_node->getPhysicBody());
             }
@@ -577,8 +576,7 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
             p_physic_world->addRigidBody( l_node->getPhysicBody() );
         }
         l_node = l_node->next;
-    }
-
+    }*/
 }
 
 void network::create_object() {

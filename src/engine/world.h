@@ -48,7 +48,7 @@ public:
     void SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID);
 
     void process_thrend();
-    void process();
+    void process( btDiscreteDynamicsWorld *world);
 
     void deleteChunks( Chunk* chunk);
     void deleteChunk( Chunk* node);
@@ -67,8 +67,7 @@ public:
     void drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
     void drawNode( Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
 
-    void UpdateArray();
-    void UpdateArrayNode();
+    void updateArray();
 
     bool getDestory() { return p_destroy; }
     inline int GetAmountChunks() const { return p_chunk_amount; }
@@ -89,7 +88,6 @@ private:
 
     std::vector<glm::tvec3<int>> p_creatingList;
     std::vector<glm::tvec3<int>> p_deletingList;
-    std::vector<Chunk*> p_updateNodeList;
 
     //ShadowMap Shadow;
 };

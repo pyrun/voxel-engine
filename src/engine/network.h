@@ -268,12 +268,12 @@ class network
         world *getWorld() { return p_starchip; }
         bool isServer() { return p_isServer; }
         bool isClient() { return p_isClient; }
-//        debug_draw *getDebugDraw() { return &p_debugdraw; }
+        debug_draw *getDebugDraw() { return &p_debugdraw; }
     protected:
 
     private:
         btDiscreteDynamicsWorld *p_physic_world;
-//        debug_draw p_debugdraw;
+        debug_draw p_debugdraw;
 
         RakNet::SocketDescriptor p_socketdescriptor;
         NetworkIDManager p_networkIdManager;

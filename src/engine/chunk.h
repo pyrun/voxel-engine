@@ -43,17 +43,9 @@ public:
     Chunk *left;
     Chunk *up;
     Chunk *down;
-
     Chunk *next;
 
-    btRigidBody *makeBulletMesh();
-
-    bool SetDeleting() {
-        if( p_deleting)
-            return false;
-        p_deleting = true;
-        return true;
-    }
+    btRigidBody *makeBulletMesh( btDiscreteDynamicsWorld *world);
 
     void serialize(bool writeToBitstream, RakNet::BitStream *bitstream)
     {
@@ -61,20 +53,9 @@ public:
             bitstream->Serialize( writeToBitstream, p_tile[i].ID);
     }
 
-    inline int getX() { return p_pos.x; }
-    inline int getY() { return p_pos.y; }
-    inline int getZ() { return p_pos.z; }
     inline glm::vec3 getPos() { return p_pos; }
 
-    inline bool GetChanged() { return p_changed; }
-    inline bool SetChange( bool Change) { p_changed = Change; return Change; }
-    inline bool GetUpdateOnce() { return p_updateonce; }
-    inline bool GetVbo() { return p_createvbo; }
-    inline bool GetArrayChange() { return p_arraychange; }
     inline int getAmount() { return p_vertices.size(); }
-    inline bool GetUpdateVboOnce() { return p_updatevboonce; }
-    inline int GetTimeIdle() { return p_time_idle; }
-    void ResetTimeIdle() { p_time_idle = SDL_GetTicks(); }
 
     void CreateTile( int X, int Y, int Z, int ID);
     void set( int X, int Y, int Z, int ID);
@@ -83,7 +64,7 @@ public:
 
     void updateForm();
 
-    void UpdateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
+    void updateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
     void updateVbo( Shader *shader);
     void draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
@@ -91,30 +72,28 @@ public:
     tile getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }
 
-    void setPhysic( bool set) { p_physicSet = set; }
-    bool isPhysicSet() { return p_physicSet; }
     btRigidBody *getPhysicBody() { return p_rigidBody; }
+
+    GLuint getVbo() { return p_vboVertex; }
 protected:
 private:
     glm::tvec3<int> p_pos;
+
     Transform p_form;
-    int p_time_idle;
+
     int p_elements;
+
     bool p_changed;
-    bool p_updateonce;
-    bool p_createvbo;
-    bool p_arraychange;
-    bool p_updatevboonce;
-    bool p_updatevbo;
-    bool p_nomorevbo;
-    bool p_deleting;
+    bool p_updateVbo;
+    bool p_updateRigidBody;
+
     GLuint p_vboVao;
     GLuint p_vboVertex;
     GLuint p_vboNormal;
     GLuint p_vboData;
+
     tile* p_tile;
-    int p_seed;
-    bool p_physicSet;
+
     btRigidBody *p_rigidBody;
 
     std::vector<block_vertex> p_vertices;

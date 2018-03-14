@@ -103,8 +103,8 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
     for (int cz = 0; cz < CHUNK_SIZE; cz++) {
         for (int cx = 0; cx < CHUNK_SIZE; cx++) {
             // Position errechen
-            posx = cx + ( c_chunk->getX()*CHUNK_SIZE);
-            posz = cz + ( c_chunk->getZ()*CHUNK_SIZE);
+            posx = cx + ( c_chunk->getPos().x*CHUNK_SIZE);
+            posz = cz + ( c_chunk->getPos().z*CHUNK_SIZE);
             // Noise generieren
             float high = scaled_raw_noise_2d( 0.5, 0.25, (float)posx/interval_range, (float)posz/interval_range);
             high += scaled_raw_noise_2d( 0, -0.02, (float)posx/interval_range_form, (float)posz/interval_range_form);
@@ -113,7 +113,7 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
             for(int cy = 0; cy < CHUNK_SIZE; cy++) {
                 i++;
                 // Position errechen
-                posy = cy + (c_chunk->getY()*CHUNK_SIZE);
+                posy = cy + (c_chunk->getPos().y*CHUNK_SIZE);
                 int type = 0;
                 //if( interval*Island_high > posy+high*Island_high )
                 if( posy < Island_high*high + border) {

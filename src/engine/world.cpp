@@ -30,7 +30,7 @@ world::world( texture *image, block_list* B_List, bool clear) {
     p_image = image;
     p_clear = clear;
 
-    p_thread = SDL_CreateThread(world_thread, "TestThread", (void *)this);
+    p_thread = SDL_CreateThread(world_thread, "world_thread", (void *)this);
 }
 
 world::~world() {
@@ -50,9 +50,9 @@ tile* world::GetTile( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->getX()*CHUNK_SIZE;
-        int p_chunk_y = y-node->getY()*CHUNK_SIZE;
-        int p_chunk_z = z-node->getZ()*CHUNK_SIZE;
+        int p_chunk_x = x-node->getPos().x*CHUNK_SIZE;
+        int p_chunk_y = y-node->getPos().y*CHUNK_SIZE;
+        int p_chunk_z = z-node->getPos().z*CHUNK_SIZE;
 
         // X - Achse
         if(p_chunk_x < 0 ) {
@@ -81,7 +81,7 @@ tile* world::GetTile( int x, int y, int z) {
             node = node->next;
             continue;
         }
-        //printf("%d %d %d | ", p_chunk_x, p_chunk_y, p_chunk_z);
+
         tile *l_tile = node->getTile( p_chunk_x, p_chunk_y, p_chunk_z );
         if( l_tile && l_tile->ID == EMPTY_BLOCK_ID)
             break;
@@ -95,9 +95,9 @@ Chunk* world::getChunkWithPos( int x, int y, int z) {
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->getX()*CHUNK_SIZE;
-        int p_chunk_y = y-node->getY()*CHUNK_SIZE;
-        int p_chunk_z = z-node->getZ()*CHUNK_SIZE;
+        int p_chunk_x = x-node->getPos().x*CHUNK_SIZE;
+        int p_chunk_y = y-node->getPos().y*CHUNK_SIZE;
+        int p_chunk_z = z-node->getPos().z*CHUNK_SIZE;
 
         // X - Achse
         if(p_chunk_x < 0 ) {
@@ -136,13 +136,9 @@ void world::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
         printf( "SetTile: Cant set tile!\n");
         return;
     }
-    int chunk_x = chunk->getX()*CHUNK_SIZE;
-    int chunk_y = chunk->getY()*CHUNK_SIZE;
-    int chunk_z = chunk->getZ()*CHUNK_SIZE;
+    glm::vec3 l_pos = chunk->getPos() * glm::vec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
 
-    // Letzte prüfung
-    //chunk->CreateTile( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
-    chunk->set( tile_x-chunk_x, tile_y-chunk_y, tile_z-chunk_z, ID);
+    chunk->set( tile_x-l_pos.x, tile_y-l_pos.y, tile_z-l_pos.z, ID);
 }
 
 void world::process_thrend() {
@@ -151,7 +147,6 @@ void world::process_thrend() {
         Chunk *l_node = getChunk( p_creatingList[i].x, p_creatingList[i].y, p_creatingList[i].z);
         if( l_node == NULL) {
             l_node = createChunk( p_creatingList[i].x, p_creatingList[i].y, p_creatingList[i].z);
-            p_updateNodeList.push_back( l_node);
             p_creatingList.erase( p_creatingList.begin()+ i);
             break;
         }
@@ -166,16 +161,16 @@ void world::process_thrend() {
     p_deletingList.clear();
 
     // be änderung Updaten
-    UpdateArray();
+    updateArray();
 }
 
-void world::process() {
+void world::process( btDiscreteDynamicsWorld *world) {
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = Chunks;
     for( ;; ) {
         if( node == NULL)
             break;
-        node->ResetTimeIdle();
+        node->makeBulletMesh( world);
         node = node->next;
     }
 }
@@ -191,11 +186,8 @@ void world::deleteChunks( Chunk* chunk) {
 void world::deleteChunk( Chunk* node) {
     if( node == NULL)
         return;
-    if( node->GetVbo() )
-        node->DestoryVbo();
     // löschen des chunks
-    destoryChunk( node->getX(), node->getY(), node->getZ());
-    //DeletingChunkList.push_back( Vector);
+    destoryChunk( node->getPos().x, node->getPos().y, node->getPos().z);
 }
 
 Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
@@ -208,9 +200,11 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
 
     Landscape_Generator( node, p_blocklist);
 
+    node->updateArray( p_blocklist);
+
     // Landscape erstellen
-    if( !p_clear)
-        Landscape_Generator( node, p_blocklist);
+    //if( !p_clear)
+    //    Landscape_Generator( node, p_blocklist);
 
     // seiten finden
     Chunk *snode;
@@ -270,9 +264,9 @@ void world::destoryChunk( int pos_x, int pos_y, int pos_z) {
     for( ;; ) {
         if( tmp == NULL)
             break;
-         if( tmp->getX() == pos_x &&
-             tmp->getY() == pos_y &&
-             tmp->getZ() == pos_z ) {
+         if( tmp->getPos().x == pos_x &&
+             tmp->getPos().y == pos_y &&
+             tmp->getPos().z == pos_z ) {
             if( tmpOld == NULL)
                 Chunks = tmp->next;
             else tmpOld->next = tmp->next;
@@ -319,9 +313,9 @@ bool world::CheckChunk( int X, int Y, int Z) {
     for( ;; ) {
         if( tmp == NULL)
             break;
-         if( tmp->getX() == X &&
-             tmp->getY() == Y &&
-             tmp->getZ() == Z )
+         if( tmp->getPos().x == X &&
+             tmp->getPos().y == Y &&
+             tmp->getPos().z == Z )
              return true;
         tmp = tmp->next;
     }
@@ -335,9 +329,9 @@ Chunk* world::getChunk( int X, int Y, int Z) {
     for( ;; ) {
         if( tmp == NULL)
             break;
-         if( tmp->getX() == X &&
-             tmp->getY() == Y &&
-             tmp->getZ() == Z )
+         if( tmp->getPos().x == X &&
+             tmp->getPos().y == Y &&
+             tmp->getPos().z == Z )
              return tmp;
         tmp = tmp->next;
     }
@@ -351,13 +345,6 @@ void world::addDeleteChunk( glm::tvec3<int> pos ) {
     p_deletingList.push_back( pos);
 }
 
-float p = 0.0f;
-bool b = true;
-
-Camera *cam;
-
-#define ota_size 200.0f
-
 void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
     int g_width = graphic->getWidth();
     int g_height = graphic->getHeight();
@@ -365,50 +352,11 @@ void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
     // get shader
     Shader* l_shader = graphic->getVoxelShader();
 
-    int i = 0;
-    for( auto l_node:p_updateNodeList)
-    {
-        if( l_node->GetArrayChange())
-            l_node->updateVbo( l_shader);
-    }
-    p_updateNodeList.clear();
-
     // einstellung des shaders
     l_shader->Bind();
     l_shader->SetSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
 
     p_image->Bind();
-
-    // How to not code a draw function... well played alex
-    /*if( config->GetSupersampling() ) {
-        for( int alpha_cut = 0; alpha_cut < 1; alpha_cut++) {
-            for(int i = 0; i < 4; i++) {
-                glm::vec3 shift = glm::vec3((i % 4) * 0.5 / g_width, (i / 2) * 0.5 / g_height, 0);
-                glm::mat4 aa = glm::translate(glm::mat4(1.0f), shift);
-
-                // Zeichnen
-                drawTransparency( l_shader, viewProjection, alpha_cut == 1 ? false : true, aa);
-                glAccum(i ? GL_ACCUM : GL_LOAD, 0.25f);
-            }
-            // zusammenrechnen
-            glAccum(GL_RETURN, 1);
-        }
-        // Zeichne Transperenz wenn gewünscht
-        if( config->GetTransparency())
-            drawTransparency( l_shader, viewProjection, false);
-    } else {
-        if( config->GetTransparency() ) {
-            // Transparent zeichnen
-            drawTransparency( l_shader, viewProjection, true);
-            drawTransparency( l_shader, viewProjection, false);
-        } else {
-            // Ohne Transperenz -> Sehr schnell
-            graphic->getVoxelShader()->SetAlpha_cutoff( 0.0f);
-            glDisable( GL_BLEND);
-            drawNode( l_shader, viewProjection);
-            glEnable( GL_BLEND);
-        }
-    }*/
 
     // Transparent zeichnen
     drawTransparency( l_shader, viewProjection, true);
@@ -435,36 +383,24 @@ void world::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alp
 }
 
 void world::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
-    Chunk *node = Chunks;
+    Chunk *l_node = Chunks;
     for( ;; ) {
-        if( node == NULL)
+        if( l_node == NULL)
             break;
-        // Update Chunk if Change
-        if( node->GetArrayChange())
-            p_updateNodeList.push_back(node); // for later now we draw
-        if( node->GetUpdateOnce() && node->getAmount() != 0 && node->GetUpdateVboOnce()) {
-            if( SDL_GetTicks() - node->GetTimeIdle() > WORLD_TILE_IDLE_TIME ) {
-                deleteChunk( node );
-            } else {
-                node->draw( shader, viewProjection, aa);
-            }
-        }
-        node = node->next;
+        l_node->draw( shader, viewProjection, aa);
+
+        // next
+        l_node = l_node->next;
     }
 }
-void world::UpdateArray() {
-    UpdateArrayNode();
-}
 
-void world::UpdateArrayNode() {
-    Chunk *node = Chunks;
+void world::updateArray() {
+    Chunk *l_node = Chunks;
     for( ;; ) {
-        if( node == NULL)
+        if( l_node == NULL)
             break;
-        // Update Chunk if Change
-        if( node->GetChanged() || !node->GetUpdateOnce() ) {// Update Chunk -> es hat sich was verändert
-            node->UpdateArray( p_blocklist); //, node->back, node->front, node->left, node->right, node->up, node->down);
-        }
-        node = node->next;
+        l_node->updateArray( p_blocklist);
+
+        l_node = l_node->next;
     }
 }

@@ -13,7 +13,7 @@
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-client 46.92.142.190" />
+				<Option parameters="-server" />
 				<Compiler>
 					<Add option="-std=c++1y" />
 					<Add option="-g" />
@@ -140,6 +140,7 @@
 		<Unit filename="engine/world.h" />
 		<Unit filename="graphic/camera.cpp" />
 		<Unit filename="graphic/camera.h" />
+		<Unit filename="graphic/debug_draw.cpp" />
 		<Unit filename="graphic/debug_draw.h" />
 		<Unit filename="graphic/display.cpp" />
 		<Unit filename="graphic/display.h" />
