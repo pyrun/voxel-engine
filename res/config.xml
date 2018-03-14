@@ -1,7 +1,7 @@
 <config>
     <engine>
         <tilemap>tileset.png</tilemap>
-        <fly>false</fly>
+        <fly>true</fly>
         <debug_physic>false</debug_physic>
     </engine>
     <graphic>

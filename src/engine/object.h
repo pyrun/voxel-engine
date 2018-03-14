@@ -12,7 +12,6 @@
 
 #include "../graphic/graphic.h"
 #include "../graphic/texture.h"
-#include "../game/objectcreator.h"
 
 #define DEFINITION_FILE "definition.xml"
 

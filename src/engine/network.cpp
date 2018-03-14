@@ -4,6 +4,7 @@ network_object::network_object()
 {
     p_type = NULL;
     p_name = "";
+    p_body = NULL;
 
     p_scale = glm::vec3( 1, 1, 1);
 
@@ -16,6 +17,8 @@ network_object::~network_object()
 }
 
 void network_object::init( btDiscreteDynamicsWorld *world) {
+    if( p_type == NULL)
+        return;
 	// Create the shape
 	p_body = p_type->makeBulletMesh();
 
@@ -42,10 +45,12 @@ void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
     if( !p_type)
         return;
 
+    if( p_body) {
         btVector3 Point = p_body->getCenterOfMassPosition();
         glm::vec3 l_rotate = QuatToEuler( p_body->getOrientation() );
         setPos( glm::vec3( (float)Point[0], (float)Point[1], (float)Point[2]));
         setRotate( l_rotate);
+    }
 
     // look if wee need to update the model matrix
     update_model();
@@ -258,16 +263,14 @@ bool network::init_upnp()
 
             std::string l_iport;
             l_iport = std::to_string( sockets[0]->GetBoundAddress().GetPort());
-            char eport[32];
-            strcpy(eport, l_iport.c_str());
 
             // Version miniupnpc-1.6.20120410
             int r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-                                        eport, l_iport.c_str(), lanaddr, 0, "UDP", 0, "0");
+                                        l_iport.c_str(), l_iport.c_str(), lanaddr, 0, "UDP", 0, "0");
 
             if(r!=UPNPCOMMAND_SUCCESS)
                 printf("AddPortMapping(%s, %s, %s) failed with code %d (%s)\n",
-                eport, l_iport.c_str(), lanaddr, r, strupnperror(r));
+                l_iport.c_str(), l_iport.c_str(), lanaddr, r, strupnperror(r));
 
             char intPort[6];
             char intClient[16];
@@ -278,7 +281,7 @@ bool network::init_upnp()
             char leaseDuration[128];
             r = UPNP_GetSpecificPortMappingEntry(urls.controlURL,
                 data.first.servicetype,
-                eport, "UDP",
+                l_iport.c_str(), "UDP",
                 intClient, intPort,
                 desc, enabled, leaseDuration);
 
@@ -311,8 +314,8 @@ void network::start()
 	if( network_topology == CLIENT)
 	{
 	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
-	    if( !init_upnp())
-            printf ( "network::start upnp didnt work\n");
+        if( !init_upnp())
+           printf ( "network::start upnp didnt work\n");
 		printf("network::start Connecting...\n");
 	}
 
@@ -540,13 +543,18 @@ bool network::process( int delta)
 void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 {
     Shader *l_object = graphic->getObjectShader();
+
     l_object->Bind();
+
     unsigned int idx;
     for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
         network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
+
+        if( l_obj->getPhysicBody() == NULL)
+            l_obj->init( p_physic_world);
+
         l_obj->draw( l_object, viewmatrix, p_types);
     }
-
 
     p_starchip->draw( graphic, config, viewmatrix);
 
