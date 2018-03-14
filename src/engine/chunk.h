@@ -58,7 +58,7 @@ public:
     void serialize(bool writeToBitstream, RakNet::BitStream *bitstream)
     {
         for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
-            bitstream->Serialize( writeToBitstream, p_tile[i]);
+            bitstream->Serialize( writeToBitstream, p_tile[i].ID);
     }
 
     inline int getX() { return p_pos.x; }
