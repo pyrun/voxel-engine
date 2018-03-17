@@ -9,7 +9,7 @@
 
 #define graphic_fov 1.2f
 #define graphic_znear 0.01f
-#define graphic_zfar 1000.0f
+#define graphic_zfar 2000.0f
 
 class graphic {
 public:

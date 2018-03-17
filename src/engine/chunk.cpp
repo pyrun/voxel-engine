@@ -2,7 +2,7 @@
 #include "../system/timer.h"
 #include <stdio.h>
 
-//#define printf if
+#define printf if
 
 Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
     // node reset

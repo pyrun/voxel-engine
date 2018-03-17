@@ -46,8 +46,8 @@ display::display( config *config) {
 
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
-    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
+    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0);
+	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0);
 
     // bit grße der Farben
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 3);
@@ -89,7 +89,8 @@ display::display( config *config) {
     SDL_GL_SetSwapInterval(0);
 
     // Tiefe nützen
-    glEnable( GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     // Cull Face
 	glEnable( GL_CULL_FACE);

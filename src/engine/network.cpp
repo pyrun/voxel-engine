@@ -564,8 +564,8 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
     for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
         network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
 
-        //if( l_obj->getPhysicBody() == NULL)
-        //    l_obj->init( p_physic_world);
+        /*if( l_obj->getPhysicBody() == NULL)
+            l_obj->init( p_physic_world);*/
 
         l_obj->draw( l_object, viewmatrix, p_types);
     }
