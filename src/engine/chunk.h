@@ -76,6 +76,7 @@ public:
     btRigidBody *getPhysicBody() { return p_rigidBody; }
 
     GLuint getVbo() { return p_vboVertex; }
+    void changed( bool set) { p_changed = set; }
 protected:
 private:
     glm::tvec3<int> p_pos;

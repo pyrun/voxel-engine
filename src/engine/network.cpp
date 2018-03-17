@@ -233,7 +233,6 @@ network::~network()
         p_rakPeerInterface->Shutdown( 100, 0);
         RakNet::RakPeerInterface::DestroyInstance( p_rakPeerInterface);
     }
-    p_chunksendlist.clear();
 
     delete p_types;
 }
@@ -325,7 +324,7 @@ void network::start()
 
 	if( isServer()) {
 
-        int l_size = 10;
+        int l_size = 2;
         for( int x = -l_size; x <= l_size; x++)
             for( int y = -l_size; y <= l_size; y++)
                 p_starchip->addChunk( glm::vec3( x, -1, y), true);
@@ -441,11 +440,11 @@ void network::readChunk( BitStream *bitstream) {
     }
     // read
     l_chunk->serialize( false, bitstream, l_start, l_end);
+    l_chunk->changed( true);
 }
 
 void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
     for( int l_width = 0; l_width < (CHUNK_SIZE*CHUNK_SIZE)/CHUNK_SIZE; l_width++) {
-        network_chunksendlist l_obj;
         BitStream l_bitstream;
 
         int l_start = l_width*CHUNK_SIZE*CHUNK_SIZE;
@@ -458,10 +457,7 @@ void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
         l_bitstream.Write( (int)l_start);
         l_bitstream.Write( (int)l_end);
         chunk->serialize( true, &l_bitstream, l_start, l_end);
-        l_obj.sendnumber = p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, address, false);
-        l_obj.address = address;
-        l_obj.position = chunk->getPos();
-        p_chunksendlist.push_back( l_obj);
+        p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE, 0, address, false);
     }
 }
 
@@ -474,7 +470,6 @@ void network::sendAllChunks( world *world,RakNet::AddressOrGUID address) {
         l_node = l_node->next;
         i++;
     }
-    printf( "%d \n", i);
 }
 
 bool network::process( int delta)
@@ -501,7 +496,7 @@ bool network::process( int delta)
             break;
         case ID_NEW_INCOMING_CONNECTION:
             printf("ID_NEW_INCOMING_CONNECTION from %s\n", p_packet->systemAddress.ToString());
-            // press the data
+            // send all chunks data
             sendAllChunks( p_starchip, p_packet->guid);
             break;
         case ID_DISCONNECTION_NOTIFICATION:
@@ -520,25 +515,7 @@ bool network::process( int delta)
                 p_rakPeerInterface->Connect( p_packet->systemAddress.ToString(false), p_packet->systemAddress.GetPort(),0,0);
             }
             break;
-        case ID_SND_RECEIPT_LOSS: // WE LOST DATA
-            {
-                // check id
-                uint32_t msgNumber;
-                memcpy(&msgNumber, p_packet->data+1, 4);
-
-                printf("%d Message #%i not delivered. WE LOST DATA CAPTAIN! Resend!\n", p_chunksendlist.size(),msgNumber);
-                for( int i = 0; i < (int)p_chunksendlist.size(); i++) {
-                    network_chunksendlist *l_send = &p_chunksendlist[i];
-                    if( l_send->sendnumber == msgNumber) {
-                        printf("2Message #%i not delivered. WE LOST DATA CAPTAIN! Resend!\n", msgNumber);
-                        sendChunk( getWorld()->getChunk( l_send->position.x, l_send->position.y, l_send->position.z), l_send->address);
-                        p_chunksendlist.erase( p_chunksendlist.begin()+i);
-                        break;
-                    }
-                    //printf( "%d == %d\n", l_send->sendnumber, msgNumber);
-                }
-            }
-        break;
+        case ID_SND_RECEIPT_LOSS:
         case ID_SND_RECEIPT_ACKED:
             {
                 uint32_t msgNumber;
@@ -550,14 +527,6 @@ bool network::process( int delta)
                 for (idx=0; idx < replicaListOut.Size(); idx++)
                 {
                     ((network_object*)replicaListOut[idx])->NotifyReplicaOfMessageDeliveryStatus( p_packet->guid,msgNumber, p_packet->data[0]==ID_SND_RECEIPT_ACKED);
-                }
-
-                for( int i = 0; i < (int)p_chunksendlist.size(); i++) {
-                    network_chunksendlist *l_send = &p_chunksendlist[i];
-                    if( l_send->sendnumber == msgNumber) {
-                        p_chunksendlist.erase( p_chunksendlist.begin()+i);
-                        break;
-                    }
                 }
             }
             break;
@@ -608,20 +577,6 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
         p_debugdraw.draw( viewmatrix);
         p_physic_world->debugDrawWorld();
     }
-
-/*    Chunk *l_node = p_starchip->getNode();
-    while( l_node != NULL) {
-        if( !l_node->isPhysicSet()) {
-            if( l_node->getPhysicBody()) {
-                p_physic_world->removeCollisionObject( l_node->getPhysicBody());
-            }
-            l_node->makeBulletMesh(); //->applyCentralImpulse();
-            l_node->setPhysic( true);
-            l_node->getPhysicBody()->updateInertiaTensor();
-            p_physic_world->addRigidBody( l_node->getPhysicBody() );
-        }
-        l_node = l_node->next;
-    }*/
 }
 
 void network::create_object() {

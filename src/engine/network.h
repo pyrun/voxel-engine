@@ -240,16 +240,6 @@ class network_mananger : public ReplicaManager3
 	}
 };
 
-class network_chunksendlist {
-    public:
-        network_chunksendlist() {}
-        ~network_chunksendlist() {}
-
-        RakNet::AddressOrGUID address;
-        uint32_t sendnumber;
-        glm::vec3 position;
-};
-
 class network
 {
     public:
@@ -297,8 +287,6 @@ class network
         int p_port;
         int p_maxamountplayer;
         std::string p_ip;
-
-        std::vector<network_chunksendlist> p_chunksendlist;
 
         world *p_starchip;
         object_handle *p_types;

@@ -52,7 +52,7 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
 
     updateForm();
 
-    printf( "Chunk::chunk take %dms creating x%dy%dz%d\n", SDL_GetTicks()-t, p_pos.x, p_pos.y, p_pos.z);
+    printf( "Chunk::chunk take %dms creating x%d y%d z%d\n", SDL_GetTicks()-t, p_pos.x, p_pos.y, p_pos.z);
 }
 
 Chunk::~Chunk() {
@@ -104,7 +104,7 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
     };
 
     // Make bullet rigid body
-    if ( ! p_vertices.empty() )
+    if ( !p_vertices.empty() )
     {
         // Working numbers
         const size_t numIndices     = p_vertices.size();
@@ -124,37 +124,20 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
             btmesh->addTriangle( A, B, C, removeDuplicateVertices );
         }
 
-
         // Give it a default MotionState
         btTransform transform;
         transform.setIdentity();
         transform.setOrigin( btVector3 ( p_form.getPos().x, p_form.getPos().y, p_form.getPos().z) );
         transform.setRotation( btQuaternion(0, 0, 0, 1) );
 
-        /*
-        btDefaultMotionState *motionState = new btDefaultMotionState( transform );*/
-
         btCollisionShape *btShape = new btBvhTriangleMeshShape( btmesh, true );
-/*
-        btRigidBody::btRigidBodyConstructionInfo
-                groundRigidBodyCI(0, motionState, btShape, btVector3(0, 0, 0));
-        body = new btRigidBody(groundRigidBodyCI);*/
 
-                // Give it a default MotionState
+        // Give it a default MotionState
         btDefaultMotionState* fallMotionState =
                 new btDefaultMotionState( transform);
 
-        //btConvexHullShape *tmpshape = new btConvexHullShape( btmesh);
-
-        /*btConvexShape  *tmpshape = new btConvexTriangleMeshShape( btmesh );
-        btShapeHull *hull = new btShapeHull(tmpshape);
-        btScalar margin = tmpshape->getMargin();
-        hull->buildHull(margin);*/
-        //btGImpactMeshShape* simplifiedConvexShape = new btGImpactMeshShape( btmesh);
-
         btScalar mass = 0;
         btVector3 fallInertia(0, 0, 0);
-        //btShape->calculateLocalInertia(mass, fallInertia);
         btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, btShape, fallInertia);
         body = new btRigidBody(fallRigidBodyCI);
     }
@@ -167,8 +150,6 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
     p_updateRigidBody = false;
 
     p_rigidBody = body;
-
-    printf( "Chunk::makeBulletMesh RigidBody update\n");
 
     world->addRigidBody( p_rigidBody );
     return body;
