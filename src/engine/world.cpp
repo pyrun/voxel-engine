@@ -19,7 +19,7 @@ static int world_thread(void *data)
     return 0;
 }
 
-world::world( texture *image, block_list* B_List, bool clear) {
+world::world( texture *image, block_list* B_List) {
     p_seed = (int)time(NULL); // p_seed
     p_buysvector = false;
     p_chunk_amount = 0;
@@ -28,8 +28,6 @@ world::world( texture *image, block_list* B_List, bool clear) {
     p_blocklist = B_List;
     p_destroy = false;
     p_image = image;
-    p_clear = clear;
-
     p_thread = SDL_CreateThread(world_thread, "world_thread", (void *)this);
 }
 
@@ -144,9 +142,9 @@ void world::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
 void world::process_thrend() {
     for( int i = 0; i < (int)p_creatingList.size(); i++)
     {
-        Chunk *l_node = getChunk( p_creatingList[i].x, p_creatingList[i].y, p_creatingList[i].z);
+        Chunk *l_node = getChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z);
         if( l_node == NULL) {
-            l_node = createChunk( p_creatingList[i].x, p_creatingList[i].y, p_creatingList[i].z);
+            l_node = createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
             p_creatingList.erase( p_creatingList.begin()+ i);
             break;
         }
@@ -154,7 +152,7 @@ void world::process_thrend() {
 
     for( auto l_pos:p_deletingList)
     {
-        Chunk *l_node = getChunk( l_pos.x, l_pos.y, l_pos.z);
+        Chunk *l_node = getChunk( l_pos.position.x, l_pos.position.y, l_pos.position.z);
         if( l_node != NULL)
             deleteChunk( l_node);
     }
@@ -190,7 +188,7 @@ void world::deleteChunk( Chunk* node) {
     destoryChunk( node->getPos().x, node->getPos().y, node->getPos().z);
 }
 
-Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
+Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape) {
     Chunk *node;
 
     // Chunk erstellen
@@ -198,13 +196,10 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z) {
     timer.Start();
     node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
 
-    Landscape_Generator( node, p_blocklist);
-
     node->updateArray( p_blocklist);
 
-    // Landscape erstellen
-    //if( !p_clear)
-    //    Landscape_Generator( node, p_blocklist);
+    if( generateLandscape)
+        Landscape_Generator( node, p_blocklist);
 
     // seiten finden
     Chunk *snode;
@@ -338,11 +333,21 @@ Chunk* world::getChunk( int X, int Y, int Z) {
     return NULL;
 }
 
-void world::addChunk( glm::tvec3<int> pos ) {
-    p_creatingList.push_back( pos);
+void world::addChunk( glm::tvec3<int> pos, bool generateLandscape ) {
+    world_data_list l_obj;
+
+    l_obj.position = pos;
+    l_obj.landscape = generateLandscape;
+
+    p_creatingList.push_back( l_obj);
 }
 void world::addDeleteChunk( glm::tvec3<int> pos ) {
-    p_deletingList.push_back( pos);
+    world_data_list l_obj;
+
+    l_obj.position = pos;
+    l_obj.landscape = false;
+
+    p_deletingList.push_back( l_obj);
 }
 
 void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {

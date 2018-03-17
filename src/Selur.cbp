@@ -25,7 +25,6 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bullet3/src" />
-					<Add directory="graphic/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />

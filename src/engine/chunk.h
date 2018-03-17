@@ -47,9 +47,10 @@ public:
 
     btRigidBody *makeBulletMesh( btDiscreteDynamicsWorld *world);
 
-    void serialize(bool writeToBitstream, RakNet::BitStream *bitstream)
+    void serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end)
     {
-        for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+        // CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE
+        for( int i = start; i < end; i++)
             bitstream->Serialize( writeToBitstream, p_tile[i].ID);
     }
 

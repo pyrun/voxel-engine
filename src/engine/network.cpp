@@ -223,7 +223,7 @@ network::network( config *config, texture* image, block_list *block_list)
     p_maxamountplayer = atoi( config->get( "max_player", "network", "32").c_str() );
     p_isClient = false;
     p_isServer = false;
-    p_starchip = new world( image, block_list, true);
+    p_starchip = new world( image, block_list);
     p_types->load( config);
 }
 
@@ -233,6 +233,8 @@ network::~network()
         p_rakPeerInterface->Shutdown( 100, 0);
         RakNet::RakPeerInterface::DestroyInstance( p_rakPeerInterface);
     }
+    p_chunksendlist.clear();
+
     delete p_types;
 }
 
@@ -326,7 +328,7 @@ void network::start()
         int l_size = 10;
         for( int x = -l_size; x <= l_size; x++)
             for( int y = -l_size; y <= l_size; y++)
-                p_starchip->addChunk( glm::vec3( x, -1, y) );
+                p_starchip->addChunk( glm::vec3( x, -1, y), true);
 
         ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
         l_obj->p_name = "box";
@@ -422,10 +424,14 @@ void network::readBlockChange( BitStream *bitstream) {
 
 void network::readChunk( BitStream *bitstream) {
     int l_x, l_y, l_z;
+    int l_start, l_end;
 
     bitstream->Read( l_x);
     bitstream->Read( l_y);
     bitstream->Read( l_z);
+    bitstream->Read( l_start);
+    bitstream->Read( l_end);
+
     Chunk *l_chunk = p_starchip->getChunk( l_x, l_y, l_z);
     if( !l_chunk)
         l_chunk = p_starchip->createChunk( l_x, l_y, l_z);
@@ -434,28 +440,41 @@ void network::readChunk( BitStream *bitstream) {
         return;
     }
     // read
-    l_chunk->serialize( false, bitstream);
+    l_chunk->serialize( false, bitstream, l_start, l_end);
 }
 
-
 void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
-    BitStream l_bitstream;
+    for( int l_width = 0; l_width < (CHUNK_SIZE*CHUNK_SIZE)/CHUNK_SIZE; l_width++) {
+        network_chunksendlist l_obj;
+        BitStream l_bitstream;
 
-    l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK);
-    l_bitstream.Write( (int)chunk->getPos().x);
-    l_bitstream.Write( (int)chunk->getPos().y);
-    l_bitstream.Write( (int)chunk->getPos().z);
-    chunk->serialize( true, &l_bitstream);
-    p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 0, address, false);
+        int l_start = l_width*CHUNK_SIZE*CHUNK_SIZE;
+        int l_end = l_start+(CHUNK_SIZE*CHUNK_SIZE);
+
+        l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK);
+        l_bitstream.Write( (int)chunk->getPos().x);
+        l_bitstream.Write( (int)chunk->getPos().y);
+        l_bitstream.Write( (int)chunk->getPos().z);
+        l_bitstream.Write( (int)l_start);
+        l_bitstream.Write( (int)l_end);
+        chunk->serialize( true, &l_bitstream, l_start, l_end);
+        l_obj.sendnumber = p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, address, false);
+        l_obj.address = address;
+        l_obj.position = chunk->getPos();
+        p_chunksendlist.push_back( l_obj);
+    }
 }
 
 void network::sendAllChunks( world *world,RakNet::AddressOrGUID address) {
+    int i =0;
     Chunk *l_node = world->getNode();
     while( l_node != NULL)
     {
         sendChunk( l_node, address);
         l_node = l_node->next;
+        i++;
     }
+    printf( "%d \n", i);
 }
 
 bool network::process( int delta)
@@ -501,7 +520,25 @@ bool network::process( int delta)
                 p_rakPeerInterface->Connect( p_packet->systemAddress.ToString(false), p_packet->systemAddress.GetPort(),0,0);
             }
             break;
-        case ID_SND_RECEIPT_LOSS:
+        case ID_SND_RECEIPT_LOSS: // WE LOST DATA
+            {
+                // check id
+                uint32_t msgNumber;
+                memcpy(&msgNumber, p_packet->data+1, 4);
+
+                printf("%d Message #%i not delivered. WE LOST DATA CAPTAIN! Resend!\n", p_chunksendlist.size(),msgNumber);
+                for( int i = 0; i < (int)p_chunksendlist.size(); i++) {
+                    network_chunksendlist *l_send = &p_chunksendlist[i];
+                    if( l_send->sendnumber == msgNumber) {
+                        printf("2Message #%i not delivered. WE LOST DATA CAPTAIN! Resend!\n", msgNumber);
+                        sendChunk( getWorld()->getChunk( l_send->position.x, l_send->position.y, l_send->position.z), l_send->address);
+                        p_chunksendlist.erase( p_chunksendlist.begin()+i);
+                        break;
+                    }
+                    //printf( "%d == %d\n", l_send->sendnumber, msgNumber);
+                }
+            }
+        break;
         case ID_SND_RECEIPT_ACKED:
             {
                 uint32_t msgNumber;
@@ -513,6 +550,14 @@ bool network::process( int delta)
                 for (idx=0; idx < replicaListOut.Size(); idx++)
                 {
                     ((network_object*)replicaListOut[idx])->NotifyReplicaOfMessageDeliveryStatus( p_packet->guid,msgNumber, p_packet->data[0]==ID_SND_RECEIPT_ACKED);
+                }
+
+                for( int i = 0; i < (int)p_chunksendlist.size(); i++) {
+                    network_chunksendlist *l_send = &p_chunksendlist[i];
+                    if( l_send->sendnumber == msgNumber) {
+                        p_chunksendlist.erase( p_chunksendlist.begin()+i);
+                        break;
+                    }
                 }
             }
             break;
