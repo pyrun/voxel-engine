@@ -7,7 +7,10 @@ in vec4 normal;
 in vec4 blockdata;
 
 in vec2 size;
-in vec4 backgroundcolor;
+in vec3 backgroundcolor;
+
+in vec3 camerapositon;
+
 in float alpha_cutoff;
 
 layout( location = 0 ) out vec4 fragColor;
@@ -50,5 +53,5 @@ void main() {
         if(color.a < alpha_cutoff)
             discard;
 
-    fragColor = mix( color, backgroundcolor, getFogFactor( z/25.0*e));
+    fragColor = mix( color, vec4( backgroundcolor.x, backgroundcolor.y, backgroundcolor.z, 1) , getFogFactor( z/25.0*e));
 }

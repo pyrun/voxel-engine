@@ -6,7 +6,7 @@ layout( location = 3 ) in vec4 voxelData;
 
 uniform mat4 g_mvp;
 uniform vec2 g_size;
-uniform vec4 g_backgroundcolor;
+uniform vec3 g_backgroundcolor;
 uniform float g_alpha_cutoff;
 
 out vec4 coord;
@@ -14,7 +14,7 @@ out vec4 normal;
 out vec4 blockdata;
 
 out vec2 size;
-out vec4 backgroundcolor;
+out vec3 backgroundcolor;
 out float alpha_cutoff;
 
 out vec4 o_sun;

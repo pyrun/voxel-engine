@@ -29,7 +29,7 @@ Shader::Shader(const std::string& fileName) {
 	p_uniforms[3] = glGetUniformLocation(p_program, "g_shadowmap");
 	p_uniforms[4] = glGetUniformLocation(p_program, "g_backgroundcolor");
 	p_uniforms[5] = glGetUniformLocation(p_program, "g_alpha_cutoff");
-	p_uniforms[6] = glGetUniformLocation(p_program, "g_sun");
+	p_uniforms[6] = glGetUniformLocation(p_program, "g_camerapositon");
 
 	p_attribute[0] = glGetAttribLocation(p_program, "vertexPosition");
 	p_attribute[1] = glGetAttribLocation(p_program, "vertexNormals");
@@ -74,27 +74,27 @@ void Shader::Bind() {
 	glUseProgram(p_program);
 }
 
-void Shader::SetSun( GLfloat x, GLfloat y, GLfloat z, GLfloat f_strength) {
-    glUniform4f( p_uniforms[6], x, y, z, f_strength);
+void Shader::setCameraPosition( glm::vec3 position) {
+    glUniform3f( p_uniforms[6], position.x, position.y, position.z);
 }
 
-void Shader::SetSize( GLfloat x, GLfloat y) {
+void Shader::setSize( GLfloat x, GLfloat y) {
     glUniform2f( p_uniforms[2], x, y);
 }
 
-void Shader::SetAlpha_cutoff( GLfloat x) {
+void Shader::setAlphaCutoff( GLfloat x) {
     if( p_old_alpha_value == x)
         return;
     p_old_alpha_value = x;
     glUniform1f( p_uniforms[5], x);
 }
 
-void Shader::SetTextureUnit(unsigned int TextureUnit) {
+void Shader::setTextureUnit(unsigned int TextureUnit) {
     glUniform1i( p_uniforms[3], TextureUnit);
 }
 
-void Shader::SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a) {
-    glUniform4f( p_uniforms[4], r, g, b, a);
+void Shader::setBackgroundColor(  GLfloat r, GLfloat g,  GLfloat b) {
+    glUniform3f( p_uniforms[4], r, g, b);
 }
 
 void Shader::update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {

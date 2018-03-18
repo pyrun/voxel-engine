@@ -39,11 +39,11 @@ public:
 	void disableFullVertexArray();
 
 	void Bind();
-	void SetSun( GLfloat x, GLfloat y, GLfloat z, GLfloat f_strength);
-	void SetSize( GLfloat x, GLfloat y);
-	void SetAlpha_cutoff( GLfloat x);
-	void SetTextureUnit(unsigned int TextureUnit);
-	void SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a);
+	void setCameraPosition( glm::vec3 position);
+	void setSize( GLfloat x, GLfloat y);
+	void setAlphaCutoff( GLfloat x);
+	void setTextureUnit(unsigned int TextureUnit);
+	void setBackgroundColor(  GLfloat r, GLfloat g,  GLfloat b);
 
 	void update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
 	void updateWithout(  Transform *t_transform, glm::mat4 mvp) ;

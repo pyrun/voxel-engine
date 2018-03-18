@@ -336,16 +336,14 @@ void world::addDeleteChunk( glm::tvec3<int> pos ) {
 }
 
 void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
-    int g_width = graphic->getWidth();
-    int g_height = graphic->getHeight();
-
     // get shader
     Shader* l_shader = graphic->getVoxelShader();
 
     // einstellung des shaders
     l_shader->Bind();
-    l_shader->SetSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
-    l_shader->SetBackgroundcolor( 1, 1, 1, 1);
+    l_shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
+    l_shader->setBackgroundColor( 1, 1, 1);
+    l_shader->setCameraPosition( graphic->getCamera()->GetPos());
 
     p_image->Bind();
 
@@ -362,14 +360,14 @@ void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
 void world::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
     // shader einstellen
     if( alpha_cutoff) {
-        shader->SetAlpha_cutoff( 0.99f);
+        shader->setAlphaCutoff( 0.99f);
     } else {
-        glDepthMask(false);
-        shader->SetAlpha_cutoff( 1.10f);
-        glDepthMask(true);
+        glDepthMask( false);
+        shader->setAlphaCutoff( 1.10f);
+        glDepthMask( true);
     }
     // Draw node
-    drawNode( shader,viewProjection, aa);
+    drawNode( shader, viewProjection, aa);
 }
 
 void world::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
