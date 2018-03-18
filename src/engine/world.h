@@ -29,7 +29,8 @@ public:
     Chunk *getChunkWithPos( int x, int y, int z);
     void SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID);
 
-    void process_thrend();
+    void process_thrend_handle();
+    void process_thrend_update();
     void process( btDiscreteDynamicsWorld *world);
 
     void deleteChunks( Chunk* chunk);
@@ -65,7 +66,8 @@ private:
     bool p_destroy;
     texture *p_image;
 
-    SDL_Thread *p_thread;
+    SDL_Thread *p_thread_update;
+    SDL_Thread *p_thread_handle;
 
     std::vector<world_data_list> p_creatingList;
     std::vector<world_data_list> p_deletingList;

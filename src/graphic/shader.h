@@ -70,6 +70,8 @@ private:
 	GLint p_program;
 	GLint p_shaders[NUM_SHADERS];
 	GLint p_uniforms[NUM_UNIFORMS];
+
+	GLfloat p_old_alpha_value;
 };
 
 #endif

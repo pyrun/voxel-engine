@@ -1,6 +1,9 @@
 #include "shader.h"
+
 #include <iostream>
 #include <fstream>
+
+#include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const std::string& fileName) {
 	p_program = glCreateProgram();
@@ -80,6 +83,9 @@ void Shader::SetSize( GLfloat x, GLfloat y) {
 }
 
 void Shader::SetAlpha_cutoff( GLfloat x) {
+    if( p_old_alpha_value == x)
+        return;
+    p_old_alpha_value = x;
     glUniform1f( p_uniforms[5], x);
 }
 
@@ -94,7 +100,7 @@ void Shader::SetBackgroundcolor(  GLfloat r, GLfloat g,  GLfloat b, GLfloat a) {
 void Shader::update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {
     glm::mat4 MVP = getCurrentViewProjectionMatrix * model * aa;
 
-    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, glm::value_ptr(MVP));
 }
 
 void Shader::updateWithout(  Transform *t_transform, glm::mat4 mvp) {

@@ -223,6 +223,7 @@ void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojectio
         p_texture->Bind();
 
     shader->update( model, viewprojection);
+
     // draw
     glBindVertexArray( p_vao);
 

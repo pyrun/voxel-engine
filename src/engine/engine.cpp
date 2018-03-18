@@ -230,6 +230,8 @@ void engine::run() {
 
     int l_delta = 0;
 
+    Timer l_timer_test;
+
     // set up clock
     l_clock.tick();
     while( p_isRunnig) { // Runniz
@@ -259,6 +261,8 @@ void engine::run() {
             p_isRunnig = false;
 
 
+
+
         /// Render
         if( p_openvr ) {
             p_openvr->renderForLeftEye();
@@ -280,9 +284,15 @@ void engine::run() {
 
         p_graphic->getDisplay()->clear();
 
+
+
         glm::mat4 l_mvp_cam = p_graphic->getCamera()->getViewProjection();
 
+        l_timer_test.Start();
+
         render( l_mvp_cam);
+
+
 
         if( p_network->getWorld()) {
             // View Cross
@@ -290,11 +300,13 @@ void engine::run() {
 
 //            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
-            viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
+            //viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
         }
 
         // Swap die Buffer um keine Renderfehler zu bekommen
         p_graphic->getDisplay()->swapBuffers();
+
+        int l_test = l_timer_test.GetTicks();
 
 
         // fehler anzeigen -> schleife eine meldung bedeutet ich habe verkackt
@@ -314,7 +326,8 @@ void engine::run() {
         l_average_delta_time = l_average_delta_time/(float)p_framerate.size();
 
         double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
-        Title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
+        Title = "TimeTest_" + NumberToString( (double)l_test );
+        Title = Title + "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         Title = Title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
         if(  p_network->getWorld())

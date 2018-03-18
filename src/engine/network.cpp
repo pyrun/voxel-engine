@@ -324,10 +324,12 @@ void network::start()
 
 	if( isServer()) {
 
-        int l_size = 2;
+        int l_size = 8;
+        int l_end = -4;
         for( int x = -l_size; x <= l_size; x++)
             for( int y = -l_size; y <= l_size; y++)
-                p_starchip->addChunk( glm::vec3( x, -1, y), true);
+                for( int z = l_end; z <= -1; z++)
+                    p_starchip->addChunk( glm::vec3( x, z, y), true);
 
         ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
         l_obj->p_name = "box";

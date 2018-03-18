@@ -2,13 +2,27 @@
 #include <time.h>
 #include "../system/timer.h"
 
-static int world_thread(void *data)
+static int world_thread_handle(void *data)
 {
-    int cnt;
-
     for ( ;; ) {
         world *l_world = (world*)data;
-        l_world->process_thrend();
+        l_world->process_thrend_handle();
+
+        if( l_world->getDestory() )
+            break;
+
+        SDL_Delay(1);
+    }
+
+    return 0;
+}
+
+static int world_thread_update(void *data)
+{
+    for ( ;; ) {
+        world *l_world = (world*)data;
+
+        l_world->process_thrend_update();
 
         if( l_world->getDestory() )
             break;
@@ -28,13 +42,15 @@ world::world( texture *image, block_list* B_List) {
     p_blocklist = B_List;
     p_destroy = false;
     p_image = image;
-    p_thread = SDL_CreateThread(world_thread, "world_thread", (void *)this);
+    p_thread_handle = SDL_CreateThread(world_thread_handle, "world_thread_handle", (void *)this);
+    p_thread_update = SDL_CreateThread(world_thread_update, "world_thread_update", (void *)this);
 }
 
 world::~world() {
     int l_return;
     p_destroy = true;
-    SDL_WaitThread( p_thread, &l_return);
+    SDL_WaitThread( p_thread_update, &l_return);
+    SDL_WaitThread( p_thread_handle, &l_return);
 
     // Löschen der Welt
     deleteChunks( Chunks);
@@ -139,7 +155,7 @@ void world::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
     chunk->set( tile_x-l_pos.x, tile_y-l_pos.y, tile_z-l_pos.z, ID);
 }
 
-void world::process_thrend() {
+void world::process_thrend_handle() {
     for( int i = 0; i < (int)p_creatingList.size(); i++)
     {
         Chunk *l_node = getChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z);
@@ -148,6 +164,8 @@ void world::process_thrend() {
             p_creatingList.erase( p_creatingList.begin()+ i);
             break;
         }
+        if( i == 2)
+            break;
     }
 
     for( auto l_pos:p_deletingList)
@@ -157,7 +175,9 @@ void world::process_thrend() {
             deleteChunk( l_node);
     }
     p_deletingList.clear();
+}
 
+void world::process_thrend_update() {
     // be änderung Updaten
     updateArray();
 }
@@ -196,43 +216,8 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandsca
     timer.Start();
     node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
 
-    node->updateArray( p_blocklist);
-
     if( generateLandscape)
         Landscape_Generator( node, p_blocklist);
-
-    // seiten finden
-    Chunk *snode;
-    if( CheckChunk( pos_x+1, pos_y, pos_z)) {
-        snode = getChunk( pos_x+1, pos_y, pos_z);
-        snode->back = node;
-        node->front = snode;
-    }
-    if( CheckChunk( pos_x-1, pos_y, pos_z)) {
-        snode = getChunk( pos_x-1, pos_y, pos_z);
-        snode->front = node;
-        node->back = snode;
-    }
-    if( CheckChunk( pos_x, pos_y+1, pos_z)) {
-        snode = getChunk( pos_x, pos_y+1, pos_z);
-        snode->down = node;
-        node->up = snode;
-    }
-    if( CheckChunk( pos_x, pos_y-1, pos_z)) {
-        snode = getChunk( pos_x, pos_y-1, pos_z);
-        snode->up = node;
-        node->down = snode;
-    }
-    if( CheckChunk( pos_x, pos_y, pos_z+1)) {
-        snode = getChunk( pos_x, pos_y, pos_z+1);
-        snode->left = node;
-        node->right = snode;
-    }
-    if( CheckChunk( pos_x, pos_y, pos_z-1)) {
-        snode = getChunk( pos_x, pos_y, pos_z-1);
-        snode->right = node;
-        node->left = snode;
-    }
 
     p_chunk_amount++; // Chunks mitzählen
 
@@ -360,6 +345,7 @@ void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
     // einstellung des shaders
     l_shader->Bind();
     l_shader->SetSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
+    l_shader->SetBackgroundcolor( 1, 1, 1, 1);
 
     p_image->Bind();
 
@@ -376,15 +362,14 @@ void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
 void world::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
     // shader einstellen
     if( alpha_cutoff) {
-        glDepthMask(true);
         shader->SetAlpha_cutoff( 0.99f);
     } else {
         glDepthMask(false);
         shader->SetAlpha_cutoff( 1.10f);
+        glDepthMask(true);
     }
     // Draw node
     drawNode( shader,viewProjection, aa);
-    glDepthMask(true);
 }
 
 void world::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
