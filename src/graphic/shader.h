@@ -40,6 +40,7 @@ public:
 
 	void Bind();
 	void setCameraPosition( glm::vec3 position);
+	void setViewProjectionMatrixe( glm::mat4 mat);
 	void setSize( GLfloat x, GLfloat y);
 	void setAlphaCutoff( GLfloat x);
 	void setTextureUnit(unsigned int TextureUnit);

@@ -81,6 +81,7 @@ Chunk::~Chunk() {
     timer.Start();
 
     // vbo daten löschen
+    glDeleteBuffers(1, &p_vboIndex);
     glDeleteBuffers(1, &p_vboVertex);
     glDeleteBuffers(1, &p_vboNormal);
     glDeleteBuffers(1, &p_vboData);
@@ -96,7 +97,7 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
         return body;
 
     // Handy lambda for converting from irr::vector to btVector
-    auto toBtVector = [ &]( const block_vertex & vec ) -> btVector3
+    auto toBtVector = [ &]( const glm::vec3 & vec ) -> btVector3
     {
         btVector3 bt( vec.x*CHUNK_SCALE, vec.y*CHUNK_SCALE, vec.z*CHUNK_SCALE );
 
@@ -104,10 +105,10 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
     };
 
     // Make bullet rigid body
-    if ( !p_vertices.empty() )
+    if ( ! p_vertices.empty() && ! p_indices.empty() )
     {
         // Working numbers
-        const size_t numIndices     = p_vertices.size();
+        const size_t numIndices     = p_indices.size();
         const size_t numTriangles   = numIndices / 3;
 
         // Create triangles
@@ -116,9 +117,9 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
         // Build btTriangleMesh
         for ( size_t i=0; i<numIndices; i+=3 )
         {
-            const btVector3 &A = toBtVector( p_vertices[ i+0 ] );
-            const btVector3 &B = toBtVector( p_vertices[ i+1 ] );
-            const btVector3 &C = toBtVector( p_vertices[ i+2 ] );
+            const btVector3 &A = toBtVector( p_vertices[ p_indices[ i+0 ] ] );
+            const btVector3 &B = toBtVector( p_vertices[ p_indices[ i+1 ] ] );
+            const btVector3 &C = toBtVector( p_vertices[ p_indices[ i+2 ] ] );
 
             bool removeDuplicateVertices = true;
             btmesh->addTriangle( A, B, C, removeDuplicateVertices );
@@ -224,6 +225,108 @@ void Chunk::updateForm()
     p_form.setScale( glm::vec3( CHUNK_SCALE));
 }
 
+void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 data) {
+    int l_flip = 0;
+    int l_indices = p_indices.size();
+    int l_vertices = p_vertices.size();
+
+    p_indices.resize( p_indices.size() + 6);
+    p_vertices.resize( p_vertices.size() + 4);
+    p_data.resize( p_data.size() + 4);
+
+    // flip
+    if( flip)
+        l_flip = 5;
+
+    // set indices
+    p_indices[ l_indices + abs(0-l_flip) ] = l_vertices+0;
+    p_indices[ l_indices + abs(1-l_flip) ] = l_vertices+1;
+    p_indices[ l_indices + abs(2-l_flip) ] = l_vertices+2;
+    p_indices[ l_indices + abs(3-l_flip) ] = l_vertices+2;
+    p_indices[ l_indices + abs(4-l_flip) ] = l_vertices+1;
+    p_indices[ l_indices + abs(5-l_flip) ] = l_vertices+3;
+
+    // set vertices
+    p_vertices[ l_vertices + 0] = pos + glm::vec3( 1, 0, 0);
+    p_vertices[ l_vertices + 1] = pos + glm::vec3( 1, 1, 0);
+    p_vertices[ l_vertices + 2] = pos + glm::vec3( 1, 0, 1);
+    p_vertices[ l_vertices + 3] = pos + glm::vec3( 1, 1, 1);
+
+    // set data
+    p_data[ l_vertices + 0] = data;
+    p_data[ l_vertices + 1] = data;
+    p_data[ l_vertices + 2] = data;
+    p_data[ l_vertices + 3] = data;
+}
+
+void Chunk::addFaceY( bool flip, glm::vec3 pos, glm::vec3 data) {
+    int l_flip = 0;
+    int l_indices = p_indices.size();
+    int l_vertices = p_vertices.size();
+
+    p_indices.resize( p_indices.size() + 6);
+    p_vertices.resize( p_vertices.size() + 4);
+    p_data.resize( p_data.size() + 4);
+
+    // flip
+    if( flip)
+        l_flip = 5;
+
+    // set indices
+    p_indices[ l_indices + abs(0-l_flip) ] = l_vertices+0;
+    p_indices[ l_indices + abs(1-l_flip) ] = l_vertices+1;
+    p_indices[ l_indices + abs(2-l_flip) ] = l_vertices+2;
+    p_indices[ l_indices + abs(3-l_flip) ] = l_vertices+2;
+    p_indices[ l_indices + abs(4-l_flip) ] = l_vertices+1;
+    p_indices[ l_indices + abs(5-l_flip) ] = l_vertices+3;
+
+    // set vertices
+    p_vertices[ l_vertices + 0] = pos + glm::vec3( 0, 0, 0);
+    p_vertices[ l_vertices + 1] = pos + glm::vec3( 1, 0, 0);
+    p_vertices[ l_vertices + 2] = pos + glm::vec3( 0, 0, 1);
+    p_vertices[ l_vertices + 3] = pos + glm::vec3( 1, 0, 1);
+
+    // set data
+    p_data[ l_vertices + 0] = data;
+    p_data[ l_vertices + 1] = data;
+    p_data[ l_vertices + 2] = data;
+    p_data[ l_vertices + 3] = data;
+}
+
+void Chunk::addFaceZ( bool flip, glm::vec3 pos, glm::vec3 data) {
+    int l_flip = 0;
+    int l_indices = p_indices.size();
+    int l_vertices = p_vertices.size();
+
+    p_indices.resize( p_indices.size() + 6);
+    p_vertices.resize( p_vertices.size() + 4);
+    p_data.resize( p_data.size() + 4);
+
+    // flip
+    if( flip)
+        l_flip = 5;
+
+    // set indices
+    p_indices[ l_indices + abs(0-l_flip) ] = l_vertices+0;
+    p_indices[ l_indices + abs(1-l_flip) ] = l_vertices+1;
+    p_indices[ l_indices + abs(2-l_flip) ] = l_vertices+2;
+    p_indices[ l_indices + abs(3-l_flip) ] = l_vertices+2;
+    p_indices[ l_indices + abs(4-l_flip) ] = l_vertices+1;
+    p_indices[ l_indices + abs(5-l_flip) ] = l_vertices+3;
+
+    // set vertices
+    p_vertices[ l_vertices + 0] = pos + glm::vec3( 0, 0, 0);
+    p_vertices[ l_vertices + 1] = pos + glm::vec3( 0, 1, 0);
+    p_vertices[ l_vertices + 2] = pos + glm::vec3( 1, 0, 0);
+    p_vertices[ l_vertices + 3] = pos + glm::vec3( 1, 1, 0);
+
+    // set data
+    p_data[ l_vertices + 0] = data;
+    p_data[ l_vertices + 1] = data;
+    p_data[ l_vertices + 2] = data;
+    p_data[ l_vertices + 3] = data;
+}
+
 void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Left, Chunk *Right, Chunk *Up, Chunk *Down) {
     int i = 0;
     glm::vec2 Side_Textur_Pos;
@@ -234,14 +337,19 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
 
     timer.Start();
 
+    /*p_indices.reserve( 2048);
     p_vertices.reserve( 2048);
     p_data.reserve( 2048);
+   */
+    p_indices.clear( );
+    p_vertices.clear( );
+    p_data.clear( );
 
     bool b_visibility = false;
 
     tile * l_tile = NULL;
 
-    // View from negative x
+    // View from positive x
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = CHUNK_SIZE - 1; x >= 0; x--) {
             for(int y = 0; y < CHUNK_SIZE; y++) {
@@ -269,50 +377,37 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if( 0&& b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == getTile( x, y-1, z)->ID) ) {
-                    p_vertices[i - 4] = block_vertex( x,     y+1,     z, 0);
-                    p_vertices[i - 3] = block_vertex( x, y+1, z, 0);
-                    p_vertices[i - 1] = block_vertex( x, y+1, z+1, 0);
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == getTile( x, y-1, z)->ID) ) {
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y+1, z+1);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 0);
-
-                    p_vertices.resize( p_vertices.size() + 6);
-                    p_data.resize( p_data.size() + 6);
-
-                    p_data[i] = block_data( 0.f, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    p_vertices[i++] = block_vertex(x, y, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    p_vertices[i++] = block_vertex(x, y, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    p_vertices[i++] = block_vertex(x, y + 1, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    p_vertices[i++] = block_vertex(x, y + 1, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    p_vertices[i++] = block_vertex(x, y, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0.f);
-                    p_vertices[i++] = block_vertex(x, y + 1, z + 1, 0);
+                    addFaceX( true, glm::vec3( x-1, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
 
                 b_visibility = true;
             }
         }
     }
-    // View from positive x
+
+    // View from negative x
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = 0; x < CHUNK_SIZE; x++)  {
             for(int y = 0; y < CHUNK_SIZE; y++) {
-                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
+                l_tile = getTile( x, y, z);
+                if( !l_tile)
                     continue;
-                uint8_t type = getTile( x, y, z)->ID;
+
+                if( l_tile->ID == EMPTY_BLOCK_ID) {// tile nicht vorhanden
+                    b_visibility = false;
+                    continue;
+                }
+                unsigned int type = l_tile->ID;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
+
                 if(  x != CHUNK_SIZE-1 && CheckTile(x+1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x+1, y, z)->ID)->getAlpha() ) {
                     b_visibility = false;
                     continue;
@@ -322,33 +417,12 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && y != 0 && CheckTile( x, y-1, z) && getTile( x, y, z)->ID == getTile( x, y-1, z)->ID) {
-                    p_vertices[i - 5] = block_vertex(x + 1, y+1, z, 0);
-                    p_vertices[i - 3] = block_vertex(x +1, y+1, z, 0);
-                    p_vertices[i - 2] = block_vertex(x +1, y+1, z+1, 0);
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == getTile( x, y-1, z)->ID) ) {
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
-                    p_vertices.resize( p_vertices.size() + 6);
-                    p_data.resize( p_data.size() + 6);
-
                     Side_Textur_Pos = List->GetTexturByType( type, 1);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z + 1, 0);
+                    addFaceX( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
                 b_visibility = true;
             }
@@ -376,37 +450,18 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     continue;
                 }
                 if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z)->ID == getTile( x, y, z)->ID) {
-                    p_vertices[i - 5] = block_vertex(x+1    , y, z, 0);
-                    p_vertices[i - 3] = block_vertex(x + 1, y, z, 0);
-                    p_vertices[i - 2] = block_vertex(x + 1, y, z+1, 0);
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y, z);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y, z+1);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 5);
-
-                    p_vertices.resize( p_vertices.size() + 6);
-                    p_data.resize( p_data.size() + 6);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y, z, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y, z + 1, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z + 1, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y, z + 1, 0);
+                    addFaceY( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
                 }
                 b_visibility = true;
             }
         }
     }
+
+
     // View from positive y
     for(int z = 0; z < CHUNK_SIZE; z++) {
          for(int y = 0; y < CHUNK_SIZE; y++){
@@ -427,38 +482,18 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     continue;
                 }
                 if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z)->ID == getTile( x, y, z)->ID) {
-                    p_vertices[i - 4] = block_vertex( x+1,     y+1,     z, 0);
-                    p_vertices[i - 3] = block_vertex( x+1, y+1, z, 0);
-                    p_vertices[i - 1] = block_vertex( x+1, y+1, z+1, 0);
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 4);
-
-                    p_vertices.resize( p_vertices.size() + 6);
-                    p_data.resize( p_data.size() + 6);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y + 1, z, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y + 1, z + 1, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y + 1, z + 1, 0);
-
-                    p_data[i] = block_data( 1, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
+                    addFaceY( true, glm::vec3( x, y+1, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
                 }
                 b_visibility = true;
             }
         }
     }
-    // View from negative z
+
+        // View from negative z
     for(int z = CHUNK_SIZE - 1; z >= 0; z--) {
          for(int x = 0; x < CHUNK_SIZE; x++){
             for(int y = 0; y < CHUNK_SIZE; y++) {
@@ -477,33 +512,12 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z)->ID == getTile( x, y-1, z)->ID) {
-                    p_vertices[i - 5] = block_vertex(x, y+1, z, 0);
-                    p_vertices[i - 2] = block_vertex(x+1, y+1, z, 0);
-                    p_vertices[i - 3] = block_vertex(x, y+1, z, 0);
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z)->ID == getTile( x, y-1, z)->ID) {
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z);
                 } else {
                     Side_Textur_Pos = List->GetTexturByType( type, 2);
-
-                    p_vertices.resize( p_vertices.size() + 6);
-                    p_data.resize( p_data.size() + 6);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y + 1, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y + 1, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z, 0);
+                    addFaceZ( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
                 b_visibility = true;
             }
@@ -529,42 +543,22 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y-1, z)->ID == getTile( x, y, z)->ID) {
-                    p_vertices[i - 4] = block_vertex( x,     y+1,     z+1, 0);
-                    p_vertices[i - 3] = block_vertex( x, y+1, z+1, 0);
-                    p_vertices[i - 1] = block_vertex( x+1, y+1, z+1, 0);
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y-1, z)->ID == getTile( x, y, z)->ID) {
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z+1);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
-                    Side_Textur_Pos = List->GetTexturByType( type, 3);
-
-                    p_vertices.resize( p_vertices.size() + 6);
-                    p_data.resize( p_data.size() + 6);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y + 1, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x, y + 1, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y, z + 1, 0);
-
-                    p_data[i] = block_data( 0, Side_Textur_Pos.x, Side_Textur_Pos.y, 0);
-                    p_vertices[i++] = block_vertex(x + 1, y + 1, z + 1, 0);
+                    Side_Textur_Pos = List->GetTexturByType( type, 2);
+                    addFaceZ( true, glm::vec3( x, y, z+1), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
                 b_visibility = true;
             }
 
         }
     }
+
     // normal errechnen
     int v;
-    p_normal.resize( i);
+    p_normal.resize( p_vertices.size());
     for( v = 0; v+3 <= i; v+=3) {
         glm::vec3 a(p_vertices[v].x, p_vertices[v].y, p_vertices[v].z);
         glm::vec3 b(p_vertices[v+1].x, p_vertices[v+1].y, p_vertices[v+1].z);
@@ -577,25 +571,26 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
         p_vertices[v+1].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
         p_vertices[v+2].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));*/
 
-        p_normal[v] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v+1] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v+1] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v+1] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v+2] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v+2] = block_data( normal.x, normal.y, normal.z, 0);
-        p_normal[v+2] = block_data( normal.x, normal.y, normal.z, 0);
+        p_normal[v] = normal;
+        p_normal[v] = normal;
+        p_normal[v] = normal;
+        p_normal[v+1] = normal;
+        p_normal[v+1] = normal;
+        p_normal[v+1] = normal;
+        p_normal[v+2] = normal;
+        p_normal[v+2] = normal;
+        p_normal[v+2] = normal;
     }
-    p_elements = i;
+    p_elements = p_indices.size();
 
     p_changed = false;
-    p_updateVbo = true;
-    p_updateRigidBody = true;
 
     if( p_elements == 0) {// Kein Speicher resavieren weil leer
         return;
     }
+
+    p_updateVbo = true;
+    p_updateRigidBody = true;
 
     printf( "Chunk::updateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
 }
@@ -611,46 +606,57 @@ void Chunk::updateVbo( Shader *shader) {
     if( getVbo() == 0) {
         // create vao
         glGenVertexArrays(1, &p_vboVao);
+        // create index buffer
+        glGenBuffers(1, &p_vboIndex);
+
         // Create vbo
         glGenBuffers(1, &p_vboVertex);
         glGenBuffers(1, &p_vboNormal);
         glGenBuffers(1, &p_vboData);
     }
 
+    // index buffer
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, p_indices.size() * sizeof( unsigned int ), &p_indices[0], GL_STATIC_DRAW);
+
     // vbo updaten
     // vertex
     glBindBuffer(GL_ARRAY_BUFFER, p_vboVertex);
-    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_vertex), &p_vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, p_vertices.size() * sizeof(glm::vec3), &p_vertices[0], GL_STATIC_DRAW);
     // normal
     glBindBuffer(GL_ARRAY_BUFFER, p_vboNormal);
-    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_vertex), &p_normal[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, p_normal.size() * sizeof(glm::vec3), &p_normal[0], GL_STATIC_DRAW);
     // data
     glBindBuffer(GL_ARRAY_BUFFER, p_vboData);
-    glBufferData(GL_ARRAY_BUFFER, p_elements * sizeof(block_data), &p_data[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, p_data.size() * sizeof(glm::vec3), &p_data[0], GL_STATIC_DRAW);
 
     // VAO
     glBindVertexArray( p_vboVao);
+
+    //array buffer bind
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
+
     // vertex
     glEnableVertexAttribArray(0);
     glBindBuffer( GL_ARRAY_BUFFER, p_vboVertex);
-    glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     // normal
     glEnableVertexAttribArray(1);
     glBindBuffer( GL_ARRAY_BUFFER, p_vboNormal);
-    glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     // data
     glEnableVertexAttribArray( shader->getAntribute( 3));
     glBindBuffer( GL_ARRAY_BUFFER, p_vboData);
-    glVertexAttribPointer( shader->getAntribute( 3), 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer( shader->getAntribute( 3), 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     glBindVertexArray(0);
 
     p_updateVbo = false;
 
     // print
-    printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(block_vertex), getAmount(), getAmount() * sizeof(block_data));
+    printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(glm::vec3), getAmount(), getAmount() * sizeof(glm::vec3));
 }
 
 void Chunk::draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
@@ -665,8 +671,8 @@ void Chunk::draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
     // use the vao
     glBindVertexArray( p_vboVao);
 
-    // draw the array
-    glDrawArrays( GL_TRIANGLES, 0, (int)p_elements);
+    // draw the elements
+    glDrawElements( GL_TRIANGLES, p_elements, GL_UNSIGNED_INT, 0);
 
     // disable
     glBindVertexArray( 0);

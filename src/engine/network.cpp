@@ -323,9 +323,9 @@ void network::start()
     p_physic_world->setDebugDrawer(&p_debugdraw);
 
 	if( isServer()) {
-
-        int l_size = 8;
-        int l_end = -4;
+        p_starchip->addChunk( glm::vec3( 0, -1, 0), true);
+        int l_size = 5;
+        int l_end = -2;
         for( int x = -l_size; x <= l_size; x++)
             for( int y = -l_size; y <= l_size; y++)
                 for( int z = l_end; z <= -1; z++)

@@ -26,7 +26,7 @@ Shader::Shader(const std::string& fileName) {
 	p_uniforms[0] = glGetUniformLocation(p_program, "g_mvp");
 	p_uniforms[1] = glGetUniformLocation(p_program, "g_shadowmvp");
 	p_uniforms[2] = glGetUniformLocation(p_program, "g_size");
-	p_uniforms[3] = glGetUniformLocation(p_program, "g_shadowmap");
+	p_uniforms[3] = glGetUniformLocation(p_program, "g_viewProjectionMatrixe");
 	p_uniforms[4] = glGetUniformLocation(p_program, "g_backgroundcolor");
 	p_uniforms[5] = glGetUniformLocation(p_program, "g_alpha_cutoff");
 	p_uniforms[6] = glGetUniformLocation(p_program, "g_camerapositon");
@@ -76,6 +76,10 @@ void Shader::Bind() {
 
 void Shader::setCameraPosition( glm::vec3 position) {
     glUniform3f( p_uniforms[6], position.x, position.y, position.z);
+}
+
+void Shader::setViewProjectionMatrixe( glm::mat4 mat) {
+    glUniformMatrix4fv(p_uniforms[3], 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 void Shader::setSize( GLfloat x, GLfloat y) {

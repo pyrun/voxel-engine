@@ -13,8 +13,8 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_SIZE 16
-#define CHUNK_SCALE 2.0f
+#define CHUNK_SIZE 32
+#define CHUNK_SCALE 1.0f
 
 #define EMPTY_BLOCK_ID 0
 
@@ -25,9 +25,6 @@ struct tile {
 };
 
 #define TILE_VERTEX_NULL -1
-
-typedef glm::tvec4<GLfloat> block_vertex;
-typedef glm::tvec4<GLfloat> block_data;
 
 //static float Noise2d(float x, float y, int seed, int octaves, float persistence);
 //static float Noise3d(float x, float y, float z, int seed, int octaves, float persistence);
@@ -65,6 +62,10 @@ public:
 
     void updateForm();
 
+    void addFaceX( bool flip, glm::vec3 pos, glm::vec3 data);
+    void addFaceY( bool flip, glm::vec3 pos, glm::vec3 data);
+    void addFaceZ( bool flip, glm::vec3 pos, glm::vec3 data);
+
     void updateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
     void updateVbo( Shader *shader);
@@ -90,6 +91,7 @@ private:
     bool p_updateRigidBody;
 
     GLuint p_vboVao;
+    GLuint p_vboIndex;
     GLuint p_vboVertex;
     GLuint p_vboNormal;
     GLuint p_vboData;
@@ -98,10 +100,10 @@ private:
 
     btRigidBody *p_rigidBody;
 
-    std::vector<block_vertex> p_vertices;
-    std::vector<block_vertex> p_normal;
-    std::vector<block_vertex> p_data;
-    //block_data p_data[ CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH * 6 * 6];
+    std::vector<unsigned int> p_indices;
+    std::vector<glm::vec3> p_vertices;
+    std::vector<glm::vec3> p_normal;
+    std::vector<glm::vec3> p_data;
 
     /*std::vector<ChunkVboVertexStruct> p_vertices;
     std::vector<ChunkVboDataStruct> p_data;*/

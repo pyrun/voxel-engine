@@ -6,6 +6,7 @@ static int world_thread_handle(void *data)
 {
     for ( ;; ) {
         world *l_world = (world*)data;
+
         l_world->process_thrend_handle();
 
         if( l_world->getDestory() )
@@ -37,11 +38,13 @@ world::world( texture *image, block_list* B_List) {
     p_seed = (int)time(NULL); // p_seed
     p_buysvector = false;
     p_chunk_amount = 0;
-    Chunks = NULL;
+    p_chunk_start = NULL;
+    p_chunk_last = NULL;
     p_world_tree_empty = true;
     p_blocklist = B_List;
     p_destroy = false;
     p_image = image;
+    p_mutex = SDL_CreateMutex ();
     p_thread_handle = SDL_CreateThread(world_thread_handle, "world_thread_handle", (void *)this);
     p_thread_update = SDL_CreateThread(world_thread_update, "world_thread_update", (void *)this);
 }
@@ -51,16 +54,17 @@ world::~world() {
     p_destroy = true;
     SDL_WaitThread( p_thread_update, &l_return);
     SDL_WaitThread( p_thread_handle, &l_return);
+    SDL_DestroyMutex( p_mutex);
 
     // Löschen der Welt
-    deleteChunks( Chunks);
+    deleteChunks( p_chunk_start);
     while( p_chunk_amount != 0) {
         SDL_Delay(1);
     }
 }
 
 tile* world::GetTile( int x, int y, int z) {
-    Chunk *node = Chunks;
+    Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
             break;
@@ -105,7 +109,7 @@ tile* world::GetTile( int x, int y, int z) {
 }
 
 Chunk* world::getChunkWithPos( int x, int y, int z) {
-    Chunk *node = Chunks;
+    Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
             break;
@@ -160,31 +164,42 @@ void world::process_thrend_handle() {
     {
         Chunk *l_node = getChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z);
         if( l_node == NULL) {
-            l_node = createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
+            createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
             p_creatingList.erase( p_creatingList.begin()+ i);
             break;
         }
-        if( i == 2)
-            break;
     }
 
     for( auto l_pos:p_deletingList)
     {
         Chunk *l_node = getChunk( l_pos.position.x, l_pos.position.y, l_pos.position.z);
-        if( l_node != NULL)
+        if( l_node != NULL) {
+            SDL_LockMutex ( p_mutex);
             deleteChunk( l_node);
+            SDL_UnlockMutex ( p_mutex);
+        }
     }
     p_deletingList.clear();
 }
 
 void world::process_thrend_update() {
     // be änderung Updaten
-    updateArray();
+    Chunk *l_node = p_chunk_start;
+    for( ;; ) {
+        if( l_node == NULL)
+            break;
+
+        SDL_LockMutex( p_mutex);
+        l_node->updateArray( p_blocklist);
+        SDL_UnlockMutex( p_mutex);
+
+        l_node = l_node->next;
+    }
 }
 
 void world::process( btDiscreteDynamicsWorld *world) {
     // Reset Idle time -> bis der Chunk sich selbst löscht
-    Chunk *node = Chunks;
+    Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
             break;
@@ -219,19 +234,22 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandsca
     if( generateLandscape)
         Landscape_Generator( node, p_blocklist);
 
-    p_chunk_amount++; // Chunks mitzählen
+    p_chunk_amount++; // p_chunk_start mitzählen
 
-    Chunk *tmp = Chunks;
+    Chunk *tmp = p_chunk_start;
     int z = 0;
+
     // Falls hauptzweik nicht exestiert erstllen
-    if( Chunks == NULL) {
-        Chunks = node;
+    if( p_chunk_start == NULL) {
+        p_chunk_start = node;
     } else {
         while( tmp->next != NULL ) {
             tmp = tmp->next;
             z++;
         }
+        SDL_LockMutex ( p_mutex);
         tmp->next = node;
+        SDL_UnlockMutex ( p_mutex);
     }
     return node;
 }
@@ -239,7 +257,7 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandsca
 void world::destoryChunk( int pos_x, int pos_y, int pos_z) {
     Timer timer;
     timer.Start();
-    Chunk *tmp = Chunks;
+    Chunk *tmp = p_chunk_start;
     Chunk *tmpOld = NULL;
     for( ;; ) {
         if( tmp == NULL)
@@ -248,7 +266,7 @@ void world::destoryChunk( int pos_x, int pos_y, int pos_z) {
              tmp->getPos().y == pos_y &&
              tmp->getPos().z == pos_z ) {
             if( tmpOld == NULL)
-                Chunks = tmp->next;
+                p_chunk_start = tmp->next;
             else tmpOld->next = tmp->next;
 
             // chunk seiten löschen
@@ -289,7 +307,7 @@ void world::destoryChunk( int pos_x, int pos_y, int pos_z) {
 }
 
 bool world::CheckChunk( int X, int Y, int Z) {
-    Chunk *tmp = Chunks;
+    Chunk *tmp = p_chunk_start;
     for( ;; ) {
         if( tmp == NULL)
             break;
@@ -305,7 +323,7 @@ bool world::CheckChunk( int X, int Y, int Z) {
 
 
 Chunk* world::getChunk( int X, int Y, int Z) {
-    Chunk *tmp = Chunks;
+    Chunk *tmp = p_chunk_start;
     for( ;; ) {
         if( tmp == NULL)
             break;
@@ -343,6 +361,7 @@ void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
     l_shader->Bind();
     l_shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
     l_shader->setBackgroundColor( 1, 1, 1);
+    l_shader->setViewProjectionMatrixe( viewProjection);
     l_shader->setCameraPosition( graphic->getCamera()->GetPos());
 
     p_image->Bind();
@@ -371,24 +390,13 @@ void world::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alp
 }
 
 void world::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
-    Chunk *l_node = Chunks;
+    Chunk *l_node = p_chunk_start;
     for( ;; ) {
         if( l_node == NULL)
             break;
         l_node->draw( shader, viewProjection, aa);
 
         // next
-        l_node = l_node->next;
-    }
-}
-
-void world::updateArray() {
-    Chunk *l_node = Chunks;
-    for( ;; ) {
-        if( l_node == NULL)
-            break;
-        l_node->updateArray( p_blocklist);
-
         l_node = l_node->next;
     }
 }

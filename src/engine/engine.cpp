@@ -300,7 +300,7 @@ void engine::run() {
 
 //            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
-            //viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
+            viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
         }
 
         // Swap die Buffer um keine Renderfehler zu bekommen
@@ -349,7 +349,7 @@ void engine::run() {
 }
 
 void engine::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
-    std::vector<block_data> t_box;
+/*    std::vector<block_data> t_box;
 
     // Chunk Vbo Data Struct
     t_box.resize( 24 );
@@ -401,5 +401,5 @@ void engine::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
     glBufferData(GL_ARRAY_BUFFER, t_box.size() * sizeof(block_data), &t_box[0], GL_DYNAMIC_DRAW);
 
     // Zeichnen
-    glDrawArrays( GL_LINES, 0, 24);
+    glDrawArrays( GL_LINES, 0, 24);*/
 }
