@@ -20,15 +20,6 @@
 
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
-struct tile {
-    int ID;
-};
-
-#define TILE_VERTEX_NULL -1
-
-//static float Noise2d(float x, float y, int seed, int octaves, float persistence);
-//static float Noise3d(float x, float y, float z, int seed, int octaves, float persistence);
-
 class Chunk {
 public:
     Chunk( int X, int Y, int Z, int Seed, block_list* b_list);
@@ -46,16 +37,15 @@ public:
 
     void serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end)
     {
-        // CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE
         for( int i = start; i < end; i++)
-            bitstream->Serialize( writeToBitstream, p_tile[i].ID);
+            bitstream->Serialize( writeToBitstream, p_tile[i]);
     }
 
     inline glm::vec3 getPos() { return p_pos; }
 
     inline int getAmount() { return p_vertices.size(); }
     void set( int X, int Y, int Z, int ID, bool change = true);
-    tile *getTile( int X, int Y, int Z);
+    int getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
     void updateForm();
@@ -69,7 +59,7 @@ public:
     void updateVbo( Shader *shader);
     void draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
 
-    tile getArray( int i) { return p_tile[i]; }
+    int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }
 
     btRigidBody *getPhysicBody() { return p_rigidBody; }
@@ -95,7 +85,7 @@ private:
     GLuint p_vboNormal;
     GLuint p_vboData;
 
-    tile* p_tile;
+    int* p_tile;
 
     btRigidBody *p_rigidBody;
 

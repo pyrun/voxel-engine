@@ -66,7 +66,7 @@ world::~world() {
     }
 }
 
-tile* world::GetTile( int x, int y, int z) {
+int world::GetTile( int x, int y, int z) {
     Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
@@ -103,8 +103,8 @@ tile* world::GetTile( int x, int y, int z) {
             continue;
         }
 
-        tile *l_tile = node->getTile( p_chunk_x, p_chunk_y, p_chunk_z );
-        if( l_tile && l_tile->ID == EMPTY_BLOCK_ID)
+        int l_tile = node->getTile( p_chunk_x, p_chunk_y, p_chunk_z );
+        if( l_tile == EMPTY_BLOCK_ID)
             break;
         return l_tile;
     }
@@ -189,6 +189,7 @@ void world::process_thrend_handle() {
 }
 
 void world::process_thrend_update() {
+    block_list *l_list = p_blocklist;
     // be änderung Updaten
     Chunk *l_node = p_chunk_start;
     for( ;; ) {
@@ -199,7 +200,8 @@ void world::process_thrend_update() {
         if( l_node->isChanged()) {
             l_node->changed( false);
             SDL_UnlockMutex ( p_mutex);
-            l_node->updateArray( p_blocklist);
+            if( l_list)
+                l_node->updateArray( l_list);
         } else {
             SDL_UnlockMutex ( p_mutex);
         }

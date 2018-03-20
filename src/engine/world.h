@@ -6,11 +6,8 @@
 #include "block.h"
 #include "landscape_generator.h"
 #include "../engine/config.h"
-//#include "../graphic/shadowmap.h"
 
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
-
-#define WORLD_TEST_FACTOR 0
 
 #define WORLD_UPDATE_THRENDS 3
 
@@ -27,7 +24,7 @@ public:
     world( texture *image, block_list* B_List);
     virtual ~world();
 
-    tile *GetTile( int x, int y, int z);
+    int GetTile( int x, int y, int z);
     Chunk *getChunkWithPos( int x, int y, int z);
     void SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID);
 

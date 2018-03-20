@@ -3,7 +3,7 @@
 network_object::network_object()
 {
     p_type = NULL;
-    p_name = "";
+    p_name = "block";
     p_body = NULL;
 
     p_scale = glm::vec3( 1, 1, 1);
@@ -40,8 +40,9 @@ glm::vec3 QuatToEuler(btQuaternion quat){
 }
 
 void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
-    if( p_type == NULL)
+    if( p_type == NULL) {
         p_type = types->get( p_name.C_String());
+    }
     if( !p_type)
         return;
 
@@ -217,6 +218,7 @@ network::network( config *config, texture* image, block_list *block_list)
 	p_physic_world->setGravity(btVector3(0, -10, 0));
 
     p_types = new object_handle();
+    p_types->load( config);
     // broadcast on 255.255.255.255 at IPv4
     p_socketdescriptor.socketFamily=AF_INET;
     p_port = atoi( config->get( "port", "network", "27558").c_str() );
@@ -224,7 +226,6 @@ network::network( config *config, texture* image, block_list *block_list)
     p_isClient = false;
     p_isServer = false;
     p_starchip = new world( image, block_list);
-    p_types->load( config);
 }
 
 network::~network()
@@ -440,11 +441,13 @@ void network::readChunk( BitStream *bitstream) {
         printf( "network::readChunk cant create chunk!\n");
         return;
     }
+
     // read
     l_chunk->serialize( false, bitstream, l_start, l_end);
 
-    if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
+    if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) {
         l_chunk->changed( true);
+    }
 }
 
 void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {

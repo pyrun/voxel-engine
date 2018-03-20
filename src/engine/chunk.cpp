@@ -32,23 +32,15 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
     p_pos.y = Y;
     p_pos.z = Z;
 
-    p_tile = NULL;
-
     int t = SDL_GetTicks();
 
-    p_tile = (tile *)malloc(sizeof(tile) * CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE); //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
-
-    if (p_tile == nullptr) {
-      // error assigning memory. Take measures.
-      printf( "Chunk::Chunk error\n");
-      return;
-    }
+    p_tile = new int[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]; //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
 
     for (int cz = 0; cz < CHUNK_SIZE; cz++)
         for (int cx = 0; cx < CHUNK_SIZE; cx++)
             for(int cy = 0; cy < CHUNK_SIZE; cy++) {
                 int index = TILE_REGISTER( cx, cy, cz);
-                p_tile[ index ].ID = EMPTY_BLOCK_ID;
+                p_tile[ index ] = EMPTY_BLOCK_ID;
             }
 
     updateForm();
@@ -158,33 +150,31 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
 }
 
 void Chunk::set( int X, int Y, int Z, int ID, bool change) {
-    tile* l_tile;
-    l_tile = getTile( X, Y, Z);
-    if( l_tile == NULL)
+    if( X < 0)
         return;
-
+    if( Y < 0)
+        return;
+    if( Z < 0)
+        return;
     // tile nehmen
-    l_tile->ID = ID;
+    p_tile[ TILE_REGISTER( X, Y, Z)] = ID;
 
     // welt hat sich verändert
     p_changed = change;
 }
 
-tile *Chunk::getTile( int X, int Y, int Z) {
+int Chunk::getTile( int X, int Y, int Z) {
     if( X < 0)
-        return NULL;
+        return EMPTY_BLOCK_ID;
     if( Y < 0)
-        return NULL;
+        return EMPTY_BLOCK_ID;
     if( Z < 0)
-        return NULL;
-    // X Y Z
-    // Z X Y -> https://www.youtube.com/watch?v=B4DuT61lIPU
-    tile *l_tile = &p_tile[ TILE_REGISTER( X, Y, Z)];
-    return l_tile;
+        return EMPTY_BLOCK_ID;
+    return p_tile[ TILE_REGISTER( X, Y, Z)];
 }
 
 bool Chunk::CheckTile( int X, int Y, int Z) {
-    if( p_tile[ TILE_REGISTER( X, Y, Z)].ID == EMPTY_BLOCK_ID)
+    if( p_tile[ TILE_REGISTER( X, Y, Z)] == EMPTY_BLOCK_ID)
         return false;
     return true;
 }
@@ -318,6 +308,9 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     glm::vec2 Side_Textur_Pos;
     Timer timer;
 
+    if( !List )
+        return;
+
     timer.Start();
 
     p_indices.clear( );
@@ -326,37 +319,34 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
 
     bool b_visibility = false;
 
-    tile * l_tile = NULL;
+    int l_tile = 0;
 
     // View from positive x
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = CHUNK_SIZE - 1; x >= 0; x--) {
             for(int y = 0; y < CHUNK_SIZE; y++) {
                 l_tile = getTile( x, y, z);
-                if( !l_tile)
-                    continue;
-
-                if( l_tile->ID == EMPTY_BLOCK_ID) {// tile nicht vorhanden
+                if( l_tile == EMPTY_BLOCK_ID) {// tile nicht vorhanden
                     b_visibility = false;
                     continue;
                 }
-                unsigned int type = l_tile->ID;
+                int type = l_tile;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
                 // Line of sight blocked?
-                if(  x != 0 && CheckTile(x-1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x-1, y, z)->ID )->getAlpha() )
+                if( x != 0 && CheckTile(x-1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x-1, y, z) )->getAlpha() )
                 {
                     b_visibility = false;
                     continue;
                 }
                 // View from negative x
-                if( x == 0 && Back != NULL && Back->CheckTile(CHUNK_SIZE-1, y, z) && Back->getTile( CHUNK_SIZE-1, y, z)->ID) {
+                if( x == 0 && Back != NULL && Back->CheckTile(CHUNK_SIZE-1, y, z) && Back->getTile( CHUNK_SIZE-1, y, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == getTile( x, y-1, z)->ID) ) {
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) ) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y+1, z+1);
                 } else {
@@ -377,26 +367,26 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                 if( !l_tile)
                     continue;
 
-                if( l_tile->ID == EMPTY_BLOCK_ID) {// tile nicht vorhanden
+                if( l_tile == EMPTY_BLOCK_ID) {// tile nicht vorhanden
                     b_visibility = false;
                     continue;
                 }
-                unsigned int type = l_tile->ID;
+                int type = l_tile;
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
 
-                if(  x != CHUNK_SIZE-1 && CheckTile(x+1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x+1, y, z)->ID)->getAlpha() ) {
+                if(  x != CHUNK_SIZE-1 && CheckTile(x+1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x+1, y, z))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
                 // View from positive x
-                if( x == CHUNK_SIZE-1 && Front != NULL && Front->CheckTile( 0, y, z) && Front->getTile( 0, y, z)->ID) {
+                if( x == CHUNK_SIZE-1 && Front != NULL && Front->CheckTile( 0, y, z) && Front->getTile( 0, y, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile->ID == getTile( x, y-1, z)->ID) ) {
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) ) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
@@ -415,20 +405,20 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
               {
                 if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
-                uint8_t type = getTile( x, y, z)->ID;
+                int type = getTile( x, y, z);
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if( y != 0 && CheckTile(x, y-1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y-1, z)->ID)->getAlpha() ) {
+                if( y != 0 && CheckTile(x, y-1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y-1, z))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( y == 0 && Down != NULL && Down->CheckTile(x, CHUNK_SIZE-1, z) && Down->getTile( x, CHUNK_SIZE-1, z)->ID) {
+                if( y == 0 && Down != NULL && Down->CheckTile(x, CHUNK_SIZE-1, z) && Down->getTile( x, CHUNK_SIZE-1, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z)->ID == getTile( x, y, z)->ID) {
+                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y, z+1);
                 } else {
@@ -447,20 +437,20 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
              for(int x = 0; x < CHUNK_SIZE; x++) {
                 if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
-                uint8_t type = getTile( x, y, z)->ID;
+                int type = getTile( x, y, z);
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if(  y != CHUNK_SIZE-1 && CheckTile(x, y+1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y+1, z)->ID)->getAlpha() ) {
+                if(  y != CHUNK_SIZE-1 && CheckTile(x, y+1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y+1, z))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( y == CHUNK_SIZE-1 && Up != NULL && Up->CheckTile(x, 0, z) && Up->getTile( x, 0, z)->ID) {
+                if( y == CHUNK_SIZE-1 && Up != NULL && Up->CheckTile(x, 0, z) && Up->getTile( x, 0, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z)->ID == getTile( x, y, z)->ID) {
+                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
@@ -478,20 +468,20 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
             for(int y = 0; y < CHUNK_SIZE; y++) {
                 if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
-                uint8_t type = getTile( x, y, z)->ID;
+                int type = getTile( x, y, z);
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if(  z != 0 && CheckTile(x, y, z-1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z-1)->ID)->getAlpha() ) {
+                if(  z != 0 && CheckTile(x, y, z-1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z-1))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( z == 0 && Left != NULL && Left->CheckTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)->ID) {
+                if( z == 0 && Left != NULL && Left->CheckTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z)->ID == getTile( x, y-1, z)->ID) {
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z) == getTile( x, y-1, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z);
                 } else {
@@ -508,21 +498,21 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
             for(int y = 0; y < CHUNK_SIZE; y++) {
                 if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
-                uint8_t type = getTile( x, y, z)->ID;
+                int type = getTile( x, y, z);
                 if( type == 0) {
                     b_visibility = false;
                     continue;
                 }
-                if( z != CHUNK_SIZE-1 && CheckTile(x, y, z+1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z+1)->ID)->getAlpha() ) {
+                if( z != CHUNK_SIZE-1 && CheckTile(x, y, z+1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z+1))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
                 // View from positive z
-                if( z == CHUNK_SIZE-1 && Right != NULL && Right->CheckTile(x, y, 0) && Right->getTile( x, y, 0)->ID) {
+                if( z == CHUNK_SIZE-1 && Right != NULL && Right->CheckTile(x, y, 0) && Right->getTile( x, y, 0)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y-1, z)->ID == getTile( x, y, z)->ID) {
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y-1, z) == getTile( x, y, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z+1);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {

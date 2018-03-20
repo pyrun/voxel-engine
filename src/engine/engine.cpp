@@ -79,7 +79,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
         mz = floorf(testpos.z/CHUNK_SCALE);
 
         // falls wir ein block finden das kein "Air" ist dann sind wir fertig
-        tile *tile = l_world->GetTile( mx, my, mz);
+        int tile = l_world->GetTile( mx, my, mz);
         if( !tile )
             continue;
 
@@ -103,7 +103,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             face = 5;
 
         // Wenn es leer ist wird es gesetzt
-        if( tile->ID && p_input.Map.Place && !p_input.MapOld.Place ) {
+        if( tile && p_input.Map.Place && !p_input.MapOld.Place ) {
             int mX, mY, mZ;
             mX = mx;
             mY = my;
@@ -131,10 +131,10 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 }
             }
 
-            printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile->ID);
+            printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile);
             break;
         }
-        if( tile->ID && p_input.Map.Destory && !p_input.MapOld.Destory) {
+        if( tile && p_input.Map.Destory && !p_input.MapOld.Destory) {
             Chunk *tmp = l_world->getChunkWithPos( mx, my, mz);
             if( tmp) {
                 p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
@@ -147,7 +147,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
         }
 
         // tile
-        if( tile->ID) {
+        if( tile) {
             //drawBox( viewProjection, glm::vec3( mx, my, mz)*glm::vec3( CHUNK_SCALE));
             break;
         }
