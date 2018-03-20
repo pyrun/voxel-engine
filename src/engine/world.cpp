@@ -167,9 +167,9 @@ void world::process_thrend_handle() {
     {
         Chunk *l_node = getChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z);
         if( l_node == NULL) {
-            //SDL_LockMutex ( p_mutex);
+            SDL_LockMutex ( p_mutex);
             createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
-            //SDL_UnlockMutex ( p_mutex);
+            SDL_UnlockMutex ( p_mutex);
             p_creatingList.erase( p_creatingList.begin()+ i);
 
             break;

@@ -318,15 +318,8 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     glm::vec2 Side_Textur_Pos;
     Timer timer;
 
-    /*if( !p_changed)
-        return;*/
-
     timer.Start();
 
-    /*p_indices.reserve( 2048);
-    p_vertices.reserve( 2048);
-    p_data.reserve( 2048);
-   */
     p_indices.clear( );
     p_vertices.clear( );
     p_data.clear( );

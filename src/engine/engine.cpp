@@ -140,6 +140,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
                 //l_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
             } else {
+                p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
                 printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
             break;
