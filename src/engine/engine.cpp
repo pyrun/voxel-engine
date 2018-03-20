@@ -331,7 +331,7 @@ void engine::run() {
         Title = Title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
         if(  p_network->getWorld())
-            Title = Title + " Chunks_" + NumberToString( (double) p_network->getWorld()->GetAmountChunks());
+            Title = Title + " Chunks_" + NumberToString( (double) p_network->getWorld()->getAmountChunks());
         p_graphic->getDisplay()->setTitle( Title);
 
         // one at evry frame

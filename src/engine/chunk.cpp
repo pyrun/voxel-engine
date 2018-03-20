@@ -25,6 +25,7 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
 
     p_changed = false;
     p_updateVbo = false;
+    p_updateRigidBody = false;
 
     // Set Position
     p_pos.x = X;
@@ -156,22 +157,7 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
     return body;
 }
 
-void Chunk::CreateTile( int X, int Y, int Z, int ID) {
-    tile* l_tile;
-    l_tile = getTile( X, Y, Z);
-
-    // cant happen but make sure
-    if( l_tile == NULL)
-        return;
-
-    // tile nehmen
-    l_tile->ID = ID;
-
-    // welt hat sich verändert
-    p_changed = true;
-}
-
-void Chunk::set( int X, int Y, int Z, int ID) {
+void Chunk::set( int X, int Y, int Z, int ID, bool change) {
     tile* l_tile;
     l_tile = getTile( X, Y, Z);
     if( l_tile == NULL)
@@ -181,7 +167,7 @@ void Chunk::set( int X, int Y, int Z, int ID) {
     l_tile->ID = ID;
 
     // welt hat sich verändert
-    p_changed = true;
+    p_changed = change;
 }
 
 tile *Chunk::getTile( int X, int Y, int Z) {
@@ -332,8 +318,8 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     glm::vec2 Side_Textur_Pos;
     Timer timer;
 
-    if( !p_changed)
-        return;
+    /*if( !p_changed)
+        return;*/
 
     timer.Start();
 

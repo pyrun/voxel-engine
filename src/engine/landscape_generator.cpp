@@ -123,7 +123,7 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
                     if( posy+1 > Island_high*high+ border)
                         type = l_grass;
                 }
-                c_chunk->CreateTile( cx, cy, cz, type);
+                c_chunk->set( cx, cy, cz, type, false);
             }
         }
     }

@@ -54,9 +54,7 @@ public:
     inline glm::vec3 getPos() { return p_pos; }
 
     inline int getAmount() { return p_vertices.size(); }
-
-    void CreateTile( int X, int Y, int Z, int ID);
-    void set( int X, int Y, int Z, int ID);
+    void set( int X, int Y, int Z, int ID, bool change = true);
     tile *getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
@@ -78,6 +76,7 @@ public:
 
     GLuint getVbo() { return p_vboVertex; }
     void changed( bool set) { p_changed = set; }
+    bool isChanged() { return p_changed; }
 protected:
 private:
     glm::tvec3<int> p_pos;

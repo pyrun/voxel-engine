@@ -435,14 +435,16 @@ void network::readChunk( BitStream *bitstream) {
 
     Chunk *l_chunk = p_starchip->getChunk( l_x, l_y, l_z);
     if( !l_chunk)
-        l_chunk = p_starchip->createChunk( l_x, l_y, l_z);
+        l_chunk = p_starchip->createChunk( l_x, l_y, l_z, false, false);
     if( !l_chunk) {
         printf( "network::readChunk cant create chunk!\n");
         return;
     }
     // read
     l_chunk->serialize( false, bitstream, l_start, l_end);
-    l_chunk->changed( true);
+
+    if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
+        l_chunk->changed( true);
 }
 
 void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {

@@ -35,7 +35,6 @@ static int world_thread_update(void *data)
 }
 
 world::world( texture *image, block_list* B_List) {
-    p_seed = (int)time(NULL); // p_seed
     p_buysvector = false;
     p_chunk_amount = 0;
     p_chunk_start = NULL;
@@ -44,15 +43,19 @@ world::world( texture *image, block_list* B_List) {
     p_blocklist = B_List;
     p_destroy = false;
     p_image = image;
+
+    // thrends
     p_mutex = SDL_CreateMutex ();
     p_thread_handle = SDL_CreateThread(world_thread_handle, "world_thread_handle", (void *)this);
-    p_thread_update = SDL_CreateThread(world_thread_update, "world_thread_update", (void *)this);
+    for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
+        p_thread_update[i] = SDL_CreateThread(world_thread_update, "world_thread_update", (void *)this);
 }
 
 world::~world() {
     int l_return;
     p_destroy = true;
-    SDL_WaitThread( p_thread_update, &l_return);
+    for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
+        SDL_WaitThread( p_thread_update[i], &l_return);
     SDL_WaitThread( p_thread_handle, &l_return);
     SDL_DestroyMutex( p_mutex);
 
@@ -164,8 +167,11 @@ void world::process_thrend_handle() {
     {
         Chunk *l_node = getChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z);
         if( l_node == NULL) {
+            //SDL_LockMutex ( p_mutex);
             createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
+            //SDL_UnlockMutex ( p_mutex);
             p_creatingList.erase( p_creatingList.begin()+ i);
+
             break;
         }
     }
@@ -189,9 +195,15 @@ void world::process_thrend_update() {
         if( l_node == NULL)
             break;
 
-        SDL_LockMutex( p_mutex);
-        l_node->updateArray( p_blocklist);
-        SDL_UnlockMutex( p_mutex);
+        SDL_LockMutex ( p_mutex);
+        if( l_node->isChanged()) {
+            l_node->changed( false);
+            SDL_UnlockMutex ( p_mutex);
+            l_node->updateArray( p_blocklist);
+        } else {
+            SDL_UnlockMutex ( p_mutex);
+        }
+
 
         l_node = l_node->next;
     }
@@ -219,44 +231,12 @@ void world::deleteChunks( Chunk* chunk) {
 void world::deleteChunk( Chunk* node) {
     if( node == NULL)
         return;
+
+    int pos_x = node->getPos().x;
+    int pos_y = node->getPos().y;
+    int pos_z = node->getPos().z;
+
     // löschen des chunks
-    destoryChunk( node->getPos().x, node->getPos().y, node->getPos().z);
-}
-
-Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape) {
-    Chunk *node;
-
-    // Chunk erstellen
-    Timer timer;
-    timer.Start();
-    node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
-
-    if( generateLandscape)
-        Landscape_Generator( node, p_blocklist);
-
-    p_chunk_amount++; // p_chunk_start mitzählen
-
-    Chunk *tmp = p_chunk_start;
-    int z = 0;
-
-    // Falls hauptzweik nicht exestiert erstllen
-    if( p_chunk_start == NULL) {
-        p_chunk_start = node;
-    } else {
-        while( tmp->next != NULL ) {
-            tmp = tmp->next;
-            z++;
-        }
-        SDL_LockMutex ( p_mutex);
-        tmp->next = node;
-        SDL_UnlockMutex ( p_mutex);
-    }
-    return node;
-}
-
-void world::destoryChunk( int pos_x, int pos_y, int pos_z) {
-    Timer timer;
-    timer.Start();
     Chunk *tmp = p_chunk_start;
     Chunk *tmpOld = NULL;
     for( ;; ) {
@@ -304,6 +284,38 @@ void world::destoryChunk( int pos_x, int pos_y, int pos_z) {
         tmpOld = tmp;
         tmp = tmp->next;
     }
+}
+
+Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape, bool update) {
+    Chunk *node;
+
+    // Chunk erstellen
+    node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
+    node->next = NULL;
+
+    if( generateLandscape)
+        Landscape_Generator( node, p_blocklist);
+
+    p_chunk_amount++; // p_chunk_start mitzählen
+
+    Chunk *tmp = p_chunk_start;
+    int z = 0;
+
+    // Falls hauptzweik nicht exestiert erstllen
+    if( p_chunk_start == NULL) {
+        p_chunk_start = node;
+    } else {
+        while( tmp->next != NULL ) {
+            tmp = tmp->next;
+            z++;
+        }
+        tmp->next = node;
+    }
+
+    // finish -> go to update section
+    node->changed( update);
+
+    return node;
 }
 
 bool world::CheckChunk( int X, int Y, int Z) {

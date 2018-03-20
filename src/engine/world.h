@@ -12,6 +12,8 @@
 
 #define WORLD_TEST_FACTOR 0
 
+#define WORLD_UPDATE_THRENDS 3
+
 Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
 class world_data_list {
@@ -35,13 +37,11 @@ public:
 
     void deleteChunks( Chunk* chunk);
     void deleteChunk( Chunk* node);
+    Chunk *createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape = false, bool update = true);
 
-
-
-    Chunk *createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape = false);
-    void destoryChunk( int pos_x, int pos_y, int pos_z);
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
     Chunk* getChunk( int X, int Y, int Z);
+
     void addChunk( glm::tvec3<int> pos, bool generateLandscape);
     void addDeleteChunk( glm::tvec3<int> pos );
 
@@ -50,11 +50,10 @@ public:
     void drawNode( Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
 
     bool getDestory() { return p_destroy; }
-    inline int GetAmountChunks() const { return p_chunk_amount; }
+    inline int getAmountChunks() const { return p_chunk_amount; }
     Chunk *getNode() { return p_chunk_start; }
 protected:
 private:
-    int p_seed;
     bool p_buysvector;
     bool p_world_tree_empty;
 
@@ -66,7 +65,7 @@ private:
     texture *p_image;
 
     SDL_mutex *p_mutex;
-    SDL_Thread *p_thread_update;
+    SDL_Thread *p_thread_update[WORLD_UPDATE_THRENDS];
     SDL_Thread *p_thread_handle;
 
     std::vector<world_data_list> p_creatingList;
