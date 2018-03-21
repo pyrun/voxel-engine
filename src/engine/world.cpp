@@ -292,7 +292,7 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandsca
     Chunk *node;
 
     // Chunk erstellen
-    node = new Chunk( pos_x, pos_y, pos_z, 102457, p_blocklist);
+    node = new Chunk( pos_x, pos_y, pos_z, 102457);
     node->next = NULL;
 
     if( generateLandscape)
@@ -315,7 +315,8 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandsca
     }
 
     // finish -> go to update section
-    node->changed( update);
+    if( update)
+        node->changed( true);
 
     return node;
 }

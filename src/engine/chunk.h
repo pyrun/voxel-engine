@@ -22,7 +22,7 @@
 
 class Chunk {
 public:
-    Chunk( int X, int Y, int Z, int Seed, block_list* b_list);
+    Chunk( int X, int Y, int Z, int Seed);
     virtual ~Chunk();
 
     Chunk *front;
@@ -37,8 +37,17 @@ public:
 
     void serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end)
     {
-        for( int i = start; i < end; i++)
-            bitstream->Serialize( writeToBitstream, p_tile[i]);
+        for( int i = start; i < end; i++) {
+            int l_tile = p_tile[i] + 1;
+            bitstream->Serialize( writeToBitstream, l_tile);
+            if( p_tile[i] > 800000) {
+                printf( "cruppt data\n");
+                p_tile[i] = EMPTY_BLOCK_ID;
+                return;
+            }
+            if( !writeToBitstream)
+                p_tile[i] = l_tile -1;
+        }
     }
 
     inline glm::vec3 getPos() { return p_pos; }

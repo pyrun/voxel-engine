@@ -121,7 +121,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if(face == 5)
                 mZ--;
 
-            if( !l_world->GetTile( mX, mY, mZ)) {
+            if( l_world->GetTile( mX, mY, mZ) != EMPTY_BLOCK_ID) {
                 Chunk *tmp = l_world->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
                     p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByID( "water")->getID());
@@ -304,7 +304,7 @@ void engine::run() {
 
 //            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
-            viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
+            //viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
         }
 
         // Swap die Buffer um keine Renderfehler zu bekommen

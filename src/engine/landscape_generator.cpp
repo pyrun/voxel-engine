@@ -114,7 +114,7 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
                 i++;
                 // Position errechen
                 posy = cy + (c_chunk->getPos().y*CHUNK_SIZE);
-                int type = 0;
+                int type = EMPTY_BLOCK_ID;
                 //if( interval*Island_high > posy+high*Island_high )
                 if( posy < Island_high*high + border) {
                     type = l_stone;

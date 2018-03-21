@@ -4,7 +4,7 @@
 
 #define printf if
 
-Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
+Chunk::Chunk( int X, int Y, int Z, int Seed) {
     // node reset
     next = NULL;
 
@@ -36,12 +36,8 @@ Chunk::Chunk( int X, int Y, int Z, int Seed, block_list* b_list) {
 
     p_tile = new int[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]; //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
 
-    for (int cz = 0; cz < CHUNK_SIZE; cz++)
-        for (int cx = 0; cx < CHUNK_SIZE; cx++)
-            for(int cy = 0; cy < CHUNK_SIZE; cy++) {
-                int index = TILE_REGISTER( cx, cy, cz);
-                p_tile[ index ] = EMPTY_BLOCK_ID;
-            }
+    for (int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+        p_tile[ i ] = EMPTY_BLOCK_ID;
 
     updateForm();
 
@@ -320,6 +316,8 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     bool b_visibility = false;
 
     int l_tile = 0;
+
+    glm::vec3 l_pos = getPos();
 
     // View from positive x
     for(int z = 0; z < CHUNK_SIZE; z++) {

@@ -397,9 +397,9 @@ void network::readBlockChange( BitStream *bitstream) {
     bitstream->Read( l_pos.z);
     bitstream->Read( l_id);
 
-    l_chunk = p_starchip->getChunk( l_pos_chunk.x, l_pos_chunk.y, l_pos_chunk.z);
+    l_chunk = getWorld()->getChunk( l_pos_chunk.x, l_pos_chunk.y, l_pos_chunk.z);
     if( !l_chunk)
-        l_chunk = p_starchip->createChunk( l_pos_chunk.x, l_pos_chunk.y, l_pos_chunk.z);
+        l_chunk = getWorld()->createChunk( l_pos_chunk.x, l_pos_chunk.y, l_pos_chunk.z);
     if( !l_chunk) {
         printf( "network::readBlockChange cant create chunk!\n");
         return;
@@ -407,7 +407,7 @@ void network::readBlockChange( BitStream *bitstream) {
 
     printf( "network::readBlockChange %.2f %.2f %.2f %d\n", l_pos.x, l_pos.y, l_pos.z, l_id);
 
-    p_starchip->SetTile( l_chunk, l_pos.x, l_pos.y, l_pos.z, l_id);
+    getWorld()->SetTile( l_chunk, l_pos.x, l_pos.y, l_pos.z, l_id);
 
     if( isServer()) {
         // now send
@@ -436,9 +436,10 @@ void network::readChunk( BitStream *bitstream) {
     bitstream->Read( l_start);
     bitstream->Read( l_end);
 
-    Chunk *l_chunk = p_starchip->getChunk( l_x, l_y, l_z);
-    if( !l_chunk)
-        l_chunk = p_starchip->createChunk( l_x, l_y, l_z, false, false);
+    Chunk *l_chunk = getWorld()->getChunk( l_x, l_y, l_z);
+    if( !l_chunk) {
+        l_chunk = getWorld()->createChunk( l_x, l_y, l_z, false, false);
+    }
     if( !l_chunk) {
         printf( "network::readChunk cant create chunk!\n");
         return;
@@ -447,9 +448,8 @@ void network::readChunk( BitStream *bitstream) {
     // read
     l_chunk->serialize( false, bitstream, l_start, l_end);
 
-    if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) {
+    if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
         l_chunk->changed( true);
-    }
 }
 
 void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
@@ -463,10 +463,10 @@ void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
         l_bitstream.Write( (int)chunk->getPos().x);
         l_bitstream.Write( (int)chunk->getPos().y);
         l_bitstream.Write( (int)chunk->getPos().z);
-        l_bitstream.Write( (int)l_start);
-        l_bitstream.Write( (int)l_end);
+        l_bitstream.Write( l_start);
+        l_bitstream.Write( l_end);
         chunk->serialize( true, &l_bitstream, l_start, l_end);
-        p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE, 0, address, false);
+        p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED , 0, address, false);
     }
 }
 
@@ -507,7 +507,7 @@ bool network::process( int delta)
         case ID_NEW_INCOMING_CONNECTION:
             printf("ID_NEW_INCOMING_CONNECTION from %s\n", p_packet->systemAddress.ToString());
             // send all chunks data
-            sendAllChunks( p_starchip, p_packet->guid);
+            sendAllChunks( getWorld(), p_packet->guid);
             break;
         case ID_DISCONNECTION_NOTIFICATION:
             printf("ID_DISCONNECTION_NOTIFICATION\n");
@@ -557,7 +557,7 @@ bool network::process( int delta)
         }
     }
 
-    p_starchip->process( p_physic_world);
+    getWorld()->process( p_physic_world);
 
     p_physic_world->stepSimulation( (float)delta * 0.001f);
 

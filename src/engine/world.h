@@ -49,6 +49,7 @@ public:
     bool getDestory() { return p_destroy; }
     inline int getAmountChunks() const { return p_chunk_amount; }
     Chunk *getNode() { return p_chunk_start; }
+    SDL_mutex *getMutex() { return p_mutex; }
 protected:
 private:
     bool p_buysvector;
