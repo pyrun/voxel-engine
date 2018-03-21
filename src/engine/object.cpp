@@ -310,7 +310,7 @@ void object::draw( Shader* shader, glm::mat4 viewprojection) {
 
 object_handle::object_handle()
 {
-
+    p_types.clear();
 }
 
 object_handle::~object_handle()
@@ -354,9 +354,11 @@ bool object_handle::load_folder( std::string folder, config *config) {
         // load type
         if( l_type->load_type( config, folder, l_entry->d_name) == false) {
             delete l_type;
+            l_type = NULL;
             load_folder( l_file, config);
         }
-        p_types.push_back( l_type);
+        if( l_type)
+            p_types.push_back( l_type);
     }
     closedir(l_dir);
 

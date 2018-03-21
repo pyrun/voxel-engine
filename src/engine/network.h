@@ -38,7 +38,7 @@ enum
 	SERVER
 } network_topology;
 
-struct network_object : public Replica3
+class network_object : public Replica3
 {
     public:
         network_object();

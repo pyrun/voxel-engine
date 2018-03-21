@@ -82,7 +82,7 @@ class object_handle
         object_type *get( std::string name);
     private:
 
-        std::vector<object_type*> p_types;
+        std::vector<object_type *> p_types;
 
 };
 

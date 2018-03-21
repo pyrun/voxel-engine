@@ -3,7 +3,6 @@
 network_object::network_object()
 {
     p_type = NULL;
-    p_name = "block";
     p_body = NULL;
 
     p_scale = glm::vec3( 1, 1, 1);
@@ -40,9 +39,10 @@ glm::vec3 QuatToEuler(btQuaternion quat){
 }
 
 void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
-    if( p_type == NULL) {
+    if( p_type == NULL && p_name.GetLength() > 0) {
         p_type = types->get( p_name.C_String());
     }
+
     if( !p_type)
         return;
 
@@ -70,7 +70,7 @@ void network_object::PrintStringInBitstream(RakNet::BitStream *bs)
         return;
     RakNet::RakString rakString;
     bs->Read(rakString);
-    printf("Receive: %s\n", rakString.C_String());
+    //printf("Receive: %s\n", rakString.C_String());
 }
 
 void network_object::SerializeConstruction(RakNet::BitStream *constructionBitstream, RakNet::Connection_RM3 *destinationConnection)	{
@@ -332,9 +332,11 @@ void network::start()
                 for( int z = l_end; z <= -1; z++)
                     p_starchip->addChunk( glm::vec3( x, z, y), true);
 
+
+
         ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
         l_obj->p_name = "box";
-        l_obj->p_type = p_types->get( l_obj->getTypeName().C_String());
+        l_obj->p_type = p_types->get( l_obj->p_name.C_String());
         l_obj->init( p_physic_world);
 
         p_replicaManager.Reference( l_obj);
@@ -481,6 +483,7 @@ void network::sendAllChunks( world *world,RakNet::AddressOrGUID address) {
 
 bool network::process( int delta)
 {
+
     bool l_quit = false;
 
     if( p_rakPeerInterface == NULL )

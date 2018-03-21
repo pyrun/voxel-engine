@@ -283,6 +283,7 @@ void engine::run() {
             p_openvr->renderFrame();
         }
 
+
         p_graphic->getDisplay()->clear();
 
 
@@ -290,8 +291,10 @@ void engine::run() {
         glm::mat4 l_mvp_cam = p_graphic->getCamera()->getViewProjection();
 
         l_timer_test.Start();
-
         render( l_mvp_cam);
+
+
+
 
 
 
