@@ -18,6 +18,8 @@
 
 #define EMPTY_BLOCK_ID 0
 
+#define MAX_TILE_ID 32.767 // dont have more blocks then this
+
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
 class Chunk {
@@ -38,15 +40,12 @@ public:
     void serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end)
     {
         for( int i = start; i < end; i++) {
-            int l_tile = p_tile[i] + 1;
-            bitstream->Serialize( writeToBitstream, l_tile);
-            if( p_tile[i] > 800000) {
-                printf( "cruppt data\n");
+            bitstream->Serialize( writeToBitstream, p_tile[i]);
+            if( p_tile[i] > MAX_TILE_ID) {
+                printf( "chunk::serialize corrupt data Data %d to %d tileID#%d\n", start, end, p_tile[i]);
                 p_tile[i] = EMPTY_BLOCK_ID;
                 return;
             }
-            if( !writeToBitstream)
-                p_tile[i] = l_tile -1;
         }
     }
 

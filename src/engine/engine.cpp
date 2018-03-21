@@ -304,7 +304,7 @@ void engine::run() {
 
 //            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
 
-            //viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
+            viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
         }
 
         // Swap die Buffer um keine Renderfehler zu bekommen
