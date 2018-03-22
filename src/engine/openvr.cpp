@@ -20,7 +20,7 @@ openvr::openvr()
 	p_pRenderModels = NULL;
 
 	p_fNearClip = 0.1f;
- 	p_fFarClip = 30.0f;
+ 	p_fFarClip = 3000.0f;
 
  	p_iTrackedControllerCount = 0;
  	p_iTrackedControllerCount_Last = -1;

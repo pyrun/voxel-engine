@@ -121,7 +121,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if(face == 5)
                 mZ--;
 
-            if( l_world->GetTile( mX, mY, mZ) != EMPTY_BLOCK_ID) {
+            if( l_world->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID) {
                 Chunk *tmp = l_world->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
                     p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByID( "water")->getID());
@@ -267,13 +267,13 @@ void engine::run() {
         /// Render
         if( p_openvr ) {
             p_openvr->renderForLeftEye();
-            l_mvp = p_openvr->getViewProjectionMatrixLeft();
+            l_mvp = p_openvr->getViewProjectionMatrixLeft() * p_graphic->getCamera()->getViewWithoutUp();
             render( l_mvp);
             p_openvr->renderModels( l_mvp);
             p_openvr->renderEndLeftEye();
 
             p_openvr->renderForRightEye();
-            l_mvp = p_openvr->getViewProjectionMatrixRight();
+            l_mvp = p_openvr->getViewProjectionMatrixRight() * p_graphic->getCamera()->getViewWithoutUp();
             render( l_mvp);
             p_openvr->renderModels( l_mvp);
             p_openvr->renderEndRightEye();

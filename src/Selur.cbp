@@ -13,7 +13,7 @@
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-client 109.193.30.110" />
+				<Option parameters="-server" />
 				<Compiler>
 					<Add option="-std=c++1y" />
 					<Add option="-g" />
@@ -81,7 +81,6 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bullet3/src" />
-					<Add directory="graphic/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
