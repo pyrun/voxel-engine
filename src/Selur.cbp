@@ -13,7 +13,7 @@
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-server" />
+				<Option parameters="-client 109.193.30.110" />
 				<Compiler>
 					<Add option="-std=c++1y" />
 					<Add option="-g" />

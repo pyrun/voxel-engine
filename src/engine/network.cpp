@@ -182,6 +182,20 @@ void network_object::Deserialize(RakNet::DeserializeParameters *deserializeParam
     p_model_change = true;
 }
 
+void network_object::SerializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection)	{
+    serializationBitstream->Write(GetName() + RakNet::RakString(" SerializeConstructionRequestAccepted"));
+}
+
+void network_object::DeserializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *acceptingConnection) {
+    PrintStringInBitstream(serializationBitstream);
+}
+void network_object::SerializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection)	{
+    serializationBitstream->Write(GetName() + RakNet::RakString(" SerializeConstructionRequestRejected"));
+}
+void network_object::DeserializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *rejectingConnection) {
+    PrintStringInBitstream(serializationBitstream);
+}
+
 void network_object::update_model() {
     if( !p_model_change)
         return;

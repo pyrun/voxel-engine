@@ -42,7 +42,7 @@ public:
         for( int i = start; i < end; i++) {
             bitstream->Serialize( writeToBitstream, p_tile[i]);
             if( p_tile[i] > MAX_TILE_ID) {
-                printf( "chunk::serialize corrupt data Data %d to %d tileID#%d\n", start, end, p_tile[i]);
+                printf( "chunk::serialize corrupt data x%d y%d z%d Data %d to %d tileID#%d\n", (int)p_pos.x, (int)p_pos.y, (int)p_pos.z, start, end, p_tile[i]);
                 p_tile[i] = EMPTY_BLOCK_ID;
                 return;
             }

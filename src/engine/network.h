@@ -53,7 +53,6 @@ class network_object : public Replica3
         virtual void WriteAllocationID(RakNet::Connection_RM3 *destinationConnection, RakNet::BitStream *allocationIdBitstream) const;
         void PrintStringInBitstream(RakNet::BitStream *bs);
 
-
         virtual void SerializeConstruction(RakNet::BitStream *constructionBitstream, RakNet::Connection_RM3 *destinationConnection);
         virtual bool DeserializeConstruction(RakNet::BitStream *constructionBitstream, RakNet::Connection_RM3 *sourceConnection);
 
@@ -69,18 +68,10 @@ class network_object : public Replica3
 
         virtual void Deserialize(RakNet::DeserializeParameters *deserializeParameters);
 
-        virtual void SerializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection)	{
-            serializationBitstream->Write(GetName() + RakNet::RakString(" SerializeConstructionRequestAccepted"));
-        }
-        virtual void DeserializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *acceptingConnection) {
-            PrintStringInBitstream(serializationBitstream);
-        }
-        virtual void SerializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection)	{
-            serializationBitstream->Write(GetName() + RakNet::RakString(" SerializeConstructionRequestRejected"));
-        }
-        virtual void DeserializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *rejectingConnection) {
-            PrintStringInBitstream(serializationBitstream);
-        }
+        virtual void SerializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection);
+        virtual void DeserializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *acceptingConnection);
+        virtual void SerializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection);
+        virtual void DeserializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *rejectingConnection);
 
         virtual void OnPoppedConnection(RakNet::Connection_RM3 *droppedConnection) { p_variableDeltaSerializer.RemoveRemoteSystemVariableHistory(droppedConnection->GetRakNetGUID()); }
         void NotifyReplicaOfMessageDeliveryStatus(RakNetGUID guid, uint32_t receiptId, bool messageArrived) { p_variableDeltaSerializer.OnMessageReceipt(guid,receiptId,messageArrived); }
