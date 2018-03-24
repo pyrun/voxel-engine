@@ -348,7 +348,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y+1, z+1);
                 } else {
-                    Side_Textur_Pos = List->GetTexturByType( type, 0);
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_FRONT);
                     addFaceX( true, glm::vec3( x-1, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
 
@@ -388,7 +388,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
-                    Side_Textur_Pos = List->GetTexturByType( type, 1);
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_BACK);
                     addFaceX( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
                 b_visibility = true;
@@ -420,7 +420,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y, z+1);
                 } else {
-                    Side_Textur_Pos = List->GetTexturByType( type, 5);
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_BUTTOM);
                     addFaceY( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
                 }
                 b_visibility = true;
@@ -452,7 +452,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
-                    Side_Textur_Pos = List->GetTexturByType( type, 4);
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_TOP);
                     addFaceY( true, glm::vec3( x, y+1, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
                 }
                 b_visibility = true;
@@ -483,7 +483,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z);
                 } else {
-                    Side_Textur_Pos = List->GetTexturByType( type, 2);
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_LEFT);
                     addFaceZ( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
                 b_visibility = true;
@@ -514,7 +514,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z+1);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
-                    Side_Textur_Pos = List->GetTexturByType( type, 2);
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_RIGHT);
                     addFaceZ( true, glm::vec3( x, y, z+1), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
                 }
                 b_visibility = true;

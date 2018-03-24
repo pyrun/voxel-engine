@@ -19,16 +19,25 @@
 //#define BLOCK_AMOUNT_SIDE 16
 //#define RESERVE_BLOCKS 2048
 
+enum block_side {
+    BLOCK_SIDE_LEFT = 42,
+    BLOCK_SIDE_RIGHT,
+    BLOCK_SIDE_TOP,
+    BLOCK_SIDE_BUTTOM,
+    BLOCK_SIDE_FRONT,
+    BLOCK_SIDE_BACK
+};
+
 class block_image  {
 public:
     block_image();
     ~block_image();
-    void LoadImage( graphic* graphic);
-    void SetImageName( std::string name);
+    void loadImage( graphic* graphic);
+    void setImageName( std::string name);
     int &getPosX() { return p_posx; }
     int &getPosY() { return p_posy; }
     SDL_Surface *getSurface() { return p_surface; }
-    std::string GetImageName() { return p_imagename; }
+    std::string getImageName() { return p_imagename; }
 private:
     SDL_Surface* p_surface;
     int p_posx;
@@ -41,17 +50,17 @@ public:
     block();
     ~block();
 
-    void LoadImage( graphic* t_graphic);
-    void SetID( int id) { i_id = id; }
-    void SetName( std::string name) { n_name = name; }
-    void SetAlpha( bool flag) { p_alpha = flag; }
-    void SetFile( std::string s_front, std::string s_back, std::string s_left, std::string s_right, std::string s_top, std::string s_bottom) {
-        image_front.SetImageName(s_front);
-        image_back.SetImageName(s_back);
-        image_left.SetImageName(s_left);
-        image_right.SetImageName(s_right);
-        image_top.SetImageName(s_top);
-        image_bottom.SetImageName(s_bottom);
+    void loadImage( graphic* t_graphic);
+    void setID( int id) { i_id = id; }
+    void setName( std::string name) { n_name = name; }
+    void setAlpha( bool flag) { p_alpha = flag; }
+    void setFile( std::string s_front, std::string s_back, std::string s_left, std::string s_right, std::string s_top, std::string s_bottom) {
+        image_front.setImageName(s_front);
+        image_back.setImageName(s_back);
+        image_left.setImageName(s_left);
+        image_right.setImageName(s_right);
+        image_top.setImageName(s_top);
+        image_bottom.setImageName(s_bottom);
     }
     block_image* getFront() { return &image_front; }
     block_image* getBack() { return &image_back; }
@@ -82,19 +91,19 @@ class block_list {
 public:
     block_list( std::string Path);
     ~block_list();
-    void Draw( graphic* graphic);
+    void draw( graphic* graphic);
     // Umrechnen wo welche textur liegt
-    glm::vec2 GetTexturByType( int Type, int Side);
+    glm::vec2 getTexturByType( int Type, block_side side);
     block* get( int ID);
-    block* getByID( std::string name);
-    int GetAmountblocks() { return (int)List.size(); }
+    block* getByName( std::string name);
+    int getAmountblocks() { return (int)p_blocks.size(); }
 private:
-    std::string Path;
-    std::vector<block> List;
+    std::string p_path;
+    std::vector<block> p_blocks;
 protected:
     bool GetSuffix(const std::string &file, const std::string &suffix);
     bool GetSuffix6502(const std::string& str, const std::string& end);
     bool FileExists(std::string StrFilename);
-    void Loadblock (std::string Path, std::string Name);
+    void loadblock (std::string path, std::string name);
 };
 #endif // BLOCK_H

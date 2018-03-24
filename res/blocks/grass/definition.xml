@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <block id="1">
 	<graphic>
-		<top image="image_top.png"> </top>
-		<bottom image="image.png"> </bottom>
-		<front image="image_side.png"> </front>
-		<back image="image_side.png"> </back>
-		<left image="image_side.png"> </left>
-		<right image="image_side.png"> </right>
+		<top>image_top.png</top>
+		<bottom>image.png</bottom>
+		<front>image_side.png</front>
+		<back>image_side.png</back>
+		<left>image_side.png</left>
+		<right>image_side.png</right>
 	</graphic>
 </block>

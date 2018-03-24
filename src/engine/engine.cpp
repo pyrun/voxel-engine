@@ -29,7 +29,7 @@ engine::engine() {
     p_network = new network( p_config, p_tilemap, p_blocklist);
 
     // set values after start
-    p_blocklist->Draw( p_graphic);
+    p_blocklist->draw( p_graphic);
 
     p_network->getDebugDraw()->init( p_graphic);
 }
@@ -124,7 +124,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if( l_world->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID) {
                 Chunk *tmp = l_world->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
-                    p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByID( "water")->getID());
+                    p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "earth")->getID());
                     //l_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
                 } else {
                     printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");

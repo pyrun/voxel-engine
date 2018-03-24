@@ -96,9 +96,9 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
     float border = -10;
 
     // List
-    int l_stone = b_list->getByID( "stone")->getID();
-    int l_earth = b_list->getByID( "earth")->getID();
-    int l_grass = b_list->getByID( "grass")->getID();
+    int l_stone = b_list->getByName( "stone")->getID();
+    int l_earth = b_list->getByName( "earth")->getID();
+    int l_grass = b_list->getByName( "grass")->getID();
 
     for (int cz = 0; cz < CHUNK_SIZE; cz++) {
         for (int cx = 0; cx < CHUNK_SIZE; cx++) {
