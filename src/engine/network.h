@@ -281,6 +281,7 @@ class network
 
         world *p_starchip;
         object_handle *p_types;
+        block_list *p_blocks;
 };
 
 #endif // NETWORK_H

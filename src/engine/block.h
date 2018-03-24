@@ -51,7 +51,7 @@ public:
     ~block();
 
     void loadImage( graphic* t_graphic);
-    void setID( int id) { i_id = id; }
+    void setID( int id) { p_id = id; }
     void setName( std::string name) { n_name = name; }
     void setAlpha( bool flag) { p_alpha = flag; }
     void setFile( std::string s_front, std::string s_back, std::string s_left, std::string s_right, std::string s_top, std::string s_bottom) {
@@ -69,13 +69,13 @@ public:
     block_image* getUp() { return &image_top; }
     block_image* getDown() { return &image_bottom; }
     bool getLoadedImage() { return p_imageloaded; }
-    int getID() { return i_id; }
+    int getID() { return p_id; }
     std::string getName() { return n_name; }
     bool getAlpha() { return p_alpha; }
 protected:
 private:
     // block
-    int i_id;
+    int p_id;
     std::string n_name;
     bool p_alpha;
     block_image image_front;

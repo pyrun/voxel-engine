@@ -240,6 +240,7 @@ network::network( config *config, texture* image, block_list *block_list)
     p_isClient = false;
     p_isServer = false;
     p_starchip = new world( image, block_list);
+    p_blocks = block_list;
 }
 
 network::~network()
@@ -460,7 +461,7 @@ void network::readChunk( BitStream *bitstream) {
     }
 
     // read
-    l_chunk->serialize( false, bitstream, l_start, l_end);
+    l_chunk->serialize( false, bitstream, l_start, l_end, p_blocks);
 
     if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
         l_chunk->changed( true);
@@ -479,7 +480,7 @@ void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
         l_bitstream.Write( (int)chunk->getPos().z);
         l_bitstream.Write( l_start);
         l_bitstream.Write( l_end);
-        chunk->serialize( true, &l_bitstream, l_start, l_end);
+        chunk->serialize( true, &l_bitstream, l_start, l_end, p_blocks);
         p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED , 0, address, false);
     }
 }
