@@ -37,7 +37,7 @@ public:
     Chunk *createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape = false, bool update = true);
 
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
-    Chunk* getChunk( int X, int Y, int Z);
+    Chunk* getChunk( glm::vec3 position);
 
     void addChunk( glm::tvec3<int> pos, bool generateLandscape);
     void addDeleteChunk( glm::tvec3<int> pos );

@@ -398,7 +398,7 @@ void network::sendBlockChange( Chunk *chunk, glm::vec3 pos, int id) {
     p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, l_address, l_broadcast);
 }
 
-void network::readBlockChange( BitStream *bitstream) {
+void network::receiveBlockChange( BitStream *bitstream) {
     RakNet::AddressOrGUID l_address;
     Chunk *l_chunk;
     glm::vec3 l_pos;
@@ -412,7 +412,7 @@ void network::readBlockChange( BitStream *bitstream) {
     bitstream->Read( l_pos.z);
     bitstream->Read( l_id);
 
-    l_chunk = getWorld()->getChunk( l_pos_chunk.x, l_pos_chunk.y, l_pos_chunk.z);
+    l_chunk = getWorld()->getChunk( l_pos_chunk);
     if( !l_chunk)
         l_chunk = getWorld()->createChunk( l_pos_chunk.x, l_pos_chunk.y, l_pos_chunk.z);
     if( !l_chunk) {
@@ -441,7 +441,7 @@ void network::readBlockChange( BitStream *bitstream) {
     }
 }
 
-void network::readChunk( BitStream *bitstream) {
+void network::receiveChunk( BitStream *bitstream) {
     int l_x, l_y, l_z;
     int l_start, l_end;
 
@@ -451,7 +451,7 @@ void network::readChunk( BitStream *bitstream) {
     bitstream->Read( l_start);
     bitstream->Read( l_end);
 
-    Chunk *l_chunk = getWorld()->getChunk( l_x, l_y, l_z);
+    Chunk *l_chunk = getWorld()->getChunk( glm::vec3( l_x, l_y, l_z) );
     if( !l_chunk) {
         l_chunk = getWorld()->createChunk( l_x, l_y, l_z, false, false);
     }
@@ -460,32 +460,36 @@ void network::readChunk( BitStream *bitstream) {
         return;
     }
 
-    // read
-    l_chunk->serialize( false, bitstream, l_start, l_end, p_blocks);
+    // read, if corrupt send send a get message
+    if( !l_chunk->serialize( false, bitstream, l_start, l_end, p_blocks) )
+        sendGetChunkData( RakNet::UNASSIGNED_SYSTEM_ADDRESS, l_chunk, l_start, l_end);
 
     if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
         l_chunk->changed( true);
 }
 
+void network::sendChunkData( Chunk *chunk, RakNet::AddressOrGUID address, int l_start, int l_end) {
+    BitStream l_bitstream;
+
+    l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK_DATA);
+    l_bitstream.Write( (int)chunk->getPos().x);
+    l_bitstream.Write( (int)chunk->getPos().y);
+    l_bitstream.Write( (int)chunk->getPos().z);
+    l_bitstream.Write( l_start);
+    l_bitstream.Write( l_end);
+    chunk->serialize( true, &l_bitstream, l_start, l_end, p_blocks);
+    p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED , 0, address, false);
+}
+
 void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
     for( int l_width = 0; l_width < (CHUNK_SIZE*CHUNK_SIZE)/CHUNK_SIZE; l_width++) {
-        BitStream l_bitstream;
-
         int l_start = l_width*CHUNK_SIZE*CHUNK_SIZE;
         int l_end = l_start+(CHUNK_SIZE*CHUNK_SIZE);
-
-        l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK);
-        l_bitstream.Write( (int)chunk->getPos().x);
-        l_bitstream.Write( (int)chunk->getPos().y);
-        l_bitstream.Write( (int)chunk->getPos().z);
-        l_bitstream.Write( l_start);
-        l_bitstream.Write( l_end);
-        chunk->serialize( true, &l_bitstream, l_start, l_end, p_blocks);
-        p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED , 0, address, false);
+        sendChunkData( chunk, address, l_start, l_end);
     }
 }
 
-void network::sendAllChunks( world *world,RakNet::AddressOrGUID address) {
+void network::sendAllChunks( world *world, RakNet::AddressOrGUID address) {
     int i =0;
     Chunk *l_node = world->getNode();
     while( l_node != NULL)
@@ -494,6 +498,40 @@ void network::sendAllChunks( world *world,RakNet::AddressOrGUID address) {
         l_node = l_node->next;
         i++;
     }
+}
+
+void network::receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID address) {
+    Chunk *l_chunk;
+    int l_start;
+    int l_end;
+    glm::vec3 l_pos_chunk;
+    bool l_send = false;
+    bitstream->Read( l_pos_chunk.x);
+    bitstream->Read( l_pos_chunk.y);
+    bitstream->Read( l_pos_chunk.z);
+    bitstream->Read( l_start);
+    bitstream->Read( l_end);
+
+    if( l_start > 0 && l_start < l_end && l_end < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE + 1) {
+        l_chunk = getWorld()->getChunk( l_pos_chunk);
+        if( l_chunk != NULL) {
+            sendChunkData( l_chunk, address, l_start, l_end);
+            l_send = true;
+        }
+    }
+    printf( "network::receiveGetChunkData chunk data send = %d\n", l_send);
+}
+
+void network::sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int start, int end) {
+    BitStream l_bitstream;
+
+    l_bitstream.Write((RakNet::MessageID)ID_GET_CHUNK_DATA);
+    l_bitstream.Write( (int)chunk->getPos().x);
+    l_bitstream.Write( (int)chunk->getPos().y);
+    l_bitstream.Write( (int)chunk->getPos().z);
+    l_bitstream.Write( start);
+    l_bitstream.Write( end);
+    p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, true);
 }
 
 bool network::process( int delta)
@@ -555,18 +593,25 @@ bool network::process( int delta)
                 }
             }
             break;
-            case ID_SET_CHUNK:
+            case ID_SET_CHUNK_DATA:
             {
                 RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
                 l_bitsteam.IgnoreBytes(sizeof(RakNet::MessageID));
-                readChunk( &l_bitsteam);
+                receiveChunk( &l_bitsteam);
             }
             break;
             case ID_SET_BLOCK:
             {
                 RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
                 l_bitsteam.IgnoreBytes(sizeof(RakNet::MessageID));
-                readBlockChange( &l_bitsteam);
+                receiveBlockChange( &l_bitsteam);
+            }
+            break;
+            case ID_GET_CHUNK_DATA:
+            {
+                RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
+                l_bitsteam.IgnoreBytes(sizeof(RakNet::MessageID));
+                receiveGetChunkData( &l_bitsteam, p_packet->systemAddress);
             }
             break;
         }

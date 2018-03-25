@@ -165,7 +165,7 @@ void world::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
 void world::process_thrend_handle() {
     for( int i = 0; i < (int)p_creatingList.size(); i++)
     {
-        Chunk *l_node = getChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z);
+        Chunk *l_node = getChunk( p_creatingList[i].position);
         if( l_node == NULL) {
             SDL_LockMutex ( p_mutex);
             createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
@@ -178,7 +178,7 @@ void world::process_thrend_handle() {
 
     for( auto l_pos:p_deletingList)
     {
-        Chunk *l_node = getChunk( l_pos.position.x, l_pos.position.y, l_pos.position.z);
+        Chunk *l_node = getChunk( l_pos.position);
         if( l_node != NULL) {
             SDL_LockMutex ( p_mutex);
             deleteChunk( l_node);
@@ -254,27 +254,27 @@ void world::deleteChunk( Chunk* node) {
             // chunk seiten löschen
             Chunk *snode;
             if( CheckChunk( pos_x+1, pos_y, pos_z)) {
-                snode = getChunk( pos_x+1, pos_y, pos_z);
+                snode = getChunk( glm::vec3(pos_x+1, pos_y, pos_z));
                 snode->back = NULL;
             }
             if( CheckChunk( pos_x-1, pos_y, pos_z)) {
-                snode = getChunk( pos_x-1, pos_y, pos_z);
+                snode = getChunk( glm::vec3(pos_x-1, pos_y, pos_z));
                 snode->front = NULL;
             }
             if( CheckChunk( pos_x, pos_y+1, pos_z)) {
-                snode = getChunk( pos_x, pos_y+1, pos_z);
+                snode = getChunk( glm::vec3(pos_x, pos_y+1, pos_z));
                 snode->down = NULL;
             }
             if( CheckChunk( pos_x, pos_y-1, pos_z)) {
-                snode = getChunk( pos_x, pos_y-1, pos_z);
+                snode = getChunk( glm::vec3(pos_x, pos_y-1, pos_z));
                 snode->up = NULL;
             }
             if( CheckChunk( pos_x, pos_y, pos_z+1)) {
-                snode = getChunk( pos_x, pos_y, pos_z+1);
+                snode = getChunk( glm::vec3(pos_x, pos_y, pos_z+1));
                 snode->left = NULL;
             }
             if( CheckChunk( pos_x, pos_y, pos_z-1)) {
-                snode = getChunk( pos_x, pos_y, pos_z-1);
+                snode = getChunk( glm::vec3(pos_x, pos_y, pos_z-1));
                 snode->right = NULL;
             }
             // löschen
@@ -337,14 +337,12 @@ bool world::CheckChunk( int X, int Y, int Z) {
 
 
 
-Chunk* world::getChunk( int X, int Y, int Z) {
+Chunk* world::getChunk( glm::vec3 position) {
     Chunk *tmp = p_chunk_start;
     for( ;; ) {
         if( tmp == NULL)
             break;
-         if( tmp->getPos().x == X &&
-             tmp->getPos().y == Y &&
-             tmp->getPos().z == Z )
+         if( tmp->getPos() == position )
              return tmp;
         tmp = tmp->next;
     }

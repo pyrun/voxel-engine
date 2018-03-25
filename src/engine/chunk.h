@@ -37,20 +37,21 @@ public:
 
     btRigidBody *makeBulletMesh( btDiscreteDynamicsWorld *world);
 
-    void serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
+    bool serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
     {
         for( int i = start; i < end; i++) {
             bitstream->Serialize( writeToBitstream, p_tile[i]);
             if( p_tile[i] > MAX_TILE_ID) {
                 printf( "chunk::serialize corrupt data x%d y%d z%d Data %d to %d tileID#%d\n", (int)p_pos.x, (int)p_pos.y, (int)p_pos.z, start, end, p_tile[i]);
                 p_tile[i] = EMPTY_BLOCK_ID;
-                return;
+                return false;
             }
             if(!writeToBitstream) {
                 if( blocks->get( p_tile[i]) == NULL )
                     p_tile[i] = 0;
             }
         }
+        return true;
     }
 
     inline glm::vec3 getPos() { return p_pos; }

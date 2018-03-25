@@ -29,7 +29,6 @@
 #include "btBulletDynamicsCommon.h"
 #include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
-// ReplicaManager3 is in the namespace RakNet
 using namespace RakNet;
 
 enum
@@ -244,11 +243,14 @@ class network
         void start_client( std::string ip = "127.0.0.1");
 
         void sendBlockChange( Chunk *chunk, glm::vec3 pos, int id);
-        void readBlockChange( BitStream *bitstream);
+        void receiveBlockChange( BitStream *bitstream);
 
-        void readChunk( BitStream *bitstream);
+        void receiveChunk( BitStream *bitstream);
+        void sendChunkData( Chunk *chunk, RakNet::AddressOrGUID address, int l_start, int l_end);
         void sendChunk( Chunk *chunk, RakNet::AddressOrGUID address);
         void sendAllChunks( world *world,RakNet::AddressOrGUID address);
+        void receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID address);
+        void sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int start, int end);
 
         bool process( int delta);
 
