@@ -16,7 +16,6 @@ std::string NumberToString( double Number) {
 engine::engine() {
     // set values
     p_openvr = NULL;
-    p_vboCursor = NULL;
     p_isRunnig = true;
     p_framecap = true;
     p_timecap = 12; // ms -> 90hz
@@ -35,8 +34,6 @@ engine::engine() {
 }
 
 engine::~engine() {
-    glDeleteBuffers(1, &p_vboCursor);
-    p_vboCursor = NULL;
     if( p_openvr)
         delete p_openvr;
     delete p_tilemap;
@@ -56,12 +53,12 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 
     world *l_world = p_network->getWorld();
 
-    // Voxel Anzeigen
+    // voxel Anzeigen
     glReadPixels( p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
 
     glm::vec4 viewport = glm::vec4(0, 0, p_graphic->getWidth(), p_graphic->getHeight());
     glm::vec3 wincoord = glm::vec3(p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, depth);
-    glm::vec3 objcoord = glm::unProject(wincoord, p_graphic->getCamera()->GetView(), p_graphic->getCamera()->GetProjection(), viewport);
+    //glm::vec3 objcoord = glm::unProject(wincoord, p_graphic->getCamera()->GetView(), p_graphic->getCamera()->GetProjection(), viewport);
 
     glm::vec3 testpos = p_graphic->getCamera()->GetPos();
     glm::vec3 prevpos = p_graphic->getCamera()->GetPos();
@@ -154,44 +151,6 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
     }
 }
 
-void engine::viewCross() {
-
-    std::vector<glm::vec4> l_vertices;
-    l_vertices.resize(4);
-    l_vertices[0] = glm::vec4( -0.05, 0, 0, 14);
-    l_vertices[1] = glm::vec4( +0.05, 0, 0, 14);
-    l_vertices[2] = glm::vec4( 0, -0.05, 0, 14);
-    l_vertices[3] = glm::vec4( 0, +0.05, 0, 14);
-
-    if( p_vboCursor == NULL)
-        glGenBuffers(1, &p_vboCursor);
-
-    Transform f_form;
-
-    float p_width = p_graphic->getWidth();
-    float p_hight = p_graphic->getHeight();
-    glm::mat4 one = glm::ortho( (float)-1, (float)1, (float)-1, (float)1);
-
-    // Vbo übertragen
-    glBindBuffer(GL_ARRAY_BUFFER, p_vboCursor);
-    glBufferData(GL_ARRAY_BUFFER, l_vertices.size() * sizeof(glm::vec4), &l_vertices[0], GL_DYNAMIC_DRAW);
-
-    //p_graphic->getVertexShader()->disableFullVertexArray();
-    // Shader einstellen
-    p_graphic->getVertexShader()->Bind();// Shader
-    p_graphic->getVertexShader()->EnableVertexArray( 0);
-    //p_graphic->getVertexShader()->BindArray( p_vboCursor, 0, GL_FLOAT, 4);
-
-    p_graphic->getVertexShader()->updateWithout( &f_form, one); //p_graphic->getCamera()->getViewProjection());
-
-
-
-    //glDrawArrays( GL_LINES, 0, l_vertices.size());
-
-    glUseProgram( 0 );
-
-}
-
 void engine::render( glm::mat4 viewProjection) {
     // chunks zeichnen
     p_network->draw( p_graphic, p_config, viewProjection);
@@ -226,12 +185,19 @@ void engine::run() {
     // set variables
     Timer l_timer;
     struct clock l_clock;
-    int number = 0;
     glm::mat4 l_mvp;
 
     int l_delta = 0;
 
     Timer l_timer_test;
+
+    ServerCreated_ClientSerialized* l_hand = new ServerCreated_ClientSerialized();
+
+    l_hand->p_name = "hand";
+    l_hand->setPos( glm::vec3( 5, 5, 5));
+    l_hand->p_type = p_network->getObjectList()->get( l_hand->p_name.C_String());
+    l_hand->init( p_network->getPhysic());
+    p_network->addObject( l_hand);
 
     // set up clock
     l_clock.tick();
@@ -240,14 +206,12 @@ void engine::run() {
 
         p_input.Reset();
         p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
-        // Input einsehen
-//        float Speed = 0.1f * framenrate.getMSframe() *framenrate.getLimit()/ 1000.0f;
-        float Speed = 0.01f;
-        //printf( "%f %f \n", Speed, framenrate.getMSframe());
+
         Camera *cam = p_graphic->getCamera();
         cam->horizontalAngle ( -p_input.Map.MousePos.x * 2);
         cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
 
+        /// process
         if( p_config->get( "fly", "engine", "false") == "true")
             fly( l_delta);
 
@@ -257,14 +221,12 @@ void engine::run() {
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
 
-
         if( p_network->process( l_delta))
             p_isRunnig = false;
 
+        l_hand->setPos( cam->GetPos());
 
-
-
-        /// Render
+        /// render #1 openVR
         if( p_openvr ) {
             p_openvr->renderForLeftEye();
             l_mvp = p_openvr->getViewProjectionMatrixLeft() * p_graphic->getCamera()->getViewWithoutUp();
@@ -284,43 +246,29 @@ void engine::run() {
         }
 
 
+        /// render #2 window
         p_graphic->getDisplay()->clear();
-
-
 
         glm::mat4 l_mvp_cam = p_graphic->getCamera()->getViewProjection();
 
         l_timer_test.Start();
         render( l_mvp_cam);
 
-
-
-
-
-
         if( p_network->getWorld()) {
-            // View Cross
-            //viewCross();
-
-//            obj->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
-
             viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
         }
 
-        // Swap die Buffer um keine Renderfehler zu bekommen
         p_graphic->getDisplay()->swapBuffers();
 
-        int l_test = l_timer_test.GetTicks();
+        /// calculation  time
 
-
-        // fehler anzeigen -> schleife eine meldung bedeutet ich habe verkackt
-        GLenum error =  glGetError();
-        if(error) {
-            std::cout << "nope" << error << std::endl;
+        // print opengl error number
+        GLenum l_error =  glGetError();
+        if( l_error) {
+            std::cout << "engine::run OpenGL Error #" << l_error << std::endl;
         }
 
-
-        // Titel setzten
+        // framerate
         p_framerate.push_back( l_clock.delta);
         if( p_framerate.size() > 100)
             p_framerate.erase( p_framerate.begin());
@@ -330,13 +278,12 @@ void engine::run() {
         l_average_delta_time = l_average_delta_time/(float)p_framerate.size();
 
         double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
-        Title = "TimeTest_" + NumberToString( (double)l_test );
-        Title = Title + "FPS_" + NumberToString( averageFrameTimeMilliseconds );
-        Title = Title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
-        Title = Title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
+        p_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
+        p_title = p_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
+        p_title = p_title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
         if(  p_network->getWorld())
-            Title = Title + " Chunks_" + NumberToString( (double) p_network->getWorld()->getAmountChunks());
-        p_graphic->getDisplay()->setTitle( Title);
+            p_title = p_title + " Chunks_" + NumberToString( (double) p_network->getWorld()->getAmountChunks());
+        p_graphic->getDisplay()->setTitle( p_title);
 
         // one at evry frame
         l_clock.tick();
@@ -352,8 +299,8 @@ void engine::run() {
     }
 }
 
-void engine::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
-/*    std::vector<block_data> t_box;
+/*void engine::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
+    std::vector<block_data> t_box;
 
     // Chunk Vbo Data Struct
     t_box.resize( 24 );
@@ -405,5 +352,5 @@ void engine::drawBox( glm::mat4 viewProjection, glm::vec3 pos) {
     glBufferData(GL_ARRAY_BUFFER, t_box.size() * sizeof(block_data), &t_box[0], GL_DYNAMIC_DRAW);
 
     // Zeichnen
-    glDrawArrays( GL_LINES, 0, 24);*/
-}
+    glDrawArrays( GL_LINES, 0, 24);
+}*/

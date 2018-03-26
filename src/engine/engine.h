@@ -16,8 +16,6 @@
 #include "../engine/openvr.h"
 #include "../engine/network.h"
 
-std::string NumberToString( int Number);
-
 struct clock
 {
     uint32_t last_tick_time = 0;
@@ -37,14 +35,11 @@ public:
     virtual ~engine();
 
     void startVR();
-
     void viewCurrentBlock( glm::mat4 viewProjection, int view_width);
-    void viewCross();
 
     void render( glm::mat4 viewProjection);
 
     void fly( int l_delta);
-
     void run();
 
     network *getNetwork() { return p_network; }
@@ -62,8 +57,7 @@ private:
 
     texture *p_tilemap;
 
-    std::string Title;
-    GLuint p_vboCursor;
+    std::string p_title;
 
     bool p_framecap;
     int p_timecap;

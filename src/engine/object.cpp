@@ -115,6 +115,8 @@ bool object_type::load_file( std::string file) {
         return false;
     }
 
+    printf( "test 2\n");
+
     // Loop over shapes
     for (size_t s = 0; s < l_shapes.size(); s++) {
       // Loop over faces(polygon)
@@ -278,11 +280,13 @@ btRigidBody *object_type::makeBulletMesh() {
         btGImpactMeshShape *tmpshape2 = new btGImpactMeshShape( btmesh);
         tmpshape2->updateBound();
 
-        btScalar mass = 100;
+        btScalar mass = 10;
         btVector3 fallInertia(0, 0, 0);
         //btShape->calculateLocalInertia(mass, fallInertia);
         btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, tmpshape2, fallInertia);
         body = new btRigidBody(fallRigidBodyCI);
+        body->setCollisionFlags( btCollisionObject::CF_KINEMATIC_OBJECT);
+        body->setActivationState( DISABLE_DEACTIVATION );
 
     }
     return body;

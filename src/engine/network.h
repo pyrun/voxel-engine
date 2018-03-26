@@ -78,7 +78,20 @@ class network_object : public Replica3
         RakNet::RakString getTypeName() { return p_name; }
 
         void update_model();
-        void setPos( glm::vec3 pos) { p_pos = pos; p_model_change = true; }
+        void setPos( glm::vec3 pos) {
+            p_pos = pos;
+            p_model_change = true;
+
+            if( p_body != NULL) {
+                btTransform initialTransform;
+
+                initialTransform.setOrigin( btVector3(p_pos.x, p_pos.y, p_pos.z) );
+                //initialTransform.setRotation( btVector3(p_rot.x, p_rot.y, p_rot.z) );
+
+                p_body->setWorldTransform( initialTransform);
+                //mMotionState->setWorldTransform(initialTransform);
+            }
+        }
         void setRotate( glm::vec3 rotate) { p_rot = rotate; p_model_change = true; }
         glm::vec3 getPos() { return p_pos; };
         btRigidBody *getPhysicBody() { return p_body; }
@@ -242,6 +255,8 @@ class network
         void start_sever();
         void start_client( std::string ip = "127.0.0.1");
 
+        void addObject( auto *l_obj);
+
         void sendBlockChange( Chunk *chunk, glm::vec3 pos, int id);
         void receiveBlockChange( BitStream *bitstream);
 
@@ -261,7 +276,10 @@ class network
         world *getWorld() { return p_starchip; }
         bool isServer() { return p_isServer; }
         bool isClient() { return p_isClient; }
+
         debug_draw *getDebugDraw() { return &p_debugdraw; }
+        btDiscreteDynamicsWorld* getPhysic() { return p_physic_world; }
+        object_handle* getObjectList() { return p_types; }
     protected:
 
     private:

@@ -47,8 +47,10 @@ public:
                 return false;
             }
             if(!writeToBitstream) {
-                if( blocks->get( p_tile[i]) == NULL )
+                if( blocks->get( p_tile[i]) == NULL && p_tile[i] != EMPTY_BLOCK_ID ) {
                     p_tile[i] = 0;
+                    return false;
+                }
             }
         }
         return true;

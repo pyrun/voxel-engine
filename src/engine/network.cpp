@@ -344,17 +344,17 @@ void network::start()
         int l_end = -2;
         for( int x = -l_size; x <= l_size; x++)
             for( int y = -l_size; y <= l_size; y++)
-                for( int z = l_end; z <= -1; z++)
+                for( int z = l_end; z <= 0; z++)
                     p_starchip->addChunk( glm::vec3( x, z, y), true);
 
 
 
         ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
-        l_obj->p_name = "box";
+        l_obj->p_name = "hand";
         l_obj->p_type = p_types->get( l_obj->p_name.C_String());
         l_obj->init( p_physic_world);
 
-        p_replicaManager.Reference( l_obj);
+        addObject( l_obj);
 	}
 }
 
@@ -373,6 +373,10 @@ void network::start_client( std::string ip)
     p_ip = ip;
     p_isClient = true;
     start();
+}
+
+void network::addObject( auto *l_obj) {
+    p_replicaManager.Reference( l_obj);
 }
 
 void network::sendBlockChange( Chunk *chunk, glm::vec3 pos, int id) {
@@ -519,16 +523,16 @@ void network::receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID a
             l_send = true;
         }
     }
-    printf( "network::receiveGetChunkData chunk data send = %d\n", l_send);
+    printf( "network::receiveGetChunkData chunk(x%dy%dz%d) data(%d to %d) send = %d\n", (int)l_pos_chunk.x, (int)l_pos_chunk.y, (int)l_pos_chunk.z, l_start, l_end, l_send);
 }
 
 void network::sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int start, int end) {
     BitStream l_bitstream;
 
     l_bitstream.Write((RakNet::MessageID)ID_GET_CHUNK_DATA);
-    l_bitstream.Write( (int)chunk->getPos().x);
-    l_bitstream.Write( (int)chunk->getPos().y);
-    l_bitstream.Write( (int)chunk->getPos().z);
+    l_bitstream.Write( chunk->getPos().x);
+    l_bitstream.Write( chunk->getPos().y);
+    l_bitstream.Write( chunk->getPos().z);
     l_bitstream.Write( start);
     l_bitstream.Write( end);
     p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, true);

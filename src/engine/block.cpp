@@ -5,6 +5,8 @@
 block_image::block_image() {
     // Null setzen
     p_surface = NULL;
+
+    p_side = BLOCK_SIDE_NONE;
 }
 
 block_image::~block_image() {
@@ -15,7 +17,7 @@ block_image::~block_image() {
 
 void block_image::loadImage( graphic* graphic) {
     // Lade Image
-    printf( "%s loaded\n", p_imagename.c_str());
+    printf( "block_image::loadImage \"%s\" loaded\n", p_imagename.c_str());
     p_surface = graphic->loadSurface( p_imagename);
 }
 
@@ -35,14 +37,19 @@ block::~block() {
 
 void block::loadImage( graphic* t_graphic) {
     // Lade die Seiten
-    image_front.loadImage( t_graphic);
-    image_back.loadImage( t_graphic);
-    image_left.loadImage( t_graphic);
-    image_right.loadImage( t_graphic);
-    image_top.loadImage( t_graphic);
-    image_bottom.loadImage( t_graphic);
+    for( int i = 0; i < p_image.size(); i++)
+        p_image[i].loadImage( t_graphic);
 
     p_imageloaded = true;
+}
+
+block_image* block::get( block_side side)
+{
+    for( int i = 0; i < (int)p_image.size(); i++) {
+        if( p_image[i].getSide() & side)
+            return &p_image[i];
+    }
+    return &p_image[0];
 }
 
 /**< block list */
@@ -87,18 +94,13 @@ void block_list::draw( graphic* graphic) {
         if( block->getLoadedImage() == false ) {
             block->loadImage( graphic);
         }
+
         // Alle Seiten Zeichnen
         block_image* side;
-        for( int n = BLOCK_SIDE_LEFT; n < BLOCK_SIDE_LEFT+6; n++) {
+        for( int n = 0; n < (int)block->getSideAmount(); n++) {
             // Seiten
-            switch(n) {
-                case BLOCK_SIDE_FRONT: side = block->getFront(); break;
-                case BLOCK_SIDE_BACK: side = block->getBack(); break;
-                case BLOCK_SIDE_LEFT: side = block->getLeft(); break;
-                case BLOCK_SIDE_RIGHT: side = block->getRight(); break;
-                case BLOCK_SIDE_TOP: side = block->getUp(); break;
-                case BLOCK_SIDE_BUTTOM: side = block->getDown(); break;
-            }
+            side = block->getSide( n);
+
             if( t_x >= l_maxwidth) {
                 t_x = 0;
                 t_y++;
@@ -114,21 +116,21 @@ void block_list::draw( graphic* graphic) {
 }
 
 glm::vec2 block_list::getTexturByType( int Type, block_side side) {
-    block* t_block = get(Type);
-    if( t_block == NULL)
+    block* l_block = get(Type);
+    if( l_block == NULL)
        printf( "block not found\n");
     block_image* t_image;
     glm::vec2 v_possition;
     // aus dein Seiten lesen
     switch( side) {
-        case BLOCK_SIDE_FRONT: t_image = t_block->getFront(); break;
-        case BLOCK_SIDE_BACK: t_image = t_block->getBack(); break;
-        case BLOCK_SIDE_LEFT: t_image = t_block->getLeft(); break;
-        case BLOCK_SIDE_RIGHT: t_image = t_block->getRight(); break;
-        case BLOCK_SIDE_TOP: t_image = t_block->getUp(); break;
-        case BLOCK_SIDE_BUTTOM: t_image = t_block->getDown(); break;
+        case BLOCK_SIDE_FRONT: t_image = l_block->get( BLOCK_SIDE_FRONT); break;
+        case BLOCK_SIDE_BACK: t_image = l_block->get( BLOCK_SIDE_BACK); break;
+        case BLOCK_SIDE_LEFT: t_image = l_block->get( BLOCK_SIDE_LEFT); break;
+        case BLOCK_SIDE_RIGHT: t_image = l_block->get( BLOCK_SIDE_RIGHT); break;
+        case BLOCK_SIDE_TOP: t_image = l_block->get( BLOCK_SIDE_TOP); break;
+        case BLOCK_SIDE_BUTTOM: t_image = l_block->get( BLOCK_SIDE_BUTTOM); break;
         default:
-            t_image = t_block->getFront();
+            t_image = l_block->get( BLOCK_SIDE_NONE);
             printf("block_list::GetTexturByType Hier läuft was DEFINITIV falsch <3\n");
         break; // falls mal was DEFINITIV falsch läuft mal melden <3
     }
@@ -187,6 +189,8 @@ void block_list::loadblock (std::string path, std::string name) {
     tinyxml2::XMLElement *l_xml_graphic;
     tinyxml2::XMLElement *l_xml_block;
     std::string l_file_definition = path + "definition.xml";
+    std::vector<std::string> l_image;
+    std::vector<block_side> l_image_side;
 
     l_doc.LoadFile( l_file_definition.c_str()); // Datei laden
     bool success = l_doc.LoadFile( l_file_definition.c_str()); // Datei laden
@@ -210,17 +214,38 @@ void block_list::loadblock (std::string path, std::string name) {
         return;
     }
 
+    if( l_xml_graphic->FirstChildElement( "front")) {
+        l_image.push_back( path + l_xml_graphic->FirstChildElement( "front")->GetText());
+        l_image_side.push_back( BLOCK_SIDE_FRONT);
+    }
+    if( l_xml_graphic->FirstChildElement( "back")) {
+        l_image.push_back( path + l_xml_graphic->FirstChildElement( "back")->GetText());
+        l_image_side.push_back( BLOCK_SIDE_BACK);
+    }
+    if( l_xml_graphic->FirstChildElement( "left")) {
+        l_image.push_back( path + l_xml_graphic->FirstChildElement( "left")->GetText());
+        l_image_side.push_back( BLOCK_SIDE_LEFT);
+    }
+    if( l_xml_graphic->FirstChildElement( "right")) {
+        l_image.push_back( path + l_xml_graphic->FirstChildElement( "right")->GetText());
+        l_image_side.push_back( BLOCK_SIDE_RIGHT);
+    }
+    if( l_xml_graphic->FirstChildElement( "top")) {
+        l_image.push_back( path + l_xml_graphic->FirstChildElement( "top")->GetText());
+        l_image_side.push_back( BLOCK_SIDE_TOP);
+    }
+    if( l_xml_graphic->FirstChildElement( "bottom")) {
+        l_image.push_back( path + l_xml_graphic->FirstChildElement( "bottom")->GetText());
+        l_image_side.push_back( BLOCK_SIDE_BUTTOM);
+    }
+
     // transparency block?
     l_alpha = atoi(l_xml_graphic->Attribute("alpha"));
 
     // block images sides set
     block l_block;
-    l_block.setFile( path + l_xml_graphic->FirstChildElement( "front")->GetText(),
-                  path + l_xml_graphic->FirstChildElement( "back")->GetText(),
-                  path + l_xml_graphic->FirstChildElement( "left")->GetText(),
-                  path + l_xml_graphic->FirstChildElement( "right")->GetText(),
-                  path + l_xml_graphic->FirstChildElement( "top")->GetText(),
-                  path + l_xml_graphic->FirstChildElement( "bottom")->GetText());
+    for( int i = 0; i < (int)l_image.size(); i++)
+        l_block.addFile( l_image[i], l_image_side[i]);
     l_block.setName( name);
     l_block.setAlpha( l_alpha);
     l_block.setID( l_id);

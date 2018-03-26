@@ -93,7 +93,7 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
     float Island_high = 10.0f;
     float interval_range = 150.f;
     float interval_range_form = 15.f;
-    float border = -10;
+    float border = 10;
 
     // List
     int l_stone = b_list->getByName( "stone")->getID();
