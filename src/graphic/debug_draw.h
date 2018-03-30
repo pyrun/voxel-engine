@@ -1,41 +1,28 @@
 #ifndef DEBUG_DRAW_H
 #define DEBUG_DRAW_H
 
-#include "btBulletDynamicsCommon.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "shader.h"
 #include "graphic.h"
 
-#include <LinearMath/btIDebugDraw.h>
-
-class debug_draw : public btIDebugDraw {
+class debug_draw {
     public:
-        void init( graphic *graphic);
+        debug_draw();
+        ~debug_draw();
 
-        void draw( glm::mat4 viewmatrix);
+        void draw( glm::mat4 viewmatrix, Shader *shader);
 
-        virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
-
-        virtual void drawContactPoint(const btVector3 &, const btVector3 &, btScalar, int, const btVector3 &) {}
-        virtual void reportErrorWarning(const char *) {}
-        virtual void draw3dText(const btVector3 &, const char *) {}
-        virtual void setDebugMode(int modus) {
-            p_modus = modus;
-        }
-        int getDebugMode(void) const { return 3; }
+        void drawLine( glm::vec3 from, glm::vec3 to, glm::vec3 color);
     private:
-        int p_modus;
-
         bool p_change;
 
         int p_vector_length;
         int p_vector_size;
-        std::vector<btVector3> p_lines;
-        std::vector<btVector3> p_color;
 
-        Shader *p_shader;
+        std::vector<glm::vec3> p_lines;
+        std::vector<glm::vec3> p_color;
 
         GLuint p_vbo_lines;
         GLuint p_vbo_color;

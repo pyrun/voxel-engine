@@ -6,9 +6,6 @@
 
 #include "RakPeerInterface.h"
 #include "BitStream.h"
-#include "btBulletDynamicsCommon.h"
-#include <BulletCollision/Gimpact/btGImpactShape.h>
-#include "BulletCollision/CollisionShapes/btShapeHull.h"
 
 #include "../graphic/graphic.h"
 #include "block.h"
@@ -35,7 +32,7 @@ public:
     Chunk *down;
     Chunk *next;
 
-    btRigidBody *makeBulletMesh( btDiscreteDynamicsWorld *world);
+//    btRigidBody *makeBulletMesh( btDiscreteDynamicsWorld *world);
 
     bool serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
     {
@@ -77,7 +74,7 @@ public:
     int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }
 
-    btRigidBody *getPhysicBody() { return p_rigidBody; }
+//    btRigidBody *getPhysicBody() { return p_rigidBody; }
 
     GLuint getVbo() { return p_vboVertex; }
     void changed( bool set) { p_changed = set; }
@@ -102,7 +99,7 @@ private:
 
     int* p_tile;
 
-    btRigidBody *p_rigidBody;
+//    btRigidBody *p_rigidBody;
 
     std::vector<unsigned int> p_indices;
     std::vector<glm::vec3> p_vertices;

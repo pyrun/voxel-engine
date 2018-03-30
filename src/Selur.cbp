@@ -24,8 +24,11 @@
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
-					<Add directory="../../bullet3/src" />
+					<Add directory="../../qu3e/src" />
 				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../qu3e/src" />
+				</ResourceCompiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
 					<Add option="-lopengl32" />
@@ -34,9 +37,7 @@
 					<Add option="-lRakNet" />
 					<Add option="-DMINIUPNP_STATICLIB" />
 					<Add option="-lminiupnpc" />
-					<Add option="-lBulletDynamics" />
-					<Add option="-lBulletCollision" />
-					<Add option="-lLinearMath" />
+					<Add option="-lqu3e" />
 					<Add library="ws2_32" />
 					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
@@ -44,7 +45,7 @@
 					<Add directory="../../openvr-mingw/lib" />
 					<Add directory="../../RakNet/Lib" />
 					<Add directory="../../Miniupnpc/lib" />
-					<Add directory="../../bullet3/lib" />
+					<Add directory="../../qu3e/lib" />
 				</Linker>
 			</Target>
 			<Target title="linux">

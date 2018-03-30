@@ -1,6 +1,8 @@
 #ifndef WORLD_H
 #define WORLD_H 1
 
+#include <q3.h>
+
 #include "../graphic/graphic.h"
 #include "chunk.h"
 #include "block.h"
@@ -10,6 +12,8 @@
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
 
 #define WORLD_UPDATE_THRENDS 3
+
+#define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0 / 60.0 )
 
 Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
@@ -30,7 +34,7 @@ public:
 
     void process_thrend_handle();
     void process_thrend_update();
-    void process( btDiscreteDynamicsWorld *world);
+    void process();
 
     void deleteChunks( Chunk* chunk);
     void deleteChunk( Chunk* node);
@@ -54,6 +58,8 @@ protected:
 private:
     bool p_buysvector;
     bool p_world_tree_empty;
+
+    q3Scene *p_physicScene;
 
     int p_chunk_amount;
     Chunk* p_chunk_start;

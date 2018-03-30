@@ -2,62 +2,12 @@
 
 network_object::network_object()
 {
-    p_type = NULL;
-    p_body = NULL;
 
-    p_scale = glm::vec3( 1, 1, 1);
-
-    p_model_change = false;
 }
 
 network_object::~network_object()
 {
 
-}
-
-void network_object::init( btDiscreteDynamicsWorld *world) {
-    if( p_type == NULL)
-        return;
-	// Create the shape
-	p_body = p_type->makeBulletMesh();
-
-	p_body->setActivationState(DISABLE_DEACTIVATION);
-
-	world->addRigidBody(p_body);
-}
-
-glm::vec3 QuatToEuler(btQuaternion quat){
-    double sqw = quat.w() * quat.w();
-    double sqx = quat.x() * quat.x();
-    double sqy = quat.y() * quat.y();
-    double sqz = quat.z() * quat.z();
-
-    return glm::vec3(
-        (float)atan2l(2.0 * ( quat.y() * quat.z() + quat.x() * quat.w() ) , ( -sqx - sqy + sqz + sqw )),
-        (float)asinl(-2.0 * ( quat.x() * quat.z() - quat.y() * quat.w() )),
-        (float)atan2l(2.0 * ( quat.x() * quat.y() + quat.z() * quat.w() ) , ( sqx - sqy - sqz + sqw )));
-}
-
-void network_object::draw( Shader *shader, glm::mat4 vp, object_handle *types) {
-    if( p_type == NULL && p_name.GetLength() > 0) {
-        p_type = types->get( p_name.C_String());
-    }
-
-    if( !p_type)
-        return;
-
-    if( p_body) {
-        btVector3 Point = p_body->getCenterOfMassPosition();
-        glm::vec3 l_rotate = QuatToEuler( p_body->getOrientation() );
-        setPos( glm::vec3( (float)Point[0], (float)Point[1], (float)Point[2]));
-        setRotate( l_rotate);
-    }
-
-    // look if wee need to update the model matrix
-    update_model();
-
-    // draw
-    p_type->draw( p_model, shader, vp);
 }
 
 void network_object::WriteAllocationID(RakNet::Connection_RM3 *destinationConnection, RakNet::BitStream *allocationIdBitstream) const {
@@ -70,7 +20,6 @@ void network_object::PrintStringInBitstream(RakNet::BitStream *bs)
         return;
     RakNet::RakString rakString;
     bs->Read(rakString);
-    //printf("Receive: %s\n", rakString.C_String());
 }
 
 void network_object::SerializeConstruction(RakNet::BitStream *constructionBitstream, RakNet::Connection_RM3 *destinationConnection)	{
@@ -196,21 +145,6 @@ void network_object::DeserializeConstructionRequestRejected(RakNet::BitStream *s
     PrintStringInBitstream(serializationBitstream);
 }
 
-void network_object::update_model() {
-    if( !p_model_change)
-        return;
-
-    p_model_change = false;
-
-    glm::mat4 l_posMat = glm::translate( p_pos);
-    glm::mat4 l_scaleMat = glm::scale( p_scale);
-    glm::mat4 l_rotX = glm::rotate( p_rot.x, glm::vec3(1.0, 0.0, 0.0));
-    glm::mat4 l_rotY = glm::rotate( p_rot.y, glm::vec3(0.0, 1.0, 0.0));
-    glm::mat4 l_rotZ = glm::rotate( p_rot.z, glm::vec3(0.0, 0.0, 1.0));
-    glm::mat4 l_rotMat = l_rotX * l_rotY * l_rotZ;
-    p_model = l_posMat * l_rotMat * l_scaleMat;
-}
-
 /** \brief network main class
  *
  *
@@ -218,18 +152,6 @@ void network_object::update_model() {
 network::network( config *config, texture* image, block_list *block_list)
 {
     p_rakPeerInterface = NULL;
-
-    // Initialize bullet
-    btBroadphaseInterface* broadphase = new btDbvtBroadphase;
-
-	btDefaultCollisionConfiguration *CollisionConfiguration = new btDefaultCollisionConfiguration();
-	btCollisionDispatcher *Dispatcher = new btCollisionDispatcher(CollisionConfiguration);
-
-	btGImpactCollisionAlgorithm::registerAlgorithm( Dispatcher);
-	btSequentialImpulseConstraintSolver *Solver = new btSequentialImpulseConstraintSolver;
-
-	p_physic_world = new btDiscreteDynamicsWorld( Dispatcher, broadphase, Solver, CollisionConfiguration);
-	p_physic_world->setGravity(btVector3(0, -10, 0));
 
     p_types = new object_handle();
     p_types->load( config);
@@ -336,8 +258,6 @@ void network::start()
 		printf("network::start Connecting...\n");
 	}
 
-    p_physic_world->setDebugDrawer(&p_debugdraw);
-
 	if( isServer()) {
         p_starchip->addChunk( glm::vec3( 0, -1, 0), true);
         int l_size = 5;
@@ -349,12 +269,11 @@ void network::start()
 
 
 
-        ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
-        l_obj->p_name = "hand";
+        /*ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
+        l_obj->p_name = "box";
         l_obj->p_type = p_types->get( l_obj->p_name.C_String());
-        l_obj->init( p_physic_world);
 
-        addObject( l_obj);
+        addObject( l_obj);*/
 	}
 }
 
@@ -375,7 +294,7 @@ void network::start_client( std::string ip)
     start();
 }
 
-void network::addObject( auto *l_obj) {
+void network::addObject( ServerCreated_ClientSerialized *l_obj) {
     p_replicaManager.Reference( l_obj);
 }
 
@@ -621,9 +540,7 @@ bool network::process( int delta)
         }
     }
 
-    getWorld()->process( p_physic_world);
-
-    p_physic_world->stepSimulation( (float)delta * 0.001f);
+    //p_physic_world->stepSimulation( (float)delta * 0.001f);
 
     return l_quit;
 }
@@ -638,18 +555,19 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
     for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
         network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
 
-        /*if( l_obj->getPhysicBody() == NULL)
-            l_obj->init( p_physic_world);*/
+        if( l_obj->getType() == NULL) {
+            object_type *l_type = p_types->get( l_obj->p_name.C_String());
+            if( l_type)
+                l_obj->setType( l_type);
+        }
 
-        l_obj->draw( l_object, viewmatrix, p_types);
+        l_obj->draw( l_object, viewmatrix);
     }
 
     p_starchip->draw( graphic, config, viewmatrix);
 
     if( config->get( "debug_physic", "engine", "false") == "true") {
         graphic->getDebugShader()->Bind();
-        p_debugdraw.draw( viewmatrix);
-        p_physic_world->debugDrawWorld();
     }
 }
 

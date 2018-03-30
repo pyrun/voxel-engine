@@ -24,13 +24,11 @@ engine::engine() {
     p_config = new config();
     p_graphic = new graphic( p_config);
     p_blocklist = new block_list("blocks");
-    p_tilemap = new texture( p_config->get( "tilemap", "engine", "tileset.png"));
-    p_network = new network( p_config, p_tilemap, p_blocklist);
-
     // set values after start
     p_blocklist->draw( p_graphic);
 
-    p_network->getDebugDraw()->init( p_graphic);
+    p_tilemap = new texture( p_config->get( "tilemap", "engine", "tileset.png"));
+    p_network = new network( p_config, p_tilemap, p_blocklist);
 }
 
 engine::~engine() {
@@ -121,7 +119,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if( l_world->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID) {
                 Chunk *tmp = l_world->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
-                    p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "earth")->getID());
+                    p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
                     //l_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
                 } else {
                     printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
@@ -192,12 +190,12 @@ void engine::run() {
     Timer l_timer_test;
 
     ServerCreated_ClientSerialized* l_hand = new ServerCreated_ClientSerialized();
-
-    l_hand->p_name = "hand";
-    l_hand->setPos( glm::vec3( 5, 5, 5));
-    l_hand->p_type = p_network->getObjectList()->get( l_hand->p_name.C_String());
-    l_hand->init( p_network->getPhysic());
     p_network->addObject( l_hand);
+
+    l_hand->p_name = "box";
+    //l_hand->p_type = p_network->getObjectList()->get( l_hand->p_name.C_String());
+
+    p_graphic->getCamera()->GetPos().y = 20;
 
     // set up clock
     l_clock.tick();
@@ -224,7 +222,8 @@ void engine::run() {
         if( p_network->process( l_delta))
             p_isRunnig = false;
 
-        l_hand->setPos( cam->GetPos());
+        l_hand->setPosition( cam->GetPos());
+        l_hand->setPosition( glm::vec3( 0, 20, 5));
 
         /// render #1 openVR
         if( p_openvr ) {

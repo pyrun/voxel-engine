@@ -17,7 +17,7 @@ Chunk::Chunk( int X, int Y, int Z, int Seed) {
     down = NULL;
 
 
-    p_rigidBody = NULL;
+//    p_rigidBody = NULL;
 
     p_vboVertex = 0;
 
@@ -79,7 +79,7 @@ Chunk::~Chunk() {
     printf( "~Chunk(): remove vbo data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
 }
 
-btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
+/*btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
     btRigidBody *body = nullptr;
 
     if( !p_updateRigidBody)
@@ -143,7 +143,7 @@ btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
 
     world->addRigidBody( p_rigidBody );
     return body;
-}
+}*/
 
 void Chunk::set( int X, int Y, int Z, int ID, bool change) {
     if( X < 0)

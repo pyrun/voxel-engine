@@ -1,10 +1,9 @@
 #include "debug_draw.h"
 
-void debug_draw::init( graphic *graphic) {
-    p_shader = graphic->getDebugShader();
-    p_vbo_lines = NULL;
-    p_vbo_color = NULL;
-    p_vao = NULL;
+debug_draw::debug_draw() {
+    p_vbo_lines = 0;
+    p_vbo_color = 0;
+    p_vao = 0;
 
     p_vector_length = 1000;
     p_vector_size = 0;
@@ -15,7 +14,15 @@ void debug_draw::init( graphic *graphic) {
     p_change = true;
 }
 
-void debug_draw::drawLine( const btVector3& from, const btVector3& to, const btVector3& color)
+debug_draw::~debug_draw() {
+    if( p_vbo_lines) {
+        glDeleteVertexArrays(1, &p_vao );
+        glDeleteBuffers(1, &p_vbo_color);
+        glDeleteBuffers(1, &p_vbo_lines);
+    }
+}
+
+void debug_draw::drawLine( glm::vec3 from, glm::vec3 to, glm::vec3 color)
 {
     if( p_vector_length <= p_vector_size+100) {
         p_vector_length+=100;
@@ -32,7 +39,7 @@ void debug_draw::drawLine( const btVector3& from, const btVector3& to, const btV
     p_change = true;
 }
 
-void debug_draw::draw( glm::mat4 viewmatrix) {
+void debug_draw::draw( glm::mat4 viewmatrix, Shader *shader) {
     if( p_vector_size == 0)
         return;
     // create vbo and vao if not set
@@ -43,7 +50,7 @@ void debug_draw::draw( glm::mat4 viewmatrix) {
     if( !p_vao) {
         glGenVertexArrays(1, &p_vao);
 
-        glBindVertexArray(p_vao);
+        glBindVertexArray( p_vao);
 
         glEnableVertexAttribArray(0);
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_lines);
@@ -55,19 +62,19 @@ void debug_draw::draw( glm::mat4 viewmatrix) {
 
         glBindVertexArray(0);
 
-        p_mvp = glGetUniformLocation( p_shader->GetProgram(), "g_mvp");
+        p_mvp = glGetUniformLocation( shader->GetProgram(), "g_mvp");
     }
 
     glUniformMatrix4fv( p_mvp, 1, GL_FALSE, glm::value_ptr( viewmatrix));
-    glBindVertexArray(p_vao);
+    glBindVertexArray( p_vao);
 
     if( p_change ) {
         p_change = false;
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_lines);
-        glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( btVector3 ), &p_lines[0], GL_STATIC_DRAW);
+        glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( glm::vec3 ), &p_lines[0], GL_STATIC_DRAW);
 
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_color);
-        glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( btVector3 ), &p_color[0], GL_STATIC_DRAW);
+        glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( glm::vec3 ), &p_color[0], GL_STATIC_DRAW);
     }
 
     glDrawArrays(GL_LINES, 0, p_vector_size);

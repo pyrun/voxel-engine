@@ -27,7 +27,7 @@ object_type::object_type()
 
 object_type::~object_type()
 {
-    glDeleteVertexArrays(1, &p_vao );
+    glDeleteVertexArrays(1, &p_vao);
     glDeleteBuffers(1, &p_vbo_vertices);
     glDeleteBuffers(1, &p_vbo_normal);
     glDeleteBuffers(1, &p_vbo_texture);
@@ -71,16 +71,15 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
     XMLElement* l_xml_file = l_object->FirstChildElement( "file" );
     if( !l_xml_file)
         return false;
+
+    // get file name
     p_file = l_xml_file->GetText();
-    printf( "test %s\n", ( l_path + p_file).c_str() );
     if( !load_file( l_path + p_file))
         return false;
 
-    printf( "test\n");
-
+    // size object
     double l_size = std::strtod( l_xml_file->Attribute( "size"), 0);
     p_size = glm::vec3( (float)l_size, (float)l_size, (float)l_size);
-    printf( "%.2f\n", l_size);
 
     // texture
     XMLElement* l_xml_texture = l_object->FirstChildElement( "texture" );
@@ -88,6 +87,31 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         p_texture_file = l_xml_texture->GetText();
     if( p_texture_file.size() > 0)
         p_texture = new texture( l_path +  p_texture_file);
+
+    // size of hit box
+    XMLElement* l_xml_hitbox = l_object->FirstChildElement( "hitbox" );
+    if( l_xml_hitbox) {
+        glm::vec3 l_hitbox_pos;
+        glm::vec3 l_hitbox_size;
+
+        l_hitbox_pos.x = atof( l_xml_hitbox->Attribute( "x"));
+        l_hitbox_pos.y = atof( l_xml_hitbox->Attribute( "y"));
+        l_hitbox_pos.z = atof( l_xml_hitbox->Attribute( "z"));
+
+        l_hitbox_size.x = atof( l_xml_hitbox->Attribute( "width"));
+        l_hitbox_size.y = atof( l_xml_hitbox->Attribute( "height"));
+        l_hitbox_size.z = atof( l_xml_hitbox->Attribute( "depth"));
+
+        q3BoxDef l_box;
+        q3Transform l_localSpace;
+        q3Identity( l_localSpace);
+
+        // set pos and box
+        l_localSpace.position.Set( l_hitbox_pos.x, l_hitbox_pos.y, l_hitbox_pos.z);
+        l_box.Set( l_localSpace, q3Vec3( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z) );
+
+        p_boxDef.push_back( l_box);
+    }
 
     printf( "l_object_name %s\n", p_name.c_str());
 }
@@ -97,7 +121,6 @@ bool object_type::load_file( std::string file) {
     tinyobj::attrib_t l_attrib;
     std::vector<tinyobj::shape_t> l_shapes;
     std::vector<tinyobj::material_t> l_materials;
-
 
     p_indices.clear();
 
@@ -114,8 +137,6 @@ bool object_type::load_file( std::string file) {
         printf( "%s\n", l_error.c_str());
         return false;
     }
-
-    printf( "test 2\n");
 
     // Loop over shapes
     for (size_t s = 0; s < l_shapes.size(); s++) {
@@ -234,67 +255,11 @@ void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojectio
     glBindVertexArray(0);
 }
 
-btRigidBody *object_type::makeBulletMesh() {
-    btRigidBody * body = nullptr;
-
-    // Handy lambda for converting from irr::vector to btVector
-    auto toBtVector = [ &]( const glm::vec3 & vec ) -> btVector3
-    {
-        btVector3 bt( vec.x, vec.y, vec.z );
-
-        return bt;
-    };
-
-    // Make bullet rigid body
-    if ( ! p_vertices.empty() && ! p_indices.empty() )
-    {
-        // Working numbers
-        const size_t numIndices     = p_indices.size();
-        const size_t numTriangles   = numIndices / 3;
-
-        // Create triangles
-        btTriangleMesh * btmesh = new btTriangleMesh();
-
-        // Build btTriangleMesh
-        for ( size_t i=0; i<numIndices; i+=3 )
-        {
-            const btVector3 &A = toBtVector( p_vertices[ p_indices[ i+0 ] ] );
-            const btVector3 &B = toBtVector( p_vertices[ p_indices[ i+1 ] ] );
-            const btVector3 &C = toBtVector( p_vertices[ p_indices[ i+2 ] ] );
-
-            bool removeDuplicateVertices = true;
-            btmesh->addTriangle( A, B, C, removeDuplicateVertices );
-        }
-
-        // Give it a default MotionState
-        btDefaultMotionState* fallMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(10, 10, 0)));
-
-        btConvexShape  *tmpshape = new btConvexTriangleMeshShape( btmesh );
-        btShapeHull *hull = new btShapeHull(tmpshape);
-        btScalar margin = tmpshape->getMargin();
-        hull->buildHull(margin);
-        btConvexHullShape* simplifiedConvexShape = new btConvexHullShape( (btScalar*)hull->getVertexPointer(), hull->numVertices());
-
-        //btConvexTriangleMeshShape *tmpshape2 = new btConvexTriangleMeshShape( btmesh);
-        btGImpactMeshShape *tmpshape2 = new btGImpactMeshShape( btmesh);
-        tmpshape2->updateBound();
-
-        btScalar mass = 10;
-        btVector3 fallInertia(0, 0, 0);
-        //btShape->calculateLocalInertia(mass, fallInertia);
-        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, tmpshape2, fallInertia);
-        body = new btRigidBody(fallRigidBodyCI);
-        body->setCollisionFlags( btCollisionObject::CF_KINEMATIC_OBJECT);
-        body->setActivationState( DISABLE_DEACTIVATION );
-
-    }
-    return body;
-}
-
 object::object()
 {
     p_type = NULL;
+
+    p_model_change = false;
 }
 
 object::~object() {
@@ -303,13 +268,49 @@ object::~object() {
 
 void object::init()
 {
-    if( p_type)
-        p_transform.setScale( p_type->getScale());
+    p_scale = p_type->getScale();
 }
 
 void object::draw( Shader* shader, glm::mat4 viewprojection) {
-    if( p_type)
-        ;//p_type->draw( getTransform(), shader, viewprojection);
+    if( p_type) {
+
+        update_model();
+
+        p_type->draw( p_model, shader, viewprojection);
+    }
+}
+
+void object::update_model() {
+    if( !p_model_change)
+        return;
+
+    p_model_change = false;
+
+    glm::mat4 l_posMat = glm::translate( p_pos);
+    glm::mat4 l_scaleMat = glm::scale( p_scale);
+    glm::mat4 l_rotX = glm::rotate( p_rot.x, glm::vec3(1.0, 0.0, 0.0));
+    glm::mat4 l_rotY = glm::rotate( p_rot.y, glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 l_rotZ = glm::rotate( p_rot.z, glm::vec3(0.0, 0.0, 1.0));
+    glm::mat4 l_rotMat = l_rotX * l_rotY * l_rotZ;
+    p_model = l_posMat * l_rotMat * l_scaleMat;
+}
+
+void object::setPosition( glm::vec3 pos )
+{
+    p_pos = pos;
+    p_model_change = true;
+}
+
+void object::setRotation( glm::vec3 rot)
+{
+    p_rot = rot;
+    p_model_change = true;
+}
+
+void object::setType( object_type *type)
+{
+    p_type = type;
+    init();
 }
 
 object_handle::object_handle()

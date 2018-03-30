@@ -4,9 +4,7 @@
 #include <dirent.h>
 #include <algorithm>
 
-#include "btBulletDynamicsCommon.h"
-#include "BulletCollision/CollisionShapes/btShapeHull.h"
-#include <BulletCollision/Gimpact/btGImpactShape.h>
+#include <q3.h>
 
 #include "../xml/tinyxml2.h"
 
@@ -30,7 +28,7 @@ class object_type {
 
         void draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
 
-        btRigidBody *makeBulletMesh();
+//        btRigidBody *makeBulletMesh();
 
         std::string getName() { return p_name; };
         glm::vec3 getScale() { return p_size; }
@@ -52,6 +50,9 @@ class object_type {
         GLuint p_vbo_normal;
         GLuint p_vbo_index;
         GLuint p_vbo_texture;
+
+        // physic
+        std::vector<q3BoxDef> p_boxDef;
 };
 
 class object {
@@ -62,10 +63,19 @@ class object {
         void init();
         void draw( Shader* shader, glm::mat4 viewprojection);
 
-        Transform *getTransform() { return &p_transform; }
+        void update_model();
+
+        void setPosition( glm::vec3 pos);
+        void setRotation( glm::vec3 rot);
+        void setType( object_type *type);
+        object_type *getType() { return p_type; }
     protected:
-    private:
-        Transform p_transform;
+    public:
+        bool p_model_change;
+        glm::mat4 p_model;
+        glm::vec3 p_pos;
+        glm::vec3 p_rot;
+        glm::vec3 p_scale;
 
         object_type *p_type;
 };

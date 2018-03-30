@@ -26,9 +26,6 @@
 #include "upnpcommands.h"
 #include "upnperrors.h"
 
-#include "btBulletDynamicsCommon.h"
-#include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
-
 using namespace RakNet;
 
 enum
@@ -37,15 +34,11 @@ enum
 	SERVER
 } network_topology;
 
-class network_object : public Replica3
+class network_object : public Replica3, public object
 {
     public:
         network_object();
         ~network_object();
-
-        void init( btDiscreteDynamicsWorld *world);
-
-        void draw( Shader *shader, glm::mat4 vp, object_handle *types);
 
         virtual RakNet::RakString GetName(void) const=0;
 
@@ -76,42 +69,12 @@ class network_object : public Replica3
         void NotifyReplicaOfMessageDeliveryStatus(RakNetGUID guid, uint32_t receiptId, bool messageArrived) { p_variableDeltaSerializer.OnMessageReceipt(guid,receiptId,messageArrived); }
 
         RakNet::RakString getTypeName() { return p_name; }
-
-        void update_model();
-        void setPos( glm::vec3 pos) {
-            p_pos = pos;
-            p_model_change = true;
-
-            if( p_body != NULL) {
-                btTransform initialTransform;
-
-                initialTransform.setOrigin( btVector3(p_pos.x, p_pos.y, p_pos.z) );
-                //initialTransform.setRotation( btVector3(p_rot.x, p_rot.y, p_rot.z) );
-
-                p_body->setWorldTransform( initialTransform);
-                //mMotionState->setWorldTransform(initialTransform);
-            }
-        }
-        void setRotate( glm::vec3 rotate) { p_rot = rotate; p_model_change = true; }
-        glm::vec3 getPos() { return p_pos; };
-        btRigidBody *getPhysicBody() { return p_body; }
-
     public:
-        btRigidBody *p_body;
-        btTransform p_transform;
-
-        bool p_model_change;
-        glm::vec3 p_pos;
-        glm::vec3 p_rot;
-        glm::vec3 p_scale;
-
         RakNet::RakString p_name;
 
         VariableDeltaSerializer p_variableDeltaSerializer;
 
-        glm::mat4 p_model;
-
-        object_type *p_type;
+        debug_draw p_debug;
 };
 
 struct ClientCreatible_ClientSerialized : public network_object {
@@ -255,7 +218,7 @@ class network
         void start_sever();
         void start_client( std::string ip = "127.0.0.1");
 
-        void addObject( auto *l_obj);
+        void addObject( ServerCreated_ClientSerialized *l_obj);
 
         void sendBlockChange( Chunk *chunk, glm::vec3 pos, int id);
         void receiveBlockChange( BitStream *bitstream);
@@ -277,14 +240,10 @@ class network
         bool isServer() { return p_isServer; }
         bool isClient() { return p_isClient; }
 
-        debug_draw *getDebugDraw() { return &p_debugdraw; }
-        btDiscreteDynamicsWorld* getPhysic() { return p_physic_world; }
         object_handle* getObjectList() { return p_types; }
     protected:
 
     private:
-        btDiscreteDynamicsWorld *p_physic_world;
-        debug_draw p_debugdraw;
 
         RakNet::SocketDescriptor p_socketdescriptor;
         NetworkIDManager p_networkIdManager;

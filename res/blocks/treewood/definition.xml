@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<block id="20">
+	<graphic>
+		<top>treewood.png</top>
+		<bottom>treewood.png</bottom>
+		<front>treewood-side.png</front>
+		<back>treewood-side.png</back>
+		<left>treewood-side.png</left>
+		<right>treewood-side.png</right>
+	</graphic>
+</block>

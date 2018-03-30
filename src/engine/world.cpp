@@ -49,6 +49,10 @@ world::world( texture *image, block_list* B_List) {
     p_thread_handle = SDL_CreateThread(world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread(world_thread_update, "world_thread_update", (void *)this);
+
+
+    // physic
+    p_physicScene = new q3Scene( WORLD_PHYSIC_FIXED_TIMESTEP );
 }
 
 world::~world() {
@@ -211,15 +215,16 @@ void world::process_thrend_update() {
     }
 }
 
-void world::process( btDiscreteDynamicsWorld *world) {
+void world::process() {
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
             break;
-        node->makeBulletMesh( world);
+        //node->makeBulletMesh( world);
         node = node->next;
     }
+    p_physicScene->Step( );
 }
 
 void world::deleteChunks( Chunk* chunk) {
