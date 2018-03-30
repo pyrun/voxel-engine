@@ -39,6 +39,19 @@ void debug_draw::drawLine( glm::vec3 from, glm::vec3 to, glm::vec3 color)
     p_change = true;
 }
 
+void debug_draw::drawCube( glm::vec3 from, glm::vec3 size, glm::vec3 color)
+{
+    // cube
+    drawLine( from + glm::vec3( 0, 0, 0),
+              from + glm::vec3( size.x, 0, 0), color );
+    drawLine( from + glm::vec3( 0, 0, 0),
+              from + glm::vec3( 0, 0, size.z), color );
+    drawLine( from + glm::vec3( size.x, 0, size.z),
+              from + glm::vec3( size.x, 0, 0), color );
+    drawLine( from + glm::vec3( 0, 0, size.z),
+              from + glm::vec3( size.x, 0, size.z), color );
+}
+
 void debug_draw::draw( glm::mat4 viewmatrix, Shader *shader) {
     if( p_vector_size == 0)
         return;

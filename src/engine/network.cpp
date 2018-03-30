@@ -261,7 +261,7 @@ void network::start()
 	if( isServer()) {
         p_starchip->addChunk( glm::vec3( 0, -1, 0), true);
         int l_size = 5;
-        int l_end = -2;
+        int l_end = -1;
         for( int x = -l_size; x <= l_size; x++)
             for( int y = -l_size; y <= l_size; y++)
                 for( int z = l_end; z <= 0; z++)

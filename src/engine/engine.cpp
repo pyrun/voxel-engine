@@ -222,8 +222,8 @@ void engine::run() {
         if( p_network->process( l_delta))
             p_isRunnig = false;
 
-        l_hand->setPosition( cam->GetPos());
-        l_hand->setPosition( glm::vec3( 0, 20, 5));
+        if( p_input.Map.Inventory && !p_input.MapOld.Inventory )
+            l_hand->setPosition( cam->GetPos() + glm::vec3( 0, 2, 0) );
 
         /// render #1 openVR
         if( p_openvr ) {
@@ -260,11 +260,10 @@ void engine::run() {
         p_graphic->getDisplay()->swapBuffers();
 
         /// calculation  time
-
         // print opengl error number
         GLenum l_error =  glGetError();
         if( l_error) {
-            std::cout << "engine::run OpenGL Error #" << l_error << std::endl;
+            std::cout << "engine::run OpenGL error #" << l_error << std::endl;
         }
 
         // framerate

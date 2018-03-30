@@ -10,6 +10,7 @@
 
 #include "../graphic/graphic.h"
 #include "../graphic/texture.h"
+#include "../graphic/debug_draw.h"
 
 #define DEFINITION_FILE "definition.xml"
 
@@ -28,9 +29,7 @@ class object_type {
 
         void draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
 
-//        btRigidBody *makeBulletMesh();
-
-        std::string getName() { return p_name; };
+        std::string getName() { return p_name; }
         glm::vec3 getScale() { return p_size; }
     private:
         std::string p_name;
@@ -53,6 +52,8 @@ class object_type {
 
         // physic
         std::vector<q3BoxDef> p_boxDef;
+
+        debug_draw p_debug;
 };
 
 class object {

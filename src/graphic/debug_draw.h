@@ -15,6 +15,7 @@ class debug_draw {
         void draw( glm::mat4 viewmatrix, Shader *shader);
 
         void drawLine( glm::vec3 from, glm::vec3 to, glm::vec3 color);
+        void drawCube( glm::vec3 from, glm::vec3 size, glm::vec3 color);
     private:
         bool p_change;
 

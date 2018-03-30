@@ -18,8 +18,6 @@
 #include "network_ids.h"
 #include "object.h"
 
-#include "../graphic/debug_draw.h"
-
 #define STATICLIB
 
 #include "miniupnpc.h"
@@ -73,8 +71,6 @@ class network_object : public Replica3, public object
         RakNet::RakString p_name;
 
         VariableDeltaSerializer p_variableDeltaSerializer;
-
-        debug_draw p_debug;
 };
 
 struct ClientCreatible_ClientSerialized : public network_object {

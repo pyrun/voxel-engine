@@ -110,6 +110,8 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         l_localSpace.position.Set( l_hitbox_pos.x, l_hitbox_pos.y, l_hitbox_pos.z);
         l_box.Set( l_localSpace, q3Vec3( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z) );
 
+        p_debug.drawCube( l_hitbox_pos, l_hitbox_size, glm::vec3( 0, 0, 1));
+
         p_boxDef.push_back( l_box);
     }
 
