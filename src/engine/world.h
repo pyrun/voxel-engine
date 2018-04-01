@@ -8,6 +8,7 @@
 #include "block.h"
 #include "landscape_generator.h"
 #include "../engine/config.h"
+#include "../system/timer.h"
 
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
 
@@ -54,6 +55,7 @@ public:
     inline int getAmountChunks() const { return p_chunk_amount; }
     Chunk *getNode() { return p_chunk_start; }
     SDL_mutex *getMutex() { return p_mutex; }
+    q3Scene *getPhysicWorld() { return p_physicScene; }
 protected:
 private:
     bool p_buysvector;
@@ -76,6 +78,7 @@ private:
     std::vector<world_data_list> p_deletingList;
 
     //ShadowMap Shadow;
+    float p_time;
 };
 
 #endif // WORLD_H

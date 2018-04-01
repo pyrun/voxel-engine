@@ -42,17 +42,36 @@ void debug_draw::drawLine( glm::vec3 from, glm::vec3 to, glm::vec3 color)
 void debug_draw::drawCube( glm::vec3 from, glm::vec3 size, glm::vec3 color)
 {
     // cube
-    drawLine( from + glm::vec3( 0, 0, 0),
-              from + glm::vec3( size.x, 0, 0), color );
+    drawLine( from + glm::vec3( size.x, 0, 0),
+              from + glm::vec3( 0, 0, 0), color );
     drawLine( from + glm::vec3( 0, 0, 0),
               from + glm::vec3( 0, 0, size.z), color );
     drawLine( from + glm::vec3( size.x, 0, size.z),
               from + glm::vec3( size.x, 0, 0), color );
     drawLine( from + glm::vec3( 0, 0, size.z),
               from + glm::vec3( size.x, 0, size.z), color );
+    // up
+    drawLine( from + glm::vec3( size.x, size.y, 0),
+              from + glm::vec3( 0, size.y, 0), color );
+    drawLine( from + glm::vec3( 0, size.y, 0),
+              from + glm::vec3( 0, size.y, size.z), color );
+    drawLine( from + glm::vec3( size.x, size.y, size.z),
+              from + glm::vec3( size.x, size.y, 0), color );
+    drawLine( from + glm::vec3( 0, size.y, size.z),
+              from + glm::vec3( size.x, size.y, size.z), color );
+
+    // sides
+    drawLine( from + glm::vec3( size.x, 0, 0),
+              from + glm::vec3( size.x, size.y, 0), color );
+    drawLine( from + glm::vec3( 0, 0, size.z),
+              from + glm::vec3( 0, size.y, size.z), color );
+    drawLine( from + glm::vec3( size.x, 0, size.z),
+              from + glm::vec3( size.x, size.y, size.z), color );
+    drawLine( from + glm::vec3( 0, 0, 0),
+              from + glm::vec3( 0, size.y, 0), color );
 }
 
-void debug_draw::draw( glm::mat4 viewmatrix, Shader *shader) {
+void debug_draw::draw( glm::mat4 model, glm::mat4 viewmatrix, Shader *shader) {
     if( p_vector_size == 0)
         return;
     // create vbo and vao if not set
@@ -67,18 +86,20 @@ void debug_draw::draw( glm::mat4 viewmatrix, Shader *shader) {
 
         glEnableVertexAttribArray(0);
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_lines);
-        glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
+        glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
 
         glEnableVertexAttribArray(1);
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_color);
-        glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
+        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
 
         glBindVertexArray(0);
 
         p_mvp = glGetUniformLocation( shader->GetProgram(), "g_mvp");
     }
 
-    glUniformMatrix4fv( p_mvp, 1, GL_FALSE, glm::value_ptr( viewmatrix));
+    glm::mat4 l_mat = viewmatrix * model;
+
+    glUniformMatrix4fv( p_mvp, 1, GL_FALSE, glm::value_ptr( l_mat));
     glBindVertexArray( p_vao);
 
     if( p_change ) {
@@ -92,6 +113,4 @@ void debug_draw::draw( glm::mat4 viewmatrix, Shader *shader) {
 
     glDrawArrays(GL_LINES, 0, p_vector_size);
     glBindVertexArray(0);
-
-    p_vector_size = 0;
 }

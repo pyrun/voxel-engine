@@ -16,22 +16,19 @@ bool file_exist( std::string file) {
 object_type::object_type()
 {
     p_texture = NULL;
-
-    // Buffer erzeugen
-    glGenVertexArrays(1, &p_vao );
-    glGenBuffers(1, &p_vbo_vertices);
-    glGenBuffers(1, &p_vbo_normal);
-    glGenBuffers(1, &p_vbo_texture);
-    glGenBuffers(1, &p_vbo_index);
+    p_model_changed = false;
+    p_vao = NULL;
 }
 
 object_type::~object_type()
 {
-    glDeleteVertexArrays(1, &p_vao);
-    glDeleteBuffers(1, &p_vbo_vertices);
-    glDeleteBuffers(1, &p_vbo_normal);
-    glDeleteBuffers(1, &p_vbo_texture);
-    glDeleteBuffers(1, &p_vbo_index);
+    if( p_vao) {
+        glDeleteVertexArrays(1, &p_vao);
+        glDeleteBuffers(1, &p_vbo_vertices);
+        glDeleteBuffers(1, &p_vbo_normal);
+        glDeleteBuffers(1, &p_vbo_texture);
+        glDeleteBuffers(1, &p_vbo_index);
+    }
 }
 
 void object_type::init( Transform *transform) {
@@ -110,11 +107,10 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         l_localSpace.position.Set( l_hitbox_pos.x, l_hitbox_pos.y, l_hitbox_pos.z);
         l_box.Set( l_localSpace, q3Vec3( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z) );
 
-        p_debug.drawCube( l_hitbox_pos, l_hitbox_size, glm::vec3( 0, 0, 1));
+        p_debug.drawCube( l_hitbox_pos, l_hitbox_size, glm::vec3( 1, 0, 0));
 
         p_boxDef.push_back( l_box);
     }
-
     printf( "l_object_name %s\n", p_name.c_str());
 }
 
@@ -178,6 +174,8 @@ bool object_type::load_file( std::string file) {
       }
     }
 
+    p_model_changed = true;
+
     /*ObjectCreator Obj;
 
     Obj.addCube( glm::vec3( 0, 2, 0), glm::vec3( 1, 2 ,1), glm::vec4( 0, 0, 1, 1));
@@ -206,6 +204,9 @@ bool object_type::load_file( std::string file) {
 
 void object_type::updateVbo()
 {
+    if( p_model_changed == false)
+        return;
+
     glBindBuffer( GL_ARRAY_BUFFER, p_vbo_vertices);
     glBufferData( GL_ARRAY_BUFFER, p_vertices.size() * sizeof( glm::vec3 ), &p_vertices[0], GL_STATIC_DRAW);
     glBindBuffer( GL_ARRAY_BUFFER, p_vbo_normal);
@@ -219,6 +220,16 @@ void object_type::updateVbo()
 
 void object_type::updateVao()
 {
+    // create if not created
+    if( p_vao == NULL) {
+        glGenVertexArrays(1, &p_vao );
+        glGenBuffers(1, &p_vbo_vertices);
+        glGenBuffers(1, &p_vbo_normal);
+        glGenBuffers(1, &p_vbo_texture);
+        glGenBuffers(1, &p_vbo_index);
+    }
+
+    // update vao
     glBindVertexArray( p_vao);
 
     glEnableVertexAttribArray( 0);  // Vertex position
@@ -239,8 +250,10 @@ void object_type::updateVao()
 
 void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection)
 {
+    if( p_vao == NULL)
+        updateVao();
+
     updateVbo();
-    updateVao();
 
     shader->Bind();
 
@@ -257,10 +270,24 @@ void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojectio
     glBindVertexArray(0);
 }
 
+void object_type::drawDebug( glm::mat4 model, Shader* shader, glm::mat4 viewprojection) {
+    shader->Bind();
+    p_debug.draw( model, viewprojection, shader);
+}
+
+void object_type::setBody( q3Body *body)
+{
+    // add boxes
+    for( int i = 0; i < (int)p_boxDef.size(); i++) {
+        q3BoxDef *l_obj = &p_boxDef[i];
+        body->AddBox( *l_obj);
+    }
+}
+
 object::object()
 {
     p_type = NULL;
-
+    p_body = NULL;
     p_model_change = false;
 }
 
@@ -273,12 +300,31 @@ void object::init()
     p_scale = p_type->getScale();
 }
 
-void object::draw( Shader* shader, glm::mat4 viewprojection) {
+void object::process()
+{
+    if( p_body) {
+        glm::vec3 l_pos = glm::vec3( p_body->GetTransform().position.x, p_body->GetTransform().position.y, p_body->GetTransform().position.z);
+
+        q3Vec3 l_axis;
+        r32 l_angle;
+        p_body->GetQuaternion().ToAxisAngle( &l_axis, &l_angle);
+
+        glm::vec3 l_rotation = glm::vec3( l_axis.x, l_axis.y, l_axis.z);
+
+
+        setPosition( l_pos, false);
+        setRotation( l_rotation, false);
+    }
+}
+
+void object::draw( Shader* shader, Shader* debug, glm::mat4 viewprojection) {
     if( p_type) {
 
         update_model();
 
         p_type->draw( p_model, shader, viewprojection);
+
+        p_type->drawDebug( p_model, debug, viewprojection);
     }
 }
 
@@ -297,14 +343,21 @@ void object::update_model() {
     p_model = l_posMat * l_rotMat * l_scaleMat;
 }
 
-void object::setPosition( glm::vec3 pos )
+void object::setPosition( glm::vec3 pos, bool body)
 {
+    if( p_body && body) {
+        p_body->SetTransform( q3Vec3( pos.x, pos.y, pos.z) );
+        //p_body->SetLinearVelocity( q3Vec3( 0, 0, 0) );
+    }
     p_pos = pos;
     p_model_change = true;
 }
 
-void object::setRotation( glm::vec3 rot)
+void object::setRotation( glm::vec3 rot, bool body)
 {
+    if( p_body && body) {
+        //p_body->SetTransform( q3Vec3( p_rot.x, p_rot.y, p_rot.z), q3Vec3( rot.x, rot.y, rot.z) );
+    }
     p_rot = rot;
     p_model_change = true;
 }
@@ -313,6 +366,13 @@ void object::setType( object_type *type)
 {
     p_type = type;
     init();
+}
+
+void object::setBody( q3Body *body)
+{
+    p_body = body;
+
+    p_type->setBody( p_body);
 }
 
 object_handle::object_handle()

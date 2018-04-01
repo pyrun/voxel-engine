@@ -540,7 +540,7 @@ bool network::process( int delta)
         }
     }
 
-    //p_physic_world->stepSimulation( (float)delta * 0.001f);
+    getWorld()->process();
 
     return l_quit;
 }
@@ -559,9 +559,18 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
             object_type *l_type = p_types->get( l_obj->p_name.C_String());
             if( l_type)
                 l_obj->setType( l_type);
+        } else {
+            if( l_obj->getBody() == NULL) {
+                q3BodyDef l_bodyDef;
+                // set type
+                l_bodyDef.bodyType = eDynamicBody;
+                l_obj->setBody( getWorld()->getPhysicWorld()->CreateBody( l_bodyDef ));
+            }
         }
 
-        l_obj->draw( l_object, viewmatrix);
+        l_obj->process();
+
+        l_obj->draw( l_object, graphic->getDebugShader(), viewmatrix);
     }
 
     p_starchip->draw( graphic, config, viewmatrix);

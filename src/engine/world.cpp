@@ -53,6 +53,7 @@ world::world( texture *image, block_list* B_List) {
 
     // physic
     p_physicScene = new q3Scene( WORLD_PHYSIC_FIXED_TIMESTEP );
+    p_time = SDL_GetTicks();
 }
 
 world::~world() {
@@ -224,7 +225,12 @@ void world::process() {
         //node->makeBulletMesh( world);
         node = node->next;
     }
-    p_physicScene->Step( );
+
+    while( (float)SDL_GetTicks() - p_time > WORLD_PHYSIC_FIXED_TIMESTEP*1000.f) {
+        p_time += ((float)WORLD_PHYSIC_FIXED_TIMESTEP*1000.f);
+        // step
+        p_physicScene->Step();
+    }
 }
 
 void world::deleteChunks( Chunk* chunk) {

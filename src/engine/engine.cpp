@@ -222,8 +222,11 @@ void engine::run() {
         if( p_network->process( l_delta))
             p_isRunnig = false;
 
-        if( p_input.Map.Inventory && !p_input.MapOld.Inventory )
+        if( p_input.Map.Inventory && !p_input.MapOld.Inventory ) {
             l_hand->setPosition( cam->GetPos() + glm::vec3( 0, 2, 0) );
+            l_hand->getBody()->SetLinearVelocity( q3Vec3( 0, 0, 0));
+            l_hand->getBody()->ApplyForceAtWorldPoint( q3Vec3( 0, -100, 100),  q3Vec3( 0, 0, 0));
+        }
 
         /// render #1 openVR
         if( p_openvr ) {

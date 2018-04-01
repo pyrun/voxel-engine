@@ -28,9 +28,11 @@ class object_type {
         void updateVao();
 
         void draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
+        void drawDebug( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
 
         std::string getName() { return p_name; }
         glm::vec3 getScale() { return p_size; }
+        void setBody( q3Body *body);
     private:
         std::string p_name;
         std::string p_file;
@@ -41,6 +43,7 @@ class object_type {
         std::vector< glm::vec2 > p_texcoords;
         std::vector<glm::vec3> p_normal;
         std::vector<unsigned int> p_indices;
+        bool p_model_changed;
 
         glm::vec3 p_size;
 
@@ -62,14 +65,18 @@ class object {
         ~object();
 
         void init();
-        void draw( Shader* shader, glm::mat4 viewprojection);
+
+        void process();
+        void draw( Shader* shader, Shader* debug, glm::mat4 viewprojection);
 
         void update_model();
 
-        void setPosition( glm::vec3 pos);
-        void setRotation( glm::vec3 rot);
+        void setPosition( glm::vec3 pos, bool body = true);
+        void setRotation( glm::vec3 rot, bool body = true);
         void setType( object_type *type);
         object_type *getType() { return p_type; }
+        q3Body* getBody() { return p_body; }
+        void setBody( q3Body *body);
     protected:
     public:
         bool p_model_change;
@@ -79,6 +86,8 @@ class object {
         glm::vec3 p_scale;
 
         object_type *p_type;
+
+        q3Body* p_body;
 };
 
 class object_handle
