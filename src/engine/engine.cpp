@@ -163,7 +163,7 @@ void engine::render( glm::mat4 viewProjection) {
 }
 
 void engine::fly( int l_delta) {
-    float Speed = 0.01f;
+    float Speed = 0.005f;
     Camera *cam = p_graphic->getCamera();
     if( p_input.Map.Up )
         cam->MoveForwardCross( Speed*l_delta);
@@ -224,8 +224,8 @@ void engine::run() {
 
         if( p_input.Map.Inventory && !p_input.MapOld.Inventory ) {
             l_hand->setPosition( cam->GetPos() + glm::vec3( 0, 2, 0) );
-            l_hand->getBody()->SetLinearVelocity( q3Vec3( 0, 0, 0));
-            l_hand->getBody()->ApplyForceAtWorldPoint( q3Vec3( 0, -100, 100),  q3Vec3( 0, 0, 0));
+            //l_hand->getBody()->SetLinearVelocity( q3Vec3( 0, 0, 0));
+            //l_hand->getBody()->ApplyForceAtWorldPoint( q3Vec3( 0, -100, 100),  q3Vec3( 0, 0, 0));
         }
 
         /// render #1 openVR

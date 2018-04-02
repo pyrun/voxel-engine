@@ -52,8 +52,11 @@ world::world( texture *image, block_list* B_List) {
 
 
     // physic
-    p_physicScene = new q3Scene( WORLD_PHYSIC_FIXED_TIMESTEP );
+    p_physicScene = new b3World();
+    p_physicScene->SetGravity( b3Vec3(0.0f, -9.8f, 0.0f));
     p_time = SDL_GetTicks();
+
+    //p_renderer.init();
 }
 
 world::~world() {
@@ -222,14 +225,18 @@ void world::process() {
     for( ;; ) {
         if( node == NULL)
             break;
+        //if( node->getBody() == NULL)
+        node->createPhysicBody( p_physicScene);
         //node->makeBulletMesh( world);
         node = node->next;
     }
 
     while( (float)SDL_GetTicks() - p_time > WORLD_PHYSIC_FIXED_TIMESTEP*1000.f) {
         p_time += ((float)WORLD_PHYSIC_FIXED_TIMESTEP*1000.f);
+        const u32 velocityIterations = 8; // Number of iterations for the velocity constraint solver.
+        const u32 positionIterations = 2; // Number of iterations for the position constraint solver.
         // step
-        p_physicScene->Step();
+        p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
     }
 }
 
@@ -397,6 +404,15 @@ void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
     // disable all Vertex arrays
     l_shader->disableArray( 0);
     l_shader->disableArray( 1);
+    glUseProgram( 0 );
+
+
+    //p_physicScene->Render( &p_renderer );
+
+    graphic->getDebugShader()->Bind();
+
+    p_renderer.draw( *p_physicScene, viewProjection, graphic->getDebugShader());
+
     glUseProgram( 0 );
 }
 

@@ -4,13 +4,12 @@
 #include <dirent.h>
 #include <algorithm>
 
-#include <q3.h>
+#include <bounce/bounce.h>
 
 #include "../xml/tinyxml2.h"
 
 #include "../graphic/graphic.h"
 #include "../graphic/texture.h"
-#include "../graphic/debug_draw.h"
 
 #define DEFINITION_FILE "definition.xml"
 
@@ -28,11 +27,10 @@ class object_type {
         void updateVao();
 
         void draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
-        void drawDebug( glm::mat4 model, Shader* shader, glm::mat4 viewprojection);
 
         std::string getName() { return p_name; }
         glm::vec3 getScale() { return p_size; }
-        void setBody( q3Body *body);
+        void setPhysic( b3Body *body);
     private:
         std::string p_name;
         std::string p_file;
@@ -54,9 +52,8 @@ class object_type {
         GLuint p_vbo_texture;
 
         // physic
-        std::vector<q3BoxDef> p_boxDef;
-
-        debug_draw p_debug;
+        b3BoxHull p_boxHull;
+        b3HullShape p_hullDef;
 };
 
 class object {
@@ -67,7 +64,7 @@ class object {
         void init();
 
         void process();
-        void draw( Shader* shader, Shader* debug, glm::mat4 viewprojection);
+        void draw( Shader* shader, glm::mat4 viewprojection);
 
         void update_model();
 
@@ -75,8 +72,9 @@ class object {
         void setRotation( glm::vec3 rot, bool body = true);
         void setType( object_type *type);
         object_type *getType() { return p_type; }
-        q3Body* getBody() { return p_body; }
-        void setBody( q3Body *body);
+        b3Body* getBody() { return p_body; }
+        void setBody( b3Body *body);
+        glm::vec3 rotationMatrixToEulerAngles(b3Mat33 &R);
     protected:
     public:
         bool p_model_change;
@@ -87,7 +85,7 @@ class object {
 
         object_type *p_type;
 
-        q3Body* p_body;
+        b3Body* p_body;
 };
 
 class object_handle

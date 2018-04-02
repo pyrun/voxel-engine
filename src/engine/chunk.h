@@ -1,6 +1,7 @@
 #ifndef CHUNK_H
 #define CHUNK_H 1
 
+#include <bounce/bounce.h>
 #include <string.h>
 #include <vector>
 
@@ -33,6 +34,8 @@ public:
     Chunk *next;
 
 //    btRigidBody *makeBulletMesh( btDiscreteDynamicsWorld *world);
+
+    void createPhysicBody( b3World *world);
 
     bool serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
     {
@@ -79,6 +82,8 @@ public:
     GLuint getVbo() { return p_vboVertex; }
     void changed( bool set) { p_changed = set; }
     bool isChanged() { return p_changed; }
+
+    b3Body* getBody() { return p_body; }
 protected:
 private:
     glm::tvec3<int> p_pos;
@@ -99,7 +104,9 @@ private:
 
     int* p_tile;
 
-//    btRigidBody *p_rigidBody;
+    b3Body* p_body;
+    b3ShapeDef *p_shape;
+    b3Mesh *p_mesh;
 
     std::vector<unsigned int> p_indices;
     std::vector<glm::vec3> p_vertices;

@@ -99,17 +99,21 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         l_hitbox_size.y = atof( l_xml_hitbox->Attribute( "height"));
         l_hitbox_size.z = atof( l_xml_hitbox->Attribute( "depth"));
 
-        q3BoxDef l_box;
+        b3Transform l_hitbox_transform;
+		l_hitbox_transform.rotation = b3Diagonal( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z);
+		l_hitbox_transform.position.SetZero();
+
+        // set up box
+        p_boxHull.SetTransform( l_hitbox_transform);
+        p_hullDef.m_hull = &p_boxHull;
+
+        /*b3BoxDef l_box;
         q3Transform l_localSpace;
         q3Identity( l_localSpace);
 
         // set pos and box
         l_localSpace.position.Set( l_hitbox_pos.x, l_hitbox_pos.y, l_hitbox_pos.z);
-        l_box.Set( l_localSpace, q3Vec3( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z) );
-
-        p_debug.drawCube( l_hitbox_pos, l_hitbox_size, glm::vec3( 1, 0, 0));
-
-        p_boxDef.push_back( l_box);
+        l_box.Set( l_localSpace, q3Vec3( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z) );*/
     }
     printf( "l_object_name %s\n", p_name.c_str());
 }
@@ -162,6 +166,7 @@ bool object_type::load_file( std::string file) {
           p_vertices.push_back( glm::vec3( vx, vy, vz));
           p_normal.push_back( glm::vec3( nx, ny, nz));
           p_texcoords.push_back( glm::vec2( tx, ty));
+
           // Optional: vertex colors
           // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
           // tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
@@ -270,18 +275,21 @@ void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojectio
     glBindVertexArray(0);
 }
 
-void object_type::drawDebug( glm::mat4 model, Shader* shader, glm::mat4 viewprojection) {
-    shader->Bind();
-    p_debug.draw( model, viewprojection, shader);
-}
-
-void object_type::setBody( q3Body *body)
+void object_type::setPhysic( b3Body *body)
 {
     // add boxes
-    for( int i = 0; i < (int)p_boxDef.size(); i++) {
+    /*for( int i = 0; i < (int)p_boxDef.size(); i++) {
         q3BoxDef *l_obj = &p_boxDef[i];
         body->AddBox( *l_obj);
-    }
+    }*/
+    b3ShapeDef l_shapeDef;
+    l_shapeDef.density = 0.1f;
+    l_shapeDef.friction = 0.3f;
+    l_shapeDef.shape = &p_hullDef;
+
+    body->CreateShape(l_shapeDef);
+    //bdef.orientation.Set(b3Vec3(0.0f, 1.0f, 0.0f), 0.5f * B3_PI);
+
 }
 
 object::object()
@@ -303,28 +311,25 @@ void object::init()
 void object::process()
 {
     if( p_body) {
-        glm::vec3 l_pos = glm::vec3( p_body->GetTransform().position.x, p_body->GetTransform().position.y, p_body->GetTransform().position.z);
+        b3Transform l_transform = p_body->GetTransform();
+        glm::vec3 l_pos = glm::vec3( l_transform.position.x, l_transform.position.y, l_transform.position.z);
+        b3Vec3 l_rot_b;
+        glm::vec3 l_rot; //
+        float l_angle;
 
-        q3Vec3 l_axis;
-        r32 l_angle;
-        p_body->GetQuaternion().ToAxisAngle( &l_axis, &l_angle);
-
-        glm::vec3 l_rotation = glm::vec3( l_axis.x, l_axis.y, l_axis.z);
-
+        l_rot = rotationMatrixToEulerAngles( l_transform.rotation);
 
         setPosition( l_pos, false);
-        setRotation( l_rotation, false);
+        setRotation( l_rot, false);
     }
 }
 
-void object::draw( Shader* shader, Shader* debug, glm::mat4 viewprojection) {
+void object::draw( Shader* shader, glm::mat4 viewprojection) {
     if( p_type) {
 
         update_model();
 
         p_type->draw( p_model, shader, viewprojection);
-
-        p_type->drawDebug( p_model, debug, viewprojection);
     }
 }
 
@@ -346,7 +351,7 @@ void object::update_model() {
 void object::setPosition( glm::vec3 pos, bool body)
 {
     if( p_body && body) {
-        p_body->SetTransform( q3Vec3( pos.x, pos.y, pos.z) );
+        p_body->SetTransform( b3Vec3( pos.x, pos.y, pos.z), b3Vec3( p_rot.x, p_rot.y, p_rot.z), 0 );
         //p_body->SetLinearVelocity( q3Vec3( 0, 0, 0) );
     }
     p_pos = pos;
@@ -368,13 +373,36 @@ void object::setType( object_type *type)
     init();
 }
 
-void object::setBody( q3Body *body)
+void object::setBody( b3Body *body)
 {
     p_body = body;
 
-    p_type->setBody( p_body);
+    p_type->setPhysic( p_body);
 }
 
+glm::vec3 object::rotationMatrixToEulerAngles(b3Mat33 &R)
+{
+    float sy = sqrt(R[0][0] * R[0][0] +  R[1][0] * R[1][0] );
+
+    bool singular = sy < 1e-6; // If magic
+
+    float x, y, z;
+    if (!singular)
+    {
+        x = atan2(R[2][1] , R[2][2]);
+        y = atan2(-R[2][0], sy);
+        z = atan2(R[1][0], R[0][0]);
+    }
+    else
+    {
+        x = atan2(-R[1][2], R[1][1]);
+        y = atan2(-R[2][0], sy);
+        z = 0;
+    }
+    return glm::vec3(-x, -y, -z);
+}
+
+/// object_handle
 object_handle::object_handle()
 {
     p_types.clear();

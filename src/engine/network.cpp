@@ -561,23 +561,34 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
                 l_obj->setType( l_type);
         } else {
             if( l_obj->getBody() == NULL) {
-                q3BodyDef l_bodyDef;
+                b3BodyDef bdef;
+                bdef.type = b3BodyType::e_dynamicBody;
+                b3Body* body = getWorld()->getPhysicWorld()->CreateBody(bdef);
+                l_obj->setBody( body);
+/*                b3BoxHull bodyBox;
+                bodyBox.SetIdentity();
+
+                b3HullShape bodyShape;
+                bodyShape.m_hull = &bodyBox;
+
+                b3ShapeDef l_bodyDef;
                 // set type
-                l_bodyDef.bodyType = eDynamicBody;
-                l_obj->setBody( getWorld()->getPhysicWorld()->CreateBody( l_bodyDef ));
+                l_bodyDef.shape = &bodyShape;
+                l_bodyDef.bodyType = e_dynamicBody;
+                l_obj->setBody( getWorld()->getPhysicWorld()->CreateBody( l_bodyDef ));*/
             }
         }
 
         l_obj->process();
 
-        l_obj->draw( l_object, graphic->getDebugShader(), viewmatrix);
+        l_obj->draw( l_object, viewmatrix);
     }
 
     p_starchip->draw( graphic, config, viewmatrix);
 
-    if( config->get( "debug_physic", "engine", "false") == "true") {
+    /*if( config->get( "debug_physic", "engine", "false") == "true") {
         graphic->getDebugShader()->Bind();
-    }
+    }*/
 }
 
 void network::create_object() {

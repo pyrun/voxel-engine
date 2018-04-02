@@ -15,7 +15,6 @@
 				<Option compiler="gcc" />
 				<Option parameters="-server client 109.193.30.110" />
 				<Compiler>
-					<Add option="-std=c++1y" />
 					<Add option="-g" />
 					<Add option="-DWIN32" />
 					<Add directory="../../SDL2/include" />
@@ -24,7 +23,7 @@
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
-					<Add directory="../../qu3e/src" />
+					<Add directory="../../bounce/include" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../qu3e/src" />
@@ -37,7 +36,7 @@
 					<Add option="-lRakNet" />
 					<Add option="-DMINIUPNP_STATICLIB" />
 					<Add option="-lminiupnpc" />
-					<Add option="-lqu3e" />
+					<Add option="-lbounce" />
 					<Add library="ws2_32" />
 					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
@@ -45,7 +44,7 @@
 					<Add directory="../../openvr-mingw/lib" />
 					<Add directory="../../RakNet/Lib" />
 					<Add directory="../../Miniupnpc/lib" />
-					<Add directory="../../qu3e/lib" />
+					<Add directory="../../bounce/lib" />
 				</Linker>
 			</Target>
 			<Target title="linux">

@@ -1,7 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H 1
 
-#include <q3.h>
+#include <bounce/bounce.h>
 
 #include "../graphic/graphic.h"
 #include "chunk.h"
@@ -9,6 +9,7 @@
 #include "landscape_generator.h"
 #include "../engine/config.h"
 #include "../system/timer.h"
+#include "../graphic/debug_draw.h"
 
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
 
@@ -55,13 +56,13 @@ public:
     inline int getAmountChunks() const { return p_chunk_amount; }
     Chunk *getNode() { return p_chunk_start; }
     SDL_mutex *getMutex() { return p_mutex; }
-    q3Scene *getPhysicWorld() { return p_physicScene; }
+    b3World *getPhysicWorld() { return p_physicScene; }
 protected:
 private:
     bool p_buysvector;
     bool p_world_tree_empty;
 
-    q3Scene *p_physicScene;
+    b3World *p_physicScene;
 
     int p_chunk_amount;
     Chunk* p_chunk_start;
@@ -79,6 +80,8 @@ private:
 
     //ShadowMap Shadow;
     float p_time;
+
+    debug_draw p_renderer;
 };
 
 #endif // WORLD_H

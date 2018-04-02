@@ -7,20 +7,15 @@
 Chunk::Chunk( int X, int Y, int Z, int Seed) {
     // node reset
     next = NULL;
-
-    // side reset
     front = NULL;
     back = NULL;
     right = NULL;
     left = NULL;
     up = NULL;
     down = NULL;
-
-
-//    p_rigidBody = NULL;
+    p_body = NULL;
 
     p_vboVertex = 0;
-
     p_elements = 0;
 
     p_changed = false;
@@ -42,6 +37,69 @@ Chunk::Chunk( int X, int Y, int Z, int Seed) {
     updateForm();
 
     printf( "Chunk::chunk take %dms creating x%d y%d z%d\n", SDL_GetTicks()-t, p_pos.x, p_pos.y, p_pos.z);
+}
+
+static void BuildGrid(b3Mesh* mesh, u32 w, u32 h, bool randomY = false)
+{
+	b3Vec3 t;
+	t.x = -0.5f * float32(w);
+	t.y = 0.0f;
+	t.z = -0.5f * float32(h);
+
+	mesh->vertexCount = w * h;
+	mesh->vertices = (b3Vec3*)b3Alloc(mesh->vertexCount * sizeof(b3Vec3));
+
+	for (u32 i = 0; i < w; ++i)
+	{
+		for (u32 j = 0; j < h; ++j)
+		{
+			u32 v1 = i * w + j;
+
+			b3Vec3 v;
+			v.x = float32(i);
+			v.y = 1;
+			v.z = float32(j);
+
+			v += t;
+
+			mesh->vertices[v1] = v;
+		}
+	}
+
+	mesh->triangleCount = 2 * (w - 1) * (h - 1);
+	mesh->triangles = (b3Triangle*)b3Alloc(mesh->triangleCount * sizeof(b3Triangle));
+
+	u32 triangleCount = 0;
+	for (u32 i = 0; i < w - 1; ++i)
+	{
+		for (u32 j = 0; j < h - 1; ++j)
+		{
+			u32 v1 = i * w + j;
+			u32 v2 = (i + 1) * w + j;
+			u32 v3 = (i + 1) * w + (j + 1);
+			u32 v4 = i * w + (j + 1);
+
+			B3_ASSERT(triangleCount < mesh->triangleCount);
+			b3Triangle* t1 = mesh->triangles + triangleCount;
+			++triangleCount;
+
+			t1->v1 = v3;
+			t1->v2 = v2;
+			t1->v3 = v1;
+
+			B3_ASSERT(triangleCount < mesh->triangleCount);
+			b3Triangle* t2 = mesh->triangles + triangleCount;
+			++triangleCount;
+
+			t2->v1 = v1;
+			t2->v2 = v4;
+			t2->v3 = v3;
+		}
+	}
+
+	B3_ASSERT(triangleCount == mesh->triangleCount);
+
+	mesh->BuildTree();
 }
 
 Chunk::~Chunk() {
@@ -77,6 +135,61 @@ Chunk::~Chunk() {
     glDeleteVertexArrays( 1, &p_vboVao);
 
     printf( "~Chunk(): remove vbo data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
+}
+
+void Chunk::createPhysicBody( b3World *world) {
+    if( !p_updateRigidBody && world)
+        return;
+
+    if( p_body) {
+        world->DestroyBody( p_body);
+        p_body = NULL;
+        delete p_shape;
+        delete p_mesh;
+        return;
+    }
+
+    b3BodyDef l_bodyDef;
+
+    l_bodyDef.type = b3BodyType::e_staticBody;
+    l_bodyDef.position.Set( p_pos.x*CHUNK_SIZE*CHUNK_SCALE, p_pos.y*CHUNK_SIZE*CHUNK_SCALE, p_pos.z*CHUNK_SIZE*CHUNK_SCALE);
+
+    p_body = world->CreateBody( l_bodyDef);
+
+    //BuildGrid( &p_mesh, 50, 50);
+    p_mesh = new b3Mesh();
+
+    p_mesh->vertexCount = (int)p_vertices.size();
+    p_mesh->vertices = (b3Vec3*)b3Alloc( p_mesh->vertexCount * sizeof(b3Vec3));
+
+    for( int i = 0; i < (int)p_vertices.size(); i++) {
+        p_mesh->vertices[i] = b3Vec3( p_vertices[i].x, p_vertices[i].y, p_vertices[i].z);
+    }
+
+    int l_triangleCount = (int)p_indices.size()/3;
+    p_mesh->triangleCount  = l_triangleCount;
+    p_mesh->triangles  = (b3Triangle*)b3Alloc(p_mesh->triangleCount * sizeof(b3Triangle));
+
+    int l_triangle = 0;
+    for( int i = 0; i < (int)p_indices.size(); i+=3) {
+        p_mesh->triangles[ l_triangle].v1 = (int)p_indices[i+0];
+        p_mesh->triangles[ l_triangle].v2 = (int)p_indices[i+1];
+        p_mesh->triangles[ l_triangle].v3 = (int)p_indices[i+2];
+        l_triangle++;
+    }
+
+    p_mesh->BuildTree();
+
+    b3MeshShape l_meshShape;
+    l_meshShape.m_mesh = p_mesh;
+
+
+    p_shape = new b3ShapeDef();
+    p_shape->shape = &l_meshShape;
+
+    p_body->CreateShape( *p_shape);
+
+    p_updateRigidBody = false;
 }
 
 /*btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
