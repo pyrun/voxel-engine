@@ -39,12 +39,8 @@ public:
 	void disableFullVertexArray();
 
 	void Bind();
-	void setCameraPosition( glm::vec3 position);
-	void setViewProjectionMatrixe( glm::mat4 mat);
 	void setSize( GLfloat x, GLfloat y);
-	void setAlphaCutoff( GLfloat x);
-	void setTextureUnit(unsigned int TextureUnit);
-	void setBackgroundColor(  GLfloat r, GLfloat g,  GLfloat b);
+	//void setTextureUnit(unsigned int TextureUnit);
 
 	void update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
 	void updateWithout(  Transform *t_transform, glm::mat4 mvp) ;
@@ -56,9 +52,9 @@ public:
 	GLuint getAntribute( int i) { return p_attribute[i]; }
 protected:
 private:
-    static const unsigned int NUM_ATTRIBUTE = 4;
+    static const unsigned int NUM_ATTRIBUTE = 3;
 	static const unsigned int NUM_SHADERS = 2;
-	static const unsigned int NUM_UNIFORMS = 7;
+	static const unsigned int NUM_UNIFORMS = 2;
 	int p_attribute_flag[NUM_ATTRIBUTE];
 	void operator=(const Shader& shader) {}
 	Shader(const Shader& shader) {}

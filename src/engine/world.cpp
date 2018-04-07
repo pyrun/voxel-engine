@@ -391,42 +391,21 @@ void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
     // einstellung des shaders
     l_shader->Bind();
     l_shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
-    l_shader->setBackgroundColor( 1, 1, 1);
-    l_shader->setViewProjectionMatrixe( viewProjection);
-    l_shader->setCameraPosition( graphic->getCamera()->GetPos());
+    //l_shader->setViewProjectionMatrixe( viewProjection);
 
     p_image->Bind();
 
     // Transparent zeichnen
-    drawTransparency( l_shader, viewProjection, true);
-    drawTransparency( l_shader, viewProjection, false);
+    drawNode( l_shader, viewProjection);
+    //draw( l_shader, viewProjection, true);
 
-    // disable all Vertex arrays
-    l_shader->disableArray( 0);
-    l_shader->disableArray( 1);
     glUseProgram( 0 );
 
-
-    //p_physicScene->Render( &p_renderer );
-
-    graphic->getDebugShader()->Bind();
+    /*graphic->getDebugShader()->Bind();
 
     p_renderer.draw( *p_physicScene, viewProjection, graphic->getDebugShader());
 
-    glUseProgram( 0 );
-}
-
-void world::drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa) {
-    // shader einstellen
-    if( alpha_cutoff) {
-        shader->setAlphaCutoff( 0.99f);
-    } else {
-        glDepthMask( false);
-        shader->setAlphaCutoff( 1.10f);
-        glDepthMask( true);
-    }
-    // Draw node
-    drawNode( shader, viewProjection, aa);
+    glUseProgram( 0 );*/
 }
 
 void world::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {

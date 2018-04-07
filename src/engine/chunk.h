@@ -111,7 +111,7 @@ private:
     std::vector<unsigned int> p_indices;
     std::vector<glm::vec3> p_vertices;
     std::vector<glm::vec3> p_normal;
-    std::vector<glm::vec3> p_data;
+    std::vector<glm::vec3> p_texture;
 
     /*std::vector<ChunkVboVertexStruct> p_vertices;
     std::vector<ChunkVboDataStruct> p_data;*/

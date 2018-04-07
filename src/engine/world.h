@@ -13,7 +13,7 @@
 
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
 
-#define WORLD_UPDATE_THRENDS 3
+#define WORLD_UPDATE_THRENDS 6
 
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0 / 60.0 )
 
@@ -48,8 +48,7 @@ public:
     void addChunk( glm::tvec3<int> pos, bool generateLandscape);
     void addDeleteChunk( glm::tvec3<int> pos );
 
-    void draw( graphic *graphic, config *config, glm::mat4 viewProjection) ;
-    void drawTransparency( Shader* shader, glm::mat4 viewProjection, bool alpha_cutoff, glm::mat4 aa = glm::mat4(1));
+    void draw( graphic *graphic, config *config, glm::mat4 viewProjection);
     void drawNode( Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
 
     bool getDestory() { return p_destroy; }

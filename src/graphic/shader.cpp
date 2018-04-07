@@ -15,7 +15,7 @@ Shader::Shader(const std::string& fileName) {
 
 	glBindAttribLocation(p_program, 0, "vertexPosition");
 	glBindAttribLocation(p_program, 1, "vertexNormals");
-	glBindAttribLocation(p_program, 2, "vertexColor");
+	glBindAttribLocation(p_program, 2, "vertexTexture");
 
 	glLinkProgram(p_program);
 	CheckShaderError(p_program, GL_LINK_STATUS, true, "Error linking shader program");
@@ -24,17 +24,11 @@ Shader::Shader(const std::string& fileName) {
 	CheckShaderError(p_program, GL_LINK_STATUS, true, "Invalid shader program");
 
 	p_uniforms[0] = glGetUniformLocation(p_program, "g_mvp");
-	p_uniforms[1] = glGetUniformLocation(p_program, "g_shadowmvp");
-	p_uniforms[2] = glGetUniformLocation(p_program, "g_size");
-	p_uniforms[3] = glGetUniformLocation(p_program, "g_viewProjectionMatrixe");
-	p_uniforms[4] = glGetUniformLocation(p_program, "g_backgroundcolor");
-	p_uniforms[5] = glGetUniformLocation(p_program, "g_alpha_cutoff");
-	p_uniforms[6] = glGetUniformLocation(p_program, "g_camerapositon");
+	p_uniforms[1] = glGetUniformLocation(p_program, "g_size");
 
 	p_attribute[0] = glGetAttribLocation(p_program, "vertexPosition");
 	p_attribute[1] = glGetAttribLocation(p_program, "vertexNormals");
-	p_attribute[2] = glGetAttribLocation(p_program, "vertexColor");
-    p_attribute[3] = glGetAttribLocation(p_program, "voxelData");
+	p_attribute[2] = glGetAttribLocation(p_program, "vertexTexture");
 
     // GL error anzeigen
     GLenum error =  glGetError(); if(error) {
@@ -74,31 +68,8 @@ void Shader::Bind() {
 	glUseProgram(p_program);
 }
 
-void Shader::setCameraPosition( glm::vec3 position) {
-    glUniform3f( p_uniforms[6], position.x, position.y, position.z);
-}
-
-void Shader::setViewProjectionMatrixe( glm::mat4 mat) {
-    glUniformMatrix4fv(p_uniforms[3], 1, GL_FALSE, glm::value_ptr(mat));
-}
-
 void Shader::setSize( GLfloat x, GLfloat y) {
     glUniform2f( p_uniforms[2], x, y);
-}
-
-void Shader::setAlphaCutoff( GLfloat x) {
-    if( p_old_alpha_value == x)
-        return;
-    p_old_alpha_value = x;
-    glUniform1f( p_uniforms[5], x);
-}
-
-void Shader::setTextureUnit(unsigned int TextureUnit) {
-    glUniform1i( p_uniforms[3], TextureUnit);
-}
-
-void Shader::setBackgroundColor(  GLfloat r, GLfloat g,  GLfloat b) {
-    glUniform3f( p_uniforms[4], r, g, b);
 }
 
 void Shader::update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {

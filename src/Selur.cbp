@@ -24,6 +24,7 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bounce/include" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../qu3e/src" />
@@ -81,6 +82,7 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bullet3/src" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -146,6 +148,8 @@
 		<Unit filename="graphic/glerror.h" />
 		<Unit filename="graphic/graphic.cpp" />
 		<Unit filename="graphic/graphic.h" />
+		<Unit filename="graphic/light.cpp" />
+		<Unit filename="graphic/light.h" />
 		<Unit filename="graphic/shader.cpp" />
 		<Unit filename="graphic/shader.h" />
 		<Unit filename="graphic/shadowmap.cpp" />

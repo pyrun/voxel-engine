@@ -4,6 +4,7 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 #include "../engine/config.h"
 
@@ -34,6 +35,7 @@ public:
 
     inline int getWidth() { return p_width; }
 	inline int getHeight() { return p_height; }
+	inline glm::vec2 getSize() { return glm::vec2( p_width, p_height); }
 
 	inline int getTilesetWidth() { return TILESET_WIDTH; }
 	inline int getTilesetHeight() { return TILESET_HEIGHT; }
