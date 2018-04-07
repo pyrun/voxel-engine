@@ -245,8 +245,8 @@ void network::start()
 	if( network_topology == CLIENT)
 	{
 	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
-        /*if( !init_upnp())
-           printf ( "network::start upnp didnt work\n");*/
+        if( !init_upnp())
+           printf ( "network::start upnp didnt work\n");
 		printf("network::start Connecting...\n");
 	}
 
