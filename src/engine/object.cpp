@@ -288,6 +288,7 @@ void object_type::setPhysic( b3Body *body)
     l_shapeDef.shape = &p_hullDef;
 
     body->CreateShape(l_shapeDef);
+
     //bdef.orientation.Set(b3Vec3(0.0f, 1.0f, 0.0f), 0.5f * B3_PI);
 
 }
@@ -348,6 +349,16 @@ void object::update_model() {
     p_model = l_posMat * l_rotMat * l_scaleMat;
 }
 
+void object::setTransform( glm::vec3 pos, glm::vec3 rot, bool body)
+{
+    if( p_body && body) {
+        p_body->SetTransform( b3Vec3( pos.x, pos.y, pos.z), b3Vec3( rot.x, rot.y, rot.z), 0 );
+    }
+    p_pos = pos;
+    p_rot = rot;
+    p_model_change = true;
+}
+
 void object::setPosition( glm::vec3 pos, bool body)
 {
     if( p_body && body) {
@@ -378,6 +389,8 @@ void object::setBody( b3Body *body)
     p_body = body;
 
     p_type->setPhysic( p_body);
+
+    setTransform( p_pos, p_rot);
 }
 
 glm::vec3 object::rotationMatrixToEulerAngles(b3Mat33 &R)

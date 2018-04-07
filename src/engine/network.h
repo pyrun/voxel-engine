@@ -35,8 +35,6 @@ enum
 class network_object : public Replica3, public object
 {
     public:
-        network_object();
-        ~network_object();
 
         virtual RakNet::RakString GetName(void) const=0;
 
@@ -214,7 +212,7 @@ class network
         void start_sever();
         void start_client( std::string ip = "127.0.0.1");
 
-        void addObject( ServerCreated_ClientSerialized *l_obj);
+        void addObject( ServerCreated_ServerSerialized *l_obj);
 
         void sendBlockChange( Chunk *chunk, glm::vec3 pos, int id);
         void receiveBlockChange( BitStream *bitstream);

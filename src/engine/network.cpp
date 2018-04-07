@@ -1,15 +1,5 @@
 #include "network.h"
 
-network_object::network_object()
-{
-
-}
-
-network_object::~network_object()
-{
-
-}
-
 void network_object::WriteAllocationID(RakNet::Connection_RM3 *destinationConnection, RakNet::BitStream *allocationIdBitstream) const {
     allocationIdBitstream->Write(GetName());
 }
@@ -129,6 +119,8 @@ void network_object::Deserialize(RakNet::DeserializeParameters *deserializeParam
     p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
 
     p_model_change = true;
+
+    setTransform( p_pos, p_rot, true);
 }
 
 void network_object::SerializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection)	{
@@ -253,8 +245,8 @@ void network::start()
 	if( network_topology == CLIENT)
 	{
 	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
-        if( !init_upnp())
-           printf ( "network::start upnp didnt work\n");
+        /*if( !init_upnp())
+           printf ( "network::start upnp didnt work\n");*/
 		printf("network::start Connecting...\n");
 	}
 
@@ -267,13 +259,13 @@ void network::start()
                 for( int z = l_end; z <= 0; z++)
                     p_starchip->addChunk( glm::vec3( x, z, y), true);
 
-
-
-        /*ServerCreated_ClientSerialized* l_obj = new ServerCreated_ClientSerialized();
+        ServerCreated_ServerSerialized* l_obj = new ServerCreated_ServerSerialized();
         l_obj->p_name = "box";
-        l_obj->p_type = p_types->get( l_obj->p_name.C_String());
+        l_obj->setPosition( glm::vec3( 0, 15, 5) );
 
-        addObject( l_obj);*/
+        p_replicaManager.Reference( l_obj);
+
+        //addObject( l_obj);
 	}
 }
 
@@ -294,7 +286,7 @@ void network::start_client( std::string ip)
     start();
 }
 
-void network::addObject( ServerCreated_ClientSerialized *l_obj) {
+void network::addObject( ServerCreated_ServerSerialized *l_obj) {
     p_replicaManager.Reference( l_obj);
 }
 
@@ -564,18 +556,8 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
                 b3BodyDef bdef;
                 bdef.type = b3BodyType::e_dynamicBody;
                 b3Body* body = getWorld()->getPhysicWorld()->CreateBody(bdef);
-                l_obj->setBody( body);
-/*                b3BoxHull bodyBox;
-                bodyBox.SetIdentity();
-
-                b3HullShape bodyShape;
-                bodyShape.m_hull = &bodyBox;
-
-                b3ShapeDef l_bodyDef;
-                // set type
-                l_bodyDef.shape = &bodyShape;
-                l_bodyDef.bodyType = e_dynamicBody;
-                l_obj->setBody( getWorld()->getPhysicWorld()->CreateBody( l_bodyDef ));*/
+                if( isServer())
+                    l_obj->setBody( body);
             }
         }
 

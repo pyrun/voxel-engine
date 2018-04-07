@@ -189,10 +189,15 @@ void engine::run() {
 
     Timer l_timer_test;
 
-    ServerCreated_ClientSerialized* l_hand = new ServerCreated_ClientSerialized();
-    p_network->addObject( l_hand);
+    /*ServerCreated_ServerSerialized* l_hand = NULL;
 
-    l_hand->p_name = "box";
+    if( p_network->isServer()) {
+        l_hand = new ServerCreated_ServerSerialized();
+        l_hand->setPosition( glm::vec3( 0, 15, 5) );
+        p_network->addObject( l_hand);
+        l_hand->p_name = "box";
+    }*/
+
     //l_hand->p_type = p_network->getObjectList()->get( l_hand->p_name.C_String());
 
     p_graphic->getCamera()->GetPos().y = 20;
@@ -223,7 +228,8 @@ void engine::run() {
             p_isRunnig = false;
 
         if( p_input.Map.Inventory && !p_input.MapOld.Inventory ) {
-            l_hand->setPosition( cam->GetPos() + glm::vec3( 0, 2, 0) );
+            //if( l_hand)
+            //    l_hand->setPosition( cam->GetPos() + glm::vec3( 0, 2, 0) );
             //l_hand->getBody()->SetLinearVelocity( q3Vec3( 0, 0, 0));
             //l_hand->getBody()->ApplyForceAtWorldPoint( q3Vec3( 0, -100, 100),  q3Vec3( 0, 0, 0));
         }

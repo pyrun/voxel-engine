@@ -68,6 +68,7 @@ class object {
 
         void update_model();
 
+        void setTransform( glm::vec3 pos, glm::vec3 rot, bool body = true);
         void setPosition( glm::vec3 pos, bool body = true);
         void setRotation( glm::vec3 rot, bool body = true);
         void setType( object_type *type);
