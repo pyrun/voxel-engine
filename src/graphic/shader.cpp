@@ -23,8 +23,10 @@ Shader::Shader(const std::string& fileName) {
 	glValidateProgram(p_program);
 	CheckShaderError(p_program, GL_LINK_STATUS, true, "Invalid shader program");
 
-	p_uniforms[0] = glGetUniformLocation(p_program, "g_mvp");
-	p_uniforms[1] = glGetUniformLocation(p_program, "g_size");
+	p_uniforms[0] = glGetUniformLocation(p_program, "projection");
+	p_uniforms[1] = glGetUniformLocation(p_program, "view");
+	p_uniforms[2] = glGetUniformLocation(p_program, "model");
+	p_uniforms[3] = glGetUniformLocation(p_program, "tilesize");
 
 	p_attribute[0] = glGetAttribLocation(p_program, "vertexPosition");
 	p_attribute[1] = glGetAttribLocation(p_program, "vertexNormals");
@@ -69,13 +71,28 @@ void Shader::Bind() {
 }
 
 void Shader::setSize( GLfloat x, GLfloat y) {
-    glUniform2f( p_uniforms[2], x, y);
+    glUniform2f( p_uniforms[3], x, y);
 }
 
-void Shader::update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa) {
-    glm::mat4 MVP = getCurrentViewProjectionMatrix * model * aa;
+void Shader::setVec3(const std::string &name, const glm::vec3 &value) const
+{
+    glUniform3fv( glGetUniformLocation( p_program, name.c_str()), 1, &value[0]);
+}
 
-    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, glm::value_ptr(MVP));
+void Shader::setFloat(const std::string &name, float value) const
+{
+    glUniform1f(glGetUniformLocation( p_program, name.c_str()), value);
+}
+
+void Shader::setInt(const std::string &name, int value) const
+{
+    glUniform1i(glGetUniformLocation( p_program, name.c_str()), value);
+}
+
+void Shader::update( glm::mat4 model, glm::mat4 view, glm::mat4 projection) {
+    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, glm::value_ptr( projection));
+    glUniformMatrix4fv(p_uniforms[1], 1, GL_FALSE, glm::value_ptr( view));
+    glUniformMatrix4fv(p_uniforms[2], 1, GL_FALSE, glm::value_ptr( model));
 }
 
 void Shader::updateWithout(  Transform *t_transform, glm::mat4 mvp) {

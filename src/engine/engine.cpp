@@ -149,17 +149,24 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
     }
 }
 
-void engine::render( glm::mat4 viewProjection) {
-    // chunks zeichnen
-    p_network->draw( p_graphic, p_config, viewProjection);
+void engine::render( glm::mat4 view, glm::mat4 projection) {
+    /// 1. geometry pass: render scene's geometry/color data into gbuffer
+    p_graphic->getDisplay()->clear( true);
 
-    //obj2->draw( p_graphic->getObjectShader(), p_graphic->getCamera());
+    glBindFramebuffer( GL_FRAMEBUFFER, p_graphic->getBufferFbo());
+    p_graphic->getDisplay()->clear( true);
 
-    // Debug
-    //DrawBox( 1, 1, 1);
+    Shader *l_shader = p_graphic->getGbuffer();
+    l_shader->Bind();
 
-    //p_gui->Draw( p_graphic);
-    // Block anzeigen was in der Sichtweite ist
+    //p_graphic->getObjectShader()->Bind();
+    //p_network->drawEntitys( p_graphic->getGbuffer(), view, projection);
+
+    p_network->getWorld()->draw( p_graphic, l_shader, view, projection);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    p_graphic->deferredShading();
 }
 
 void engine::fly( int l_delta) {
@@ -235,7 +242,7 @@ void engine::run() {
         }
 
         /// render #1 openVR
-        if( p_openvr ) {
+        /*if( p_openvr ) {
             p_openvr->renderForLeftEye();
             l_mvp = p_openvr->getViewProjectionMatrixLeft() * p_graphic->getCamera()->getViewWithoutUp();
             render( l_mvp);
@@ -251,19 +258,20 @@ void engine::run() {
 
             //l_timer.Start();
             p_openvr->renderFrame();
-        }
+        }*/
 
 
         /// render #2 window
-        p_graphic->getDisplay()->clear();
 
-        glm::mat4 l_mvp_cam = p_graphic->getCamera()->getViewProjection();
+
+        glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
+        glm::mat4 l_projection = p_graphic->getCamera()->getProjection();
 
         l_timer_test.Start();
-        render( l_mvp_cam);
+        render( l_view_cam, l_projection);
 
         if( p_network->getWorld()) {
-            viewCurrentBlock( l_mvp_cam, 275); // 275 = 2,75Meter
+            viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter
         }
 
         p_graphic->getDisplay()->swapBuffers();

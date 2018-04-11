@@ -13,6 +13,8 @@ class light
         void setPositon( glm::vec3 pos) { p_positions = pos; }
         void setColor( glm::vec3 color) { p_colors = color; }
         int getId() { return p_id; }
+        glm::vec3 getPos() { return p_positions; }
+        glm::vec3 getColor() { return p_colors; }
     protected:
 
     private:

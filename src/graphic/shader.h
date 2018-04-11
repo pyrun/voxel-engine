@@ -41,8 +41,11 @@ public:
 	void Bind();
 	void setSize( GLfloat x, GLfloat y);
 	//void setTextureUnit(unsigned int TextureUnit);
+	void setVec3(const std::string &name, const glm::vec3 &value) const;
+	void setFloat(const std::string &name, float value) const;
+	void setInt(const std::string &name, int value) const;
 
-	void update( glm::mat4 model, glm::mat4 getCurrentViewProjectionMatrix, glm::mat4 aa = glm::mat4(1));
+	void update( glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 	void updateWithout(  Transform *t_transform, glm::mat4 mvp) ;
 
 	inline GLint& GetProgram() { return p_program; }
@@ -54,7 +57,7 @@ protected:
 private:
     static const unsigned int NUM_ATTRIBUTE = 3;
 	static const unsigned int NUM_SHADERS = 2;
-	static const unsigned int NUM_UNIFORMS = 2;
+	static const unsigned int NUM_UNIFORMS = 4;
 	int p_attribute_flag[NUM_ATTRIBUTE];
 	void operator=(const Shader& shader) {}
 	Shader(const Shader& shader) {}

@@ -226,7 +226,8 @@ void world::process() {
         if( node == NULL)
             break;
         //if( node->getBody() == NULL)
-        node->createPhysicBody( p_physicScene);
+        if( node->createPhysicBody( p_physicScene))
+            break;
         //node->makeBulletMesh( world);
         node = node->next;
     }
@@ -384,36 +385,22 @@ void world::addDeleteChunk( glm::tvec3<int> pos ) {
     p_deletingList.push_back( l_obj);
 }
 
-void world::draw( graphic *graphic, config *config, glm::mat4 viewProjection) {
-    // get shader
-    Shader* l_shader = graphic->getVoxelShader();
+void world::draw( graphic *graphic, Shader *shader, glm::mat4 view, glm::mat4 projection) {
 
-    // einstellung des shaders
-    l_shader->Bind();
-    l_shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
-    //l_shader->setViewProjectionMatrixe( viewProjection);
+    shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
 
     p_image->Bind();
 
-    // Transparent zeichnen
-    drawNode( l_shader, viewProjection);
-    //draw( l_shader, viewProjection, true);
-
-    glUseProgram( 0 );
-
-    /*graphic->getDebugShader()->Bind();
-
-    p_renderer.draw( *p_physicScene, viewProjection, graphic->getDebugShader());
-
-    glUseProgram( 0 );*/
+    // draw node
+    drawNode( shader, view, projection);
 }
 
-void world::drawNode( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
+void world::drawNode( Shader* shader, glm::mat4 view, glm::mat4 projection) {
     Chunk *l_node = p_chunk_start;
     for( ;; ) {
         if( l_node == NULL)
             break;
-        l_node->draw( shader, viewProjection, aa);
+        l_node->draw( shader, view, projection);
 
         // next
         l_node = l_node->next;

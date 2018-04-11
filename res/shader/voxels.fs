@@ -1,12 +1,12 @@
-#version 400
+#version 440
 
 uniform sampler2D sampler;
 
-in vec3 coord;
+in vec3 fragPos;
 in vec3 normal;
 in vec3 blockdata;
 
-in vec2 size;
+uniform vec2 tilesize;
 
 layout( location = 0 ) out vec4 fragColor;
 
@@ -15,16 +15,18 @@ void main() {
 
     // Texture Position errechnen
     if(blockdata.z > 0) {
-        Texture.x = fract( coord.x);
-        Texture.y = fract( coord.z);
+        Texture.x = fract( fragPos.x);
+        Texture.y = fract( fragPos.z);
     } else {
-        Texture.x = fract( coord.x + coord.z );
-        Texture.y = fract( -coord.y);
+        Texture.x = fract( fragPos.x + fragPos.z );
+        Texture.y = fract( -fragPos.y);
     }
 
     // Textur aus Tileset waehlen
-    Texture.x = (Texture.x + blockdata.x)/size.x;
-    Texture.y = (Texture.y + blockdata.y)/size.y;
+    Texture.x = (Texture.x + blockdata.x)/tilesize.x;
+    Texture.y = (Texture.y + blockdata.y)/tilesize.y;
 
-    fragColor = texture2D( sampler, Texture);
+    vec3 color = vec3( 1, 1, 1) * gl_FragCoord.z;
+
+    fragColor = texture( sampler, Texture);
 }

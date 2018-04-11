@@ -2,30 +2,34 @@
 #include <SDL2/SDL_image.h>
 
 graphic::graphic( config *config) {
-    //
+    // creating window
     p_display = new display( config);
 
-    // Shader laden
+    // loading the shader
+    p_gbuffer = new Shader( "shader/g_buffer");
+    p_deferred_shading = new Shader( "shader/deferred_shading");
     p_voxel = new Shader( "shader/voxels");
-    p_vertex = new Shader( "shader/vertex");
     p_object = new Shader( "shader/object");
     p_debug = new Shader( "shader/debug");
 
-    // camera
+    // set up camera
     p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
 
     initDeferredShading();
 
     p_index_light = 0;
 
-    createLight( glm::vec3( 0, 20, 0), glm::vec3( 1, 0, 0));
+    createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
+    createLight( glm::vec3( 0, 15, 6), glm::vec3( 1, 1.0, 1.0));
+    createLight( glm::vec3( 6, 15, 6), glm::vec3( 1, 0.5, 0.5));
 }
 
 graphic::~graphic() {
+    delete p_gbuffer;
+    delete p_deferred_shading;
     delete p_debug;
     delete p_camera;
     delete p_voxel;
-    delete p_vertex;
     delete p_display;
 }
 
@@ -40,14 +44,13 @@ void graphic::resizeWindow( int screen_width, int screen_height) {
 void graphic::initDeferredShading() {
     glm::vec2 l_scrn = p_display->getSize();
 
-
     glGenFramebuffers(1, &p_buffer);
     glBindFramebuffer(GL_FRAMEBUFFER, p_buffer);
 
     // 1 - position color buffer
     glGenTextures(1, &p_position);
     glBindTexture(GL_TEXTURE_2D, p_position);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, l_scrn.x, l_scrn.y, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_position, 0);
@@ -55,7 +58,7 @@ void graphic::initDeferredShading() {
     // 2 - normal color buffer
     glGenTextures(1, &p_normal);
     glBindTexture(GL_TEXTURE_2D, p_normal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, l_scrn.x, l_scrn.y, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, p_normal, 0);
@@ -81,6 +84,80 @@ void graphic::initDeferredShading() {
     // finally check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         printf( "graphic::initDeferredShading framebuffer didnt complete!\n");
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    p_deferred_shading->Bind();
+    p_deferred_shading->setInt("gPosition", 0);
+    p_deferred_shading->setInt("gNormal", 1);
+    p_deferred_shading->setInt("gAlbedoSpec", 2);
+}
+
+
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+    if (quadVAO == 0)
+    {
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        // setup plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
+void graphic::deferredShading() {
+    glm::vec2 l_scrn = p_display->getSize();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    p_deferred_shading->Bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, p_position);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, p_normal);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, p_colorSpec);
+    // send light relevant uniforms
+    for (unsigned int i = 0; i < p_lights.size(); i++)
+    {
+        p_deferred_shading->setVec3("lights[" + std::to_string(i) + "].Position", p_lights[i].getPos());
+        p_deferred_shading->setVec3("lights[" + std::to_string(i) + "].Color", p_lights[i].getColor());
+
+        // update attenuation parameters and calculate radius
+        float constant  = 1.0;
+        float linear    = 0.7;
+        float quadratic = 1.8;
+        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
+        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+        // then calculate radius of light volume/sphere
+        const float maxBrightness = std::fmaxf(std::fmaxf(p_lights[i].getColor().r, p_lights[i].getColor().g), p_lights[i].getColor().b);
+        float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
+    }
+    p_deferred_shading->setVec3( "viewPos", getCamera()->GetPos());
+    renderQuad();
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, p_buffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+
+    glBlitFramebuffer(0, 0, l_scrn.x, l_scrn.y, 0, 0, l_scrn.x, l_scrn.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -132,5 +209,7 @@ int graphic::createLight( glm::vec3 pos, glm::vec3 color) {
     l_light.setColor( color);
 
     p_index_light++;
+
+    p_lights.push_back( l_light);
     return p_index_light-1;
 }

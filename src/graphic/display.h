@@ -16,7 +16,7 @@ public:
     display( config *config);
     virtual ~display();
 
-    void clear();
+    void clear( bool black = false);
     void swapBuffers();
     void setTitle( std::string& title);
 

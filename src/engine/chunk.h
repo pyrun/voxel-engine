@@ -33,9 +33,7 @@ public:
     Chunk *down;
     Chunk *next;
 
-//    btRigidBody *makeBulletMesh( btDiscreteDynamicsWorld *world);
-
-    void createPhysicBody( b3World *world);
+    bool createPhysicBody( b3World *world);
 
     bool serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
     {
@@ -71,8 +69,8 @@ public:
 
     void updateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void DestoryVbo();
-    void updateVbo( Shader *shader);
-    void draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa = glm::mat4(1));
+    void updateVbo();
+    void draw( Shader* shader, glm::mat4 view, glm::mat4 projection);
 
     int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }

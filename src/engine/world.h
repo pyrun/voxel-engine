@@ -48,8 +48,8 @@ public:
     void addChunk( glm::tvec3<int> pos, bool generateLandscape);
     void addDeleteChunk( glm::tvec3<int> pos );
 
-    void draw( graphic *graphic, config *config, glm::mat4 viewProjection);
-    void drawNode( Shader* shader, glm::mat4 viewProjection,  glm::mat4 aa =  glm::mat4(1));
+    void draw( graphic *graphic, Shader *shader, glm::mat4 view, glm::mat4 projection);
+    void drawNode( Shader* shader, glm::mat4 view, glm::mat4 projection);
 
     bool getDestory() { return p_destroy; }
     inline int getAmountChunks() const { return p_chunk_amount; }

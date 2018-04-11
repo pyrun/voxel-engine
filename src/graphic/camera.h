@@ -22,13 +22,14 @@ public:
 	void zoom( float change = 0.0f);
 
     glm::mat4 getViewProjection() const{ return p_projection * glm::lookAt(p_position, p_position + p_direction, p_up); }
+    glm::mat4 getView() const{ return glm::lookAt(p_position, p_position + p_direction, p_up); }
+    glm::mat4 getProjection() const{ return p_projection; }
 	inline glm::mat4 GetViewProjectionOrtho() const{ return projectionortho * glm::lookAt(p_position, p_position+p_direction, p_up); }
 
 	inline glm::vec3& GetPos() { return p_position; }
 	inline glm::vec3& GetForward() { return p_direction; }
 	inline glm::vec3& GetUp() { return p_up; }
 
-	inline glm::mat4& GetProjection() { return p_projection;}
 	inline glm::mat4 GetView() { return glm::lookAt(p_position, p_position + p_direction, p_up); }
 	inline glm::mat4 getViewWithoutUp() { return glm::lookAt(p_position, p_position + glm::vec3( p_direction.x, 0.f, p_direction.z ), glm::vec3( 0, 1.0f, 0)); }
 protected:

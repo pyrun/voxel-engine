@@ -253,7 +253,7 @@ void object_type::updateVao()
     glBindVertexArray(0);
 }
 
-void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojection)
+void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 view, glm::mat4 projection)
 {
     if( p_vao == NULL)
         updateVao();
@@ -265,7 +265,7 @@ void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 viewprojectio
     if( p_texture)
         p_texture->Bind();
 
-    shader->update( model, viewprojection);
+    shader->update( model, view, projection);
 
     // draw
     glBindVertexArray( p_vao);
@@ -325,12 +325,12 @@ void object::process()
     }
 }
 
-void object::draw( Shader* shader, glm::mat4 viewprojection) {
+void object::draw( Shader* shader, glm::mat4 view, glm::mat4 projection) {
     if( p_type) {
 
         update_model();
 
-        p_type->draw( p_model, shader, viewprojection);
+        p_type->draw( p_model, shader, view, projection);
     }
 }
 

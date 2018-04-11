@@ -137,16 +137,16 @@ Chunk::~Chunk() {
     printf( "~Chunk(): remove vbo data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
 }
 
-void Chunk::createPhysicBody( b3World *world) {
+bool Chunk::createPhysicBody( b3World *world) {
     if( !p_updateRigidBody && world)
-        return;
+        return false;
 
     if( p_body) {
         world->DestroyBody( p_body);
         p_body = NULL;
         delete p_shape;
         delete p_mesh;
-        return;
+        return false;
     }
 
     b3BodyDef l_bodyDef;
@@ -190,6 +190,8 @@ void Chunk::createPhysicBody( b3World *world) {
     p_body->CreateShape( *p_shape);
 
     p_updateRigidBody = false;
+
+    return true;
 }
 
 /*btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
@@ -639,27 +641,17 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     // normal errechnen
     int v;
     p_normal.resize( p_vertices.size());
-    for( v = 0; v+3 <= i; v+=3) {
-        glm::vec3 a(p_vertices[v].x, p_vertices[v].y, p_vertices[v].z);
-        glm::vec3 b(p_vertices[v+1].x, p_vertices[v+1].y, p_vertices[v+1].z);
-        glm::vec3 c(p_vertices[v+2].x, p_vertices[v+2].y, p_vertices[v+2].z);
+    for( int i = 0; i < (int)p_indices.size(); i+=3) {
+        glm::vec3 a(p_vertices[ p_indices[i+0]].x, p_vertices[p_indices[i+0]].y, p_vertices[p_indices[i+0]].z);
+        glm::vec3 b(p_vertices[ p_indices[i+1]].x, p_vertices[p_indices[i+1]].y, p_vertices[p_indices[i+1]].z);
+        glm::vec3 c(p_vertices[ p_indices[i+2]].x, p_vertices[p_indices[i+2]].y, p_vertices[p_indices[i+2]].z);
         glm::vec3 edge1 = b-a;
         glm::vec3 edge2 = c-a;
         glm::vec3 normal = glm::normalize( glm::cross( edge1, edge2));
 
-        /*p_vertices[v+0].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
-        p_vertices[v+1].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));
-        p_vertices[v+2].w = PackToFloat ( ConvertChar( normal.x) , ConvertChar( normal.y), ConvertChar( normal.z));*/
-
-        p_normal[v] = normal;
-        p_normal[v] = normal;
-        p_normal[v] = normal;
-        p_normal[v+1] = normal;
-        p_normal[v+1] = normal;
-        p_normal[v+1] = normal;
-        p_normal[v+2] = normal;
-        p_normal[v+2] = normal;
-        p_normal[v+2] = normal;
+        p_normal[p_indices[i+0]] = normal;
+        p_normal[p_indices[i+1]] = normal;
+        p_normal[p_indices[i+2]] = normal;
     }
     p_elements = p_indices.size();
 
@@ -675,7 +667,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     printf( "Chunk::updateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
 }
 
-void Chunk::updateVbo( Shader *shader) {
+void Chunk::updateVbo() {
     Timer timer;
     timer.Start();
 
@@ -739,14 +731,14 @@ void Chunk::updateVbo( Shader *shader) {
     printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(glm::vec3), getAmount(), getAmount() * sizeof(glm::vec3));
 }
 
-void Chunk::draw( Shader* shader, glm::mat4 viewProjection, glm::mat4 aa) {
+void Chunk::draw( Shader* shader, glm::mat4 view, glm::mat4 projection) {
     if( p_vboVertex == 0 && !p_updateVbo)
         return;
     if( p_updateVbo)
-        updateVbo( shader);
+        updateVbo();
 
     // Shader einstellen
-    shader->update( p_form.getModel(), viewProjection, aa);
+    shader->update( p_form.getModel(), view, projection);
 
     // use the vao
     glBindVertexArray( p_vboVao);

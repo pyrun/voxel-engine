@@ -27,5 +27,6 @@ texture::~texture() {
 }
 
 void texture::Bind() {
+    glActiveTexture( GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, p_texture);
 }

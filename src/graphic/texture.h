@@ -11,6 +11,8 @@ public:
 	void Bind();
 
 	virtual ~texture();
+
+	GLuint getId() { return p_texture; }
 protected:
 private:
 	texture(const texture& texture) {}

@@ -37,7 +37,7 @@ public:
     void startVR();
     void viewCurrentBlock( glm::mat4 viewProjection, int view_width);
 
-    void render( glm::mat4 viewProjection);
+    void render( glm::mat4 view, glm::mat4 projection);
 
     void fly( int l_delta);
     void run();

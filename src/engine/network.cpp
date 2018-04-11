@@ -537,12 +537,8 @@ bool network::process( int delta)
     return l_quit;
 }
 
-void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
+void network::drawEntitys( Shader *shader, glm::mat4 view, glm::mat4 projection)
 {
-    Shader *l_object = graphic->getObjectShader();
-
-    l_object->Bind();
-
     unsigned int idx;
     for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
         network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
@@ -563,14 +559,8 @@ void network::draw( graphic *graphic, config *config, glm::mat4 viewmatrix)
 
         l_obj->process();
 
-        l_obj->draw( l_object, viewmatrix);
+        l_obj->draw( shader, view, projection);
     }
-
-    p_starchip->draw( graphic, config, viewmatrix);
-
-    /*if( config->get( "debug_physic", "engine", "false") == "true") {
-        graphic->getDebugShader()->Bind();
-    }*/
 }
 
 void network::create_object() {

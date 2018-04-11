@@ -21,6 +21,7 @@ public:
     void resizeWindow( int screen_width, int screen_height);
 
     void initDeferredShading();
+    void deferredShading();
 
     SDL_Surface* loadSurface(std::string File);
     void draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip);
@@ -36,16 +37,23 @@ public:
     display * getDisplay() { if(p_display == NULL) printf( "graphic::GetDisplay dont exist\n"); return p_display; }
 
     inline Shader *getVoxelShader() { if(p_voxel == NULL) printf( "graphic::GetVoxelShader dont exist\n"); return p_voxel; }
-    inline Shader *getVertexShader() { if(p_vertex== NULL) printf( "graphic::getVertexShader dont exist\n"); return p_vertex; }
     inline Shader *getObjectShader() { if(p_object== NULL) printf( "graphic::GetObjectShader dont exist\n"); return p_object; }
     inline Shader *getDebugShader() { if(p_debug== NULL) printf( "graphic::getDebugShader dont exist\n"); return p_debug; }
+
+    unsigned int getBufferFbo() { return p_buffer; }
+
+    Shader *getGbuffer() { return p_gbuffer; }
+
     inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
 protected:
 private:
     Camera *p_camera;
     display* p_display;
+
+    Shader *p_gbuffer;
+    Shader *p_deferred_shading;
+
     Shader* p_voxel;
-    Shader* p_vertex;
     Shader *p_object;
     Shader *p_debug;
 

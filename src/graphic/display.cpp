@@ -111,8 +111,10 @@ display::~display() {
 	SDL_Quit();
 }
 
-void display::clear() {
-    if( p_backgroundcolor_change) {
+void display::clear( bool black) {
+    if( black)
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    else if( p_backgroundcolor_change) {
         glClearColor( p_red, p_green, p_blue, p_alpha);
         p_backgroundcolor_change = false;
     }
