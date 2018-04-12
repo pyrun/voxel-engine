@@ -10,7 +10,6 @@ graphic::graphic( config *config) {
     p_deferred_shading = new Shader( "shader/deferred_shading");
     p_voxel = new Shader( "shader/voxels");
     p_object = new Shader( "shader/object");
-    p_debug = new Shader( "shader/debug");
 
     // set up camera
     p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
@@ -22,12 +21,14 @@ graphic::graphic( config *config) {
     createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
     createLight( glm::vec3( 0, 15, 6), glm::vec3( 1, 1.0, 1.0));
     createLight( glm::vec3( 6, 15, 6), glm::vec3( 1, 0.5, 0.5));
+    createLight( glm::vec3( 0, 15, 0), glm::vec3( 1, 1, 1));
+
+    p_vao_quad = 0;
 }
 
 graphic::~graphic() {
     delete p_gbuffer;
     delete p_deferred_shading;
-    delete p_debug;
     delete p_camera;
     delete p_voxel;
     delete p_display;
@@ -41,35 +42,55 @@ void graphic::resizeWindow( int screen_width, int screen_height) {
     p_camera->resize( (float)screen_width/(float)screen_height);
 }
 
+void graphic::initShadowsMapping() {
+    glGenFramebuffers(1, &p_fbo_shadow_depth);
+
+    glGenTextures(1, &p_texture_shadow_depth);
+    glBindTexture(GL_TEXTURE_2D, p_texture_shadow_depth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 p_shadow_width, p_shadow_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_shadow_depth);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_texture_shadow_depth, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void graphic::initDeferredShading() {
     glm::vec2 l_scrn = p_display->getSize();
 
-    glGenFramebuffers(1, &p_buffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, p_buffer);
+    glGenFramebuffers(1, &p_fbo_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_buffer);
 
     // 1 - position color buffer
-    glGenTextures(1, &p_position);
-    glBindTexture(GL_TEXTURE_2D, p_position);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, l_scrn.x, l_scrn.y, 0, GL_RGBA, GL_FLOAT, NULL);
+    glGenTextures(1, &p_texture_position);
+    glBindTexture(GL_TEXTURE_2D, p_texture_position);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_position, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_position, 0);
 
     // 2 - normal color buffer
-    glGenTextures(1, &p_normal);
-    glBindTexture(GL_TEXTURE_2D, p_normal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, l_scrn.x, l_scrn.y, 0, GL_RGBA, GL_FLOAT, NULL);
+    glGenTextures(1, &p_texture_normal);
+    glBindTexture(GL_TEXTURE_2D, p_texture_normal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, p_normal, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, p_texture_normal, 0);
 
     // 3 - color + specular color buffer
-    glGenTextures(1, &p_colorSpec);
-    glBindTexture(GL_TEXTURE_2D, p_colorSpec);
+    glGenTextures(1, &p_texture_colorSpec);
+    glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, l_scrn.x, l_scrn.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, p_colorSpec, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, p_texture_colorSpec, 0);
 
     // 4 - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
     unsigned int l_attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -92,48 +113,61 @@ void graphic::initDeferredShading() {
     p_deferred_shading->setInt("gAlbedoSpec", 2);
 }
 
-
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad()
+void graphic::renderQuad()
 {
-    if (quadVAO == 0)
+    // if dont setup -> creating vao
+    if (p_vao_quad == 0)
     {
-        float quadVertices[] = {
+        float l_vertices_and_texture[] = {
             // positions        // texture Coords
             -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
             -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
              1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
              1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
         };
-        // setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+        // setup vao
+        glGenVertexArrays(1, &p_vao_quad);
+        glGenBuffers(1, &p_vbo_quad);
+        glBindVertexArray(p_vao_quad);
+
+        // upload data once
+        glBindBuffer(GL_ARRAY_BUFFER, p_vbo_quad);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(l_vertices_and_texture), &l_vertices_and_texture, GL_STATIC_DRAW);
+
+        // setup vbo
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     }
-    glBindVertexArray(quadVAO);
+    // render vao ( rect)
+    glBindVertexArray(p_vao_quad);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
 
-void graphic::deferredShading() {
+void graphic::renderDeferredShadingStart() {
+    // render scene in geometry/color data
+    getDisplay()->clear( true);
+
+    glBindFramebuffer( GL_FRAMEBUFFER, p_fbo_buffer);
+    getDisplay()->clear( true);
+}
+
+void graphic::renderDeferredShadingEnd() {
     glm::vec2 l_scrn = p_display->getSize();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     p_deferred_shading->Bind();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, p_position);
+    glBindTexture(GL_TEXTURE_2D, p_texture_position);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, p_normal);
+    glBindTexture(GL_TEXTURE_2D, p_texture_normal);
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, p_colorSpec);
+    glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
     // send light relevant uniforms
     for (unsigned int i = 0; i < p_lights.size(); i++)
     {
@@ -142,8 +176,8 @@ void graphic::deferredShading() {
 
         // update attenuation parameters and calculate radius
         float constant  = 1.0;
-        float linear    = 0.7;
-        float quadratic = 1.8;
+        float linear    = 0.1;
+        float quadratic = 0.1;
         p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
         p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
         // then calculate radius of light volume/sphere
@@ -152,13 +186,35 @@ void graphic::deferredShading() {
         p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
     }
     p_deferred_shading->setVec3( "viewPos", getCamera()->GetPos());
+
+    // render
     renderQuad();
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, p_buffer);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fbo_buffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
 
     glBlitFramebuffer(0, 0, l_scrn.x, l_scrn.y, 0, 0, l_scrn.x, l_scrn.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void graphic::renderShadowmapStart() {
+    // render to depth map
+    glViewport(0, 0, p_shadow_width, p_shadow_height);
+    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_shadow_depth);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // render scene
+}
+
+void graphic::renderShadowmapEnd() {
+    glm::vec2 l_scrn = p_display->getSize();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // render scene normal again
+    glViewport(0, 0, l_scrn.x, l_scrn.y);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, p_texture_shadow_depth);
+
+    // render
 }
 
 SDL_Surface* graphic::loadSurface(std::string File) {

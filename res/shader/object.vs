@@ -1,20 +1,30 @@
-#version 410
+#version 440
 
-layout(location=0) in vec3 vertexPosition;
-layout(location=1) in vec3 vertexNormals;
-layout(location=2) in vec2 vertexTexture;
+layout( location = 0 ) in vec3 vertexPosition;
+layout( location = 1 ) in vec3 vertexNormals;
+layout( location = 2 ) in vec2 vertexTexture;
 
-uniform mat4 g_mvp;
-uniform vec2 g_size;
-uniform vec4 g_backgroundcolor;
-uniform float g_alpha_cutoff;
-uniform vec4 g_sun;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
-out vec3 normal;
-out vec2 textureCoords;
+out vec2 TexCoords;
+out vec3 FragPos;
+out vec3 Normal;
 
-void main() {
-    textureCoords = vertexTexture;
-    normal = vertexNormals;
-    gl_Position = g_mvp * vec4( vertexPosition, 1.0);
+void main()
+{
+    // pos
+    vec4 worldPos = model * vec4( vertexPosition, 1.0);
+    FragPos = worldPos.xyz; 
+
+    // data
+    TexCoords = vertexTexture;
+
+    // normal
+    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    Normal = normalMatrix * vertexNormals;
+
+    // position
+    gl_Position = projection * view * worldPos;
 }

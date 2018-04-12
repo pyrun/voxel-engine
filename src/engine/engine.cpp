@@ -150,23 +150,17 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 }
 
 void engine::render( glm::mat4 view, glm::mat4 projection) {
-    /// 1. geometry pass: render scene's geometry/color data into gbuffer
-    p_graphic->getDisplay()->clear( true);
-
-    glBindFramebuffer( GL_FRAMEBUFFER, p_graphic->getBufferFbo());
-    p_graphic->getDisplay()->clear( true);
+    p_graphic->renderDeferredShadingStart();
 
     Shader *l_shader = p_graphic->getGbuffer();
     l_shader->Bind();
-
-    //p_graphic->getObjectShader()->Bind();
-    //p_network->drawEntitys( p_graphic->getGbuffer(), view, projection);
-
     p_network->getWorld()->draw( p_graphic, l_shader, view, projection);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    l_shader = p_graphic->getObjectShader();
+    l_shader->Bind();
+    p_network->drawEntitys( l_shader, view, projection);
 
-    p_graphic->deferredShading();
+    p_graphic->renderDeferredShadingEnd();
 }
 
 void engine::fly( int l_delta) {

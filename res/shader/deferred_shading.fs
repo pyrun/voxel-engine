@@ -26,7 +26,6 @@ void main()
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse = texture(gAlbedoSpec, TexCoords).xyz;
-    //float Specular = texture(gAlbedoSpec, TexCoords).a;
     
     // then calculate lighting as usual
     vec3 lighting  = vec3( 0, 0, 0);
@@ -47,5 +46,6 @@ void main()
             lighting += diffuse;        
         }
     }
-    FragColor = vec4(lighting, 1.0);
+
+    FragColor = vec4( lighting, 1.0);
 }

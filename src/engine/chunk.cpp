@@ -639,7 +639,6 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     }
 
     // normal errechnen
-    int v;
     p_normal.resize( p_vertices.size());
     for( int i = 0; i < (int)p_indices.size(); i+=3) {
         glm::vec3 a(p_vertices[ p_indices[i+0]].x, p_vertices[p_indices[i+0]].y, p_vertices[p_indices[i+0]].z);

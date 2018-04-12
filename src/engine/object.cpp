@@ -155,17 +155,16 @@ bool object_type::load_file( std::string file) {
           tinyobj::real_t vy = l_attrib.vertices[3*idx.vertex_index+1];
           tinyobj::real_t vz = l_attrib.vertices[3*idx.vertex_index+2];
 
-          tinyobj::real_t nx = 0; //l_attrib.normals[3*idx.normal_index+0];
-          tinyobj::real_t ny = 0; //l_attrib.normals[3*idx.normal_index+1];
-          tinyobj::real_t nz = 0; //l_attrib.normals[3*idx.normal_index+2];
-
-          tinyobj::real_t tx = l_attrib.texcoords[2*idx.texcoord_index+0];
-          tinyobj::real_t ty = 1.0f - l_attrib.texcoords[2*idx.texcoord_index+1];
+          if( l_attrib.texcoords[ 0]) {
+            tinyobj::real_t tx = l_attrib.texcoords[2*idx.texcoord_index+0];
+            tinyobj::real_t ty = 1.0f - l_attrib.texcoords[2*idx.texcoord_index+1];
+            p_texcoords.push_back( glm::vec2( tx, ty));
+          } else {
+            p_texcoords.push_back( glm::vec2( 0, 0));
+          }
 
           p_indices.push_back( p_indices.size() );
           p_vertices.push_back( glm::vec3( vx, vy, vz));
-          p_normal.push_back( glm::vec3( nx, ny, nz));
-          p_texcoords.push_back( glm::vec2( tx, ty));
 
           // Optional: vertex colors
           // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
@@ -173,36 +172,25 @@ bool object_type::load_file( std::string file) {
           // tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
         }
         index_offset += fv;
-
-        // per-face material
-        //l_shapes[s].mesh.material_ids[f];
       }
     }
 
-    p_model_changed = true;
-
-    /*ObjectCreator Obj;
-
-    Obj.addCube( glm::vec3( 0, 2, 0), glm::vec3( 1, 2 ,1), glm::vec4( 0, 0, 1, 1));
-            Obj.addCube( glm::vec3( 0, 0, 0), glm::vec3( 1, 1.5,1), glm::vec4( 0, 0, 1, 1));
-
-
-    p_vertices = Obj.getVertices();
-    p_indices = Obj.getIndices();
-    p_texcoords = Obj.getTexcoords();
+    // normal
     p_normal.resize( p_vertices.size());
-    for( int v = 0; v+3 <= p_vertices.size(); v+=3) {
-        glm::vec3 a(p_vertices[v].x, p_vertices[v].y, p_vertices[v].z);
-        glm::vec3 b(p_vertices[v+1].x, p_vertices[v+1].y, p_vertices[v+1].z);
-        glm::vec3 c(p_vertices[v+2].x, p_vertices[v+2].y, p_vertices[v+2].z);
+    for( int i = 0; i < (int)p_indices.size(); i+=3) {
+        glm::vec3 a(p_vertices[ p_indices[i+0]].x, p_vertices[p_indices[i+0]].y, p_vertices[p_indices[i+0]].z);
+        glm::vec3 b(p_vertices[ p_indices[i+1]].x, p_vertices[p_indices[i+1]].y, p_vertices[p_indices[i+1]].z);
+        glm::vec3 c(p_vertices[ p_indices[i+2]].x, p_vertices[p_indices[i+2]].y, p_vertices[p_indices[i+2]].z);
         glm::vec3 edge1 = b-a;
         glm::vec3 edge2 = c-a;
-        glm::vec3 l_normal = glm::normalize( glm::cross( edge1, edge2));
+        glm::vec3 normal = glm::normalize( glm::cross( edge1, edge2));
 
-        p_normal[v] = l_normal;
-        p_normal[v+1] = l_normal;
-        p_normal[v+2] = l_normal;
-    }*/
+        p_normal[p_indices[i+0]] = normal;
+        p_normal[p_indices[i+1]] = normal;
+        p_normal[p_indices[i+2]] = normal;
+    }
+
+    p_model_changed = true;
 
     return true;
 }
@@ -259,8 +247,6 @@ void object_type::draw( glm::mat4 model, Shader* shader, glm::mat4 view, glm::ma
         updateVao();
 
     updateVbo();
-
-    shader->Bind();
 
     if( p_texture)
         p_texture->Bind();

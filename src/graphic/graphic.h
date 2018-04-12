@@ -20,8 +20,15 @@ public:
 
     void resizeWindow( int screen_width, int screen_height);
 
+    void initShadowsMapping();
     void initDeferredShading();
-    void deferredShading();
+
+    void renderQuad();
+    void renderDeferredShadingStart();
+    void renderDeferredShadingEnd();
+
+    void renderShadowmapStart();
+    void renderShadowmapEnd();
 
     SDL_Surface* loadSurface(std::string File);
     void draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip);
@@ -36,12 +43,8 @@ public:
 
     display * getDisplay() { if(p_display == NULL) printf( "graphic::GetDisplay dont exist\n"); return p_display; }
 
-    inline Shader *getVoxelShader() { if(p_voxel == NULL) printf( "graphic::GetVoxelShader dont exist\n"); return p_voxel; }
-    inline Shader *getObjectShader() { if(p_object== NULL) printf( "graphic::GetObjectShader dont exist\n"); return p_object; }
-    inline Shader *getDebugShader() { if(p_debug== NULL) printf( "graphic::getDebugShader dont exist\n"); return p_debug; }
-
-    unsigned int getBufferFbo() { return p_buffer; }
-
+    Shader *getVoxelShader() { return p_voxel; }
+    Shader *getObjectShader() { return p_object; }
     Shader *getGbuffer() { return p_gbuffer; }
 
     inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
@@ -53,16 +56,22 @@ private:
     Shader *p_gbuffer;
     Shader *p_deferred_shading;
 
+    unsigned int p_vao_quad;
+    unsigned int p_vbo_quad;
+
     Shader* p_voxel;
     Shader *p_object;
-    Shader *p_debug;
 
-    unsigned int p_buffer;
+    unsigned int p_fbo_buffer;
     unsigned int p_depth;
-    unsigned int p_position, p_normal, p_colorSpec;
+    unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec;
 
     int p_index_light;
     std::vector<light> p_lights;
+
+    const unsigned int p_shadow_width = 1024, p_shadow_height = 1024;
+    unsigned int p_fbo_shadow_depth;
+    unsigned int p_texture_shadow_depth;
 };
 
 #endif // graphic_H
