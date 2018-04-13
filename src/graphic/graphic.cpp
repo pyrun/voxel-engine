@@ -152,14 +152,15 @@ void graphic::renderDeferredShadingStart() {
     getDisplay()->clear( true);
 
     glBindFramebuffer( GL_FRAMEBUFFER, p_fbo_buffer);
-    getDisplay()->clear( true);
+    getDisplay()->clear( false);
 }
 
 void graphic::renderDeferredShadingEnd() {
     glm::vec2 l_scrn = p_display->getSize();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    getDisplay()->clear( false);
 
     p_deferred_shading->Bind();
     glActiveTexture(GL_TEXTURE0);
@@ -181,7 +182,7 @@ void graphic::renderDeferredShadingEnd() {
         p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
         p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
         // then calculate radius of light volume/sphere
-        const float maxBrightness = std::fmaxf(std::fmaxf(p_lights[i].getColor().r, p_lights[i].getColor().g), p_lights[i].getColor().b);
+        const float maxBrightness = std::fmaxf( std::fmaxf(p_lights[i].getColor().r, p_lights[i].getColor().g), p_lights[i].getColor().b);
         float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
         p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
     }

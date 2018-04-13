@@ -112,9 +112,10 @@ display::~display() {
 }
 
 void display::clear( bool black) {
-    if( black)
+    if( black) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    else if( p_backgroundcolor_change) {
+        p_backgroundcolor_change = true;
+    } else if( p_backgroundcolor_change) {
         glClearColor( p_red, p_green, p_blue, p_alpha);
         p_backgroundcolor_change = false;
     }
