@@ -36,7 +36,7 @@ public:
 
     void process_thrend_handle();
     void process_thrend_update();
-    void process();
+    void process_thrend_physic();
 
     void deleteChunks( Chunk* chunk);
     void deleteChunk( Chunk* node);
@@ -73,6 +73,7 @@ private:
     SDL_mutex *p_mutex;
     SDL_Thread *p_thread_update[WORLD_UPDATE_THRENDS];
     SDL_Thread *p_thread_handle;
+    SDL_Thread *p_thread_physic;
 
     std::vector<world_data_list> p_creatingList;
     std::vector<world_data_list> p_deletingList;

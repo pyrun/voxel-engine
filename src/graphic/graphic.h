@@ -23,6 +23,8 @@ public:
     void initShadowsMapping();
     void initDeferredShading();
 
+    void resizeDeferredShading();
+
     void renderQuad();
     void renderDeferredShadingStart();
     void renderDeferredShadingEnd();

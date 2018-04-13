@@ -40,6 +40,8 @@ void graphic::resizeWindow( int screen_width, int screen_height) {
     p_display->setSize( screen_width, screen_height);
     // resize
     p_camera->resize( (float)screen_width/(float)screen_height);
+
+    resizeDeferredShading();
 }
 
 void graphic::initShadowsMapping() {
@@ -111,6 +113,24 @@ void graphic::initDeferredShading() {
     p_deferred_shading->setInt("gPosition", 0);
     p_deferred_shading->setInt("gNormal", 1);
     p_deferred_shading->setInt("gAlbedoSpec", 2);
+}
+
+void graphic::resizeDeferredShading() {
+    glm::vec2 l_scrn = p_display->getSize();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_buffer);
+
+    glBindTexture(GL_TEXTURE_2D, p_texture_position);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_FLOAT, NULL);
+
+    glBindTexture(GL_TEXTURE_2D, p_texture_normal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_FLOAT, NULL);
+
+    glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, l_scrn.x, l_scrn.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, p_depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, l_scrn.x, l_scrn.y);
 }
 
 void graphic::renderQuad()
@@ -193,9 +213,8 @@ void graphic::renderDeferredShadingEnd() {
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fbo_buffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-
-    glBlitFramebuffer(0, 0, l_scrn.x, l_scrn.y, 0, 0, l_scrn.x, l_scrn.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, l_scrn.x, l_scrn.y, 0, 0, l_scrn.x, l_scrn.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 void graphic::renderShadowmapStart() {

@@ -21,11 +21,11 @@ uniform Light lights[NR_LIGHTS];
 uniform vec3 viewPos;
 
 void main()
-{             
+{  
     // retrieve data from G-buffer
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
-    vec3 Diffuse = texture(gAlbedoSpec, TexCoords).xyz;
+    vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
     
     // then calculate lighting as usual
     vec3 lighting  = vec3( 0, 0, 0);

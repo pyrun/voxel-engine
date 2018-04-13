@@ -532,8 +532,6 @@ bool network::process( int delta)
         }
     }
 
-    getWorld()->process();
-
     return l_quit;
 }
 

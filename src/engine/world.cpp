@@ -34,6 +34,22 @@ static int world_thread_update(void *data)
     return 0;
 }
 
+static int world_thread_physic(void *data)
+{
+    for ( ;; ) {
+        world *l_world = (world*)data;
+
+        l_world->process_thrend_physic();
+
+        if( l_world->getDestory() )
+            break;
+
+        SDL_Delay(1);
+    }
+
+    return 0;
+}
+
 world::world( texture *image, block_list* B_List) {
     p_buysvector = false;
     p_chunk_amount = 0;
@@ -46,10 +62,10 @@ world::world( texture *image, block_list* B_List) {
 
     // thrends
     p_mutex = SDL_CreateMutex ();
-    p_thread_handle = SDL_CreateThread(world_thread_handle, "world_thread_handle", (void *)this);
+    p_thread_handle = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
-        p_thread_update[i] = SDL_CreateThread(world_thread_update, "world_thread_update", (void *)this);
-
+        p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
+    p_thread_physic = SDL_CreateThread( world_thread_physic, "world_thread_physic", (void *)this);
 
     // physic
     p_physicScene = new b3World();
@@ -65,6 +81,7 @@ world::~world() {
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         SDL_WaitThread( p_thread_update[i], &l_return);
     SDL_WaitThread( p_thread_handle, &l_return);
+    SDL_WaitThread( p_thread_physic, &l_return);
     SDL_DestroyMutex( p_mutex);
 
     // Löschen der Welt
@@ -214,29 +231,32 @@ void world::process_thrend_update() {
             SDL_UnlockMutex ( p_mutex);
         }
 
-
         l_node = l_node->next;
     }
 }
 
-void world::process() {
+void world::process_thrend_physic() {
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
             break;
-        //if( node->getBody() == NULL)
+
+        // create body
         if( node->createPhysicBody( p_physicScene))
-            break;
-        //node->makeBulletMesh( world);
+            break; // olny one
+
+        // next
         node = node->next;
     }
 
+    // check if time pass
     while( (float)SDL_GetTicks() - p_time > WORLD_PHYSIC_FIXED_TIMESTEP*1000.f) {
+        // p_time calculate
         p_time += ((float)WORLD_PHYSIC_FIXED_TIMESTEP*1000.f);
         const u32 velocityIterations = 8; // Number of iterations for the velocity constraint solver.
         const u32 positionIterations = 2; // Number of iterations for the position constraint solver.
-        // step
+        // fixed step
         p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
     }
 }
