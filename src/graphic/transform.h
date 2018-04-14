@@ -31,18 +31,6 @@ public:
         p_model = posMat * rotMat * scaleMat;
 	}
 
-	inline glm::mat4 GetMVP(Camera *camera) {
-		glm::mat4 M = getModel();
-		glm::mat4 VP = camera->getViewProjection();
-		return VP * M;
-	}
-
-	inline glm::mat4 GetMVPOrtho(const Camera& camera) {
-		glm::mat4 M = getModel();
-		glm::mat4 VP = camera.GetViewProjectionOrtho();
-		return VP * M;
-	}
-
 
 	inline glm::vec3 getPos() { return pos; p_change = true;}
 	inline glm::vec3 getPosConst() const { return pos; }

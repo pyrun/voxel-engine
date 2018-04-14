@@ -74,6 +74,9 @@ private:
     const unsigned int p_shadow_width = 1024, p_shadow_height = 1024;
     unsigned int p_fbo_shadow_depth;
     unsigned int p_texture_shadow_depth;
+
+    // camera shadow
+    Camera *p_camera_shadow;
 };
 
 #endif // graphic_H

@@ -263,8 +263,7 @@ void network::start()
         l_obj->p_name = "box";
         l_obj->setPosition( glm::vec3( 0, 40, 5) );
 
-        //p_replicaManager.Reference( l_obj);
-
+        // add the obj
         addObject( l_obj);
 	}
 }

@@ -73,8 +73,6 @@ world::world( texture *image, block_list* B_List) {
     p_physicScene = new b3World();
     p_physicScene->SetGravity( b3Vec3(0.0f, -9.8f, 0.0f));
     p_time = SDL_GetTicks();
-
-    //p_renderer.init();
 }
 
 world::~world() {
@@ -246,12 +244,12 @@ void world::process_thrend_physic() {
             break;
 
         // create body
-        SDL_LockMutex ( p_mutex);
+        SDL_LockMutex ( p_mutex_physic);
         if( node->createPhysicBody( p_physicScene)) {
-            SDL_UnlockMutex ( p_mutex);
+            SDL_UnlockMutex ( p_mutex_physic);
             break; // olny one
         }
-        SDL_UnlockMutex ( p_mutex);
+        SDL_UnlockMutex ( p_mutex_physic);
 
         // next
         node = node->next;
@@ -264,10 +262,10 @@ void world::process_thrend_physic() {
         const u32 velocityIterations = 8; // Number of iterations for the velocity constraint solver.
         const u32 positionIterations = 2; // Number of iterations for the position constraint solver.
         // fixed step
-        SDL_LockMutex ( p_mutex);
+        SDL_LockMutex ( p_mutex_physic);
         if( p_physicScene)
             p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
-        SDL_UnlockMutex ( p_mutex);
+        SDL_UnlockMutex ( p_mutex_physic);
     }
 }
 

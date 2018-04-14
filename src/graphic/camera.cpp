@@ -14,7 +14,7 @@ Camera::Camera(const glm::vec3& pos, float fov, float aspect, float zNear, float
     // calc zoom
     zoom( 0);
 
-    this->projectionortho = glm::ortho<float>(-ortho_size, ortho_size,-ortho_size,ortho_size, p_zNear, p_zFar);
+    p_projection_ortho = glm::ortho<float>(-ortho_size, ortho_size,-ortho_size,ortho_size, p_zNear, p_zFar);
 
     // calc
     calcOrientation();

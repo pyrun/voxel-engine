@@ -2,6 +2,9 @@
 #include <SDL2/SDL_image.h>
 
 graphic::graphic( config *config) {
+    p_index_light = 0;
+    p_vao_quad = 0;
+
     // creating window
     p_display = new display( config);
 
@@ -13,23 +16,23 @@ graphic::graphic( config *config) {
 
     // set up camera
     p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
+    p_camera_shadow = new Camera( glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar, 10);
 
     initDeferredShading();
+    initShadowsMapping();
 
-    p_index_light = 0;
-
+    // test lights
     createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
     createLight( glm::vec3( 0, 15, 6), glm::vec3( 1, 1.0, 1.0));
     createLight( glm::vec3( 6, 15, 6), glm::vec3( 1, 0.5, 0.5));
     createLight( glm::vec3( 0, 15, 0), glm::vec3( 1, 1, 1));
-
-    p_vao_quad = 0;
 }
 
 graphic::~graphic() {
     delete p_gbuffer;
     delete p_deferred_shading;
     delete p_camera;
+    delete p_camera_shadow;
     delete p_voxel;
     delete p_display;
 }
@@ -62,6 +65,9 @@ void graphic::initShadowsMapping() {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // creating view of point
+
 }
 
 void graphic::initDeferredShading() {
