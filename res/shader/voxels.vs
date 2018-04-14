@@ -15,13 +15,13 @@ out vec3 blockdata;
 void main(void) {
     // pos
     vec4 worldPos = model * vec4( vertexPosition, 1.0);
-    fragPos = worldPos.xyz; 
+    fragPos = worldPos.xyz;
 
     // data
     blockdata = vertexTexture;
 
     // normal
-    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    mat3 normalMatrix = transpose( inverse( mat3( model)));
     normal = normalMatrix * vertexNormals;
 
     // position

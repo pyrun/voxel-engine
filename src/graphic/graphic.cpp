@@ -4,6 +4,7 @@
 graphic::graphic( config *config) {
     p_index_light = 0;
     p_vao_quad = 0;
+    p_fbo_shadow_depth = 0;
 
     // creating window
     p_display = new display( config);
@@ -13,13 +14,19 @@ graphic::graphic( config *config) {
     p_deferred_shading = new Shader( "shader/deferred_shading");
     p_voxel = new Shader( "shader/voxels");
     p_object = new Shader( "shader/object");
+    p_shadow = new Shader( "shader/shadow");
 
     // set up camera
     p_camera = new Camera(glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
-    p_camera_shadow = new Camera( glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar, 10);
 
     initDeferredShading();
     initShadowsMapping();
+
+    // set up light camera
+    p_lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, graphic_znear, graphic_zfar);
+    p_lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
+                              glm::vec3( 0.0f, 0.0f,  0.0f),
+                              glm::vec3( 0.0f, 1.0f,  0.0f));
 
     // test lights
     createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
@@ -31,8 +38,8 @@ graphic::graphic( config *config) {
 graphic::~graphic() {
     delete p_gbuffer;
     delete p_deferred_shading;
+    delete p_shadow;
     delete p_camera;
-    delete p_camera_shadow;
     delete p_voxel;
     delete p_display;
 }
@@ -139,6 +146,18 @@ void graphic::resizeDeferredShading() {
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, l_scrn.x, l_scrn.y);
 }
 
+void graphic::renderShadowStart() {
+    glViewport(0, 0, p_shadow_width, p_shadow_height);
+    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_shadow_depth);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    // render scene
+}
+
+void graphic::renderShadowEnd() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
 void graphic::renderQuad()
 {
     // if dont setup -> creating vao
@@ -195,6 +214,10 @@ void graphic::renderDeferredShadingEnd() {
     glBindTexture(GL_TEXTURE_2D, p_texture_normal);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
+    if( p_fbo_shadow_depth) {
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture( GL_TEXTURE_2D, p_texture_shadow_depth);
+    }
     // send light relevant uniforms
     for (unsigned int i = 0; i < p_lights.size(); i++)
     {

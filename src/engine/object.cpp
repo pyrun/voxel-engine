@@ -151,9 +151,9 @@ bool object_type::load_file( std::string file) {
         for (size_t v = 0; v < fv; v++) {
           // access to vertex
           tinyobj::index_t idx = l_shapes[s].mesh.indices[index_offset + v];
-          tinyobj::real_t vx = l_attrib.vertices[3*idx.vertex_index+0];
-          tinyobj::real_t vy = l_attrib.vertices[3*idx.vertex_index+1];
-          tinyobj::real_t vz = l_attrib.vertices[3*idx.vertex_index+2];
+          tinyobj::real_t l_vertex_x = l_attrib.vertices[3*idx.vertex_index+0];
+          tinyobj::real_t l_vertex_y = l_attrib.vertices[3*idx.vertex_index+1];
+          tinyobj::real_t l_vertex_z = l_attrib.vertices[3*idx.vertex_index+2];
 
           if( l_attrib.texcoords[ 0]) {
             tinyobj::real_t tx = l_attrib.texcoords[2*idx.texcoord_index+0];
@@ -164,7 +164,7 @@ bool object_type::load_file( std::string file) {
           }
 
           p_indices.push_back( p_indices.size() );
-          p_vertices.push_back( glm::vec3( vx, vy, vz));
+          p_vertices.push_back( glm::vec3( l_vertex_x, l_vertex_y, l_vertex_z));
 
           // Optional: vertex colors
           // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];

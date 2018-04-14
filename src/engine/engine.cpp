@@ -150,9 +150,19 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 }
 
 void engine::render( glm::mat4 view, glm::mat4 projection) {
+    Shader *l_shader = p_graphic->getShadow();
+    glm::mat4 l_proj = p_graphic->getLightProjection();
+    glm::mat4 l_view = p_graphic->getLightView();
+
+    p_graphic->getDisplay()->clear( false);
+    p_graphic->renderShadowStart();
+    l_shader->Bind();
+    p_network->getWorld()->draw( p_graphic, l_shader, view, projection);
+    p_graphic->renderShadowEnd();
+
     p_graphic->renderDeferredShadingStart();
 
-    Shader *l_shader = p_graphic->getGbuffer();
+    l_shader = p_graphic->getGbuffer();
     l_shader->Bind();
     p_network->getWorld()->draw( p_graphic, l_shader, view, projection);
 
@@ -161,6 +171,7 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     p_network->drawEntitys( l_shader, view, projection);
 
     p_graphic->renderDeferredShadingEnd();
+
 }
 
 void engine::fly( int l_delta) {

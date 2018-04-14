@@ -7,6 +7,7 @@ in vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform sampler2D gDepthMap;
 
 struct Light {
     vec3 Position;
@@ -29,7 +30,7 @@ void main()
     
     // then calculate lighting as usual
     vec3 lighting  = vec3( 0, 0, 0);
-    vec3 viewDir  = normalize(viewPos - FragPos);
+    vec3 viewDir  = normalize( viewPos - FragPos);
     for(int i = 0; i < NR_LIGHTS; ++i)
     {
          // calculate distance between light source and current fragment
@@ -39,6 +40,7 @@ void main()
             // diffuse
             vec3 lightDir = normalize(lights[i].Position - FragPos);
             vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * lights[i].Color;
+
             // attenuation
             float distance = length(lights[i].Position - FragPos);
             float attenuation = 1.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);

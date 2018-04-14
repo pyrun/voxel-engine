@@ -25,6 +25,9 @@ public:
 
     void resizeDeferredShading();
 
+    void renderShadowStart();
+    void renderShadowEnd();
+
     void renderQuad();
     void renderDeferredShadingStart();
     void renderDeferredShadingEnd();
@@ -47,9 +50,13 @@ public:
 
     Shader *getVoxelShader() { return p_voxel; }
     Shader *getObjectShader() { return p_object; }
+    Shader *getShadow() { return p_shadow; }
     Shader *getGbuffer() { return p_gbuffer; }
 
     inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
+
+    glm::mat4 getLightProjection() { return p_lightProjection; }
+    glm::mat4 getLightView() { return p_lightView; }
 protected:
 private:
     Camera *p_camera;
@@ -57,26 +64,29 @@ private:
 
     Shader *p_gbuffer;
     Shader *p_deferred_shading;
-
-    unsigned int p_vao_quad;
-    unsigned int p_vbo_quad;
-
+    Shader *p_shadow;
     Shader* p_voxel;
     Shader *p_object;
 
+    // render one texture as rec to the screen
+    unsigned int p_vao_quad;
+    unsigned int p_vbo_quad;
+
+    // buffer for deferred shading
     unsigned int p_fbo_buffer;
     unsigned int p_depth;
     unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec;
 
+    // spotlight source
     int p_index_light;
     std::vector<light> p_lights;
 
+    // shadow buffer and settings
     const unsigned int p_shadow_width = 1024, p_shadow_height = 1024;
     unsigned int p_fbo_shadow_depth;
     unsigned int p_texture_shadow_depth;
-
-    // camera shadow
-    Camera *p_camera_shadow;
+    glm::mat4 p_lightProjection;
+    glm::mat4 p_lightView;
 };
 
 #endif // graphic_H
