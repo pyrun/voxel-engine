@@ -59,9 +59,11 @@ world::world( texture *image, block_list* B_List) {
     p_blocklist = B_List;
     p_destroy = false;
     p_image = image;
+    p_physicScene = NULL;
 
     // thrends
     p_mutex = SDL_CreateMutex ();
+    p_mutex_physic = SDL_CreateMutex ();
     p_thread_handle = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
@@ -83,6 +85,7 @@ world::~world() {
     SDL_WaitThread( p_thread_handle, &l_return);
     SDL_WaitThread( p_thread_physic, &l_return);
     SDL_DestroyMutex( p_mutex);
+    SDL_DestroyMutex( p_mutex_physic);
 
     // Löschen der Welt
     deleteChunks( p_chunk_start);
@@ -239,12 +242,16 @@ void world::process_thrend_physic() {
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = p_chunk_start;
     for( ;; ) {
-        if( node == NULL)
+        if( node == NULL || p_physicScene == NULL)
             break;
 
         // create body
-        if( node->createPhysicBody( p_physicScene))
+        SDL_LockMutex ( p_mutex);
+        if( node->createPhysicBody( p_physicScene)) {
+            SDL_UnlockMutex ( p_mutex);
             break; // olny one
+        }
+        SDL_UnlockMutex ( p_mutex);
 
         // next
         node = node->next;
@@ -257,7 +264,10 @@ void world::process_thrend_physic() {
         const u32 velocityIterations = 8; // Number of iterations for the velocity constraint solver.
         const u32 positionIterations = 2; // Number of iterations for the position constraint solver.
         // fixed step
-        p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
+        SDL_LockMutex ( p_mutex);
+        if( p_physicScene)
+            p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
+        SDL_UnlockMutex ( p_mutex);
     }
 }
 

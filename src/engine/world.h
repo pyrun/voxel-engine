@@ -71,6 +71,7 @@ private:
     texture *p_image;
 
     SDL_mutex *p_mutex;
+    SDL_mutex *p_mutex_physic;
     SDL_Thread *p_thread_update[WORLD_UPDATE_THRENDS];
     SDL_Thread *p_thread_handle;
     SDL_Thread *p_thread_physic;

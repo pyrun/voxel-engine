@@ -39,69 +39,6 @@ Chunk::Chunk( int X, int Y, int Z, int Seed) {
     printf( "Chunk::chunk take %dms creating x%d y%d z%d\n", SDL_GetTicks()-t, p_pos.x, p_pos.y, p_pos.z);
 }
 
-static void BuildGrid(b3Mesh* mesh, u32 w, u32 h, bool randomY = false)
-{
-	b3Vec3 t;
-	t.x = -0.5f * float32(w);
-	t.y = 0.0f;
-	t.z = -0.5f * float32(h);
-
-	mesh->vertexCount = w * h;
-	mesh->vertices = (b3Vec3*)b3Alloc(mesh->vertexCount * sizeof(b3Vec3));
-
-	for (u32 i = 0; i < w; ++i)
-	{
-		for (u32 j = 0; j < h; ++j)
-		{
-			u32 v1 = i * w + j;
-
-			b3Vec3 v;
-			v.x = float32(i);
-			v.y = 1;
-			v.z = float32(j);
-
-			v += t;
-
-			mesh->vertices[v1] = v;
-		}
-	}
-
-	mesh->triangleCount = 2 * (w - 1) * (h - 1);
-	mesh->triangles = (b3Triangle*)b3Alloc(mesh->triangleCount * sizeof(b3Triangle));
-
-	u32 triangleCount = 0;
-	for (u32 i = 0; i < w - 1; ++i)
-	{
-		for (u32 j = 0; j < h - 1; ++j)
-		{
-			u32 v1 = i * w + j;
-			u32 v2 = (i + 1) * w + j;
-			u32 v3 = (i + 1) * w + (j + 1);
-			u32 v4 = i * w + (j + 1);
-
-			B3_ASSERT(triangleCount < mesh->triangleCount);
-			b3Triangle* t1 = mesh->triangles + triangleCount;
-			++triangleCount;
-
-			t1->v1 = v3;
-			t1->v2 = v2;
-			t1->v3 = v1;
-
-			B3_ASSERT(triangleCount < mesh->triangleCount);
-			b3Triangle* t2 = mesh->triangles + triangleCount;
-			++triangleCount;
-
-			t2->v1 = v1;
-			t2->v2 = v4;
-			t2->v3 = v3;
-		}
-	}
-
-	B3_ASSERT(triangleCount == mesh->triangleCount);
-
-	mesh->BuildTree();
-}
-
 Chunk::~Chunk() {
     Timer timer;
     timer.Start();
@@ -194,71 +131,24 @@ bool Chunk::createPhysicBody( b3World *world) {
     return true;
 }
 
-/*btRigidBody *Chunk::makeBulletMesh( btDiscreteDynamicsWorld *world) {
-    btRigidBody *body = nullptr;
-
-    if( !p_updateRigidBody)
-        return body;
-
-    // Handy lambda for converting from irr::vector to btVector
-    auto toBtVector = [ &]( const glm::vec3 & vec ) -> btVector3
-    {
-        btVector3 bt( vec.x*CHUNK_SCALE, vec.y*CHUNK_SCALE, vec.z*CHUNK_SCALE );
-
-        return bt;
-    };
-
-    // Make bullet rigid body
-    if ( ! p_vertices.empty() && ! p_indices.empty() )
-    {
-        // Working numbers
-        const size_t numIndices     = p_indices.size();
-        const size_t numTriangles   = numIndices / 3;
-
-        // Create triangles
-        btTriangleMesh * btmesh = new btTriangleMesh();
-
-        // Build btTriangleMesh
-        for ( size_t i=0; i<numIndices; i+=3 )
-        {
-            const btVector3 &A = toBtVector( p_vertices[ p_indices[ i+0 ] ] );
-            const btVector3 &B = toBtVector( p_vertices[ p_indices[ i+1 ] ] );
-            const btVector3 &C = toBtVector( p_vertices[ p_indices[ i+2 ] ] );
-
-            bool removeDuplicateVertices = true;
-            btmesh->addTriangle( A, B, C, removeDuplicateVertices );
+bool Chunk::serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
+{
+    for( int i = start; i < end; i++) {
+        bitstream->Serialize( writeToBitstream, p_tile[i]);
+        if( p_tile[i] > MAX_TILE_ID) {
+            printf( "chunk::serialize corrupt data x%d y%d z%d Data %d to %d tileID#%d\n", (int)p_pos.x, (int)p_pos.y, (int)p_pos.z, start, end, p_tile[i]);
+            p_tile[i] = EMPTY_BLOCK_ID;
+            return false;
         }
-
-        // Give it a default MotionState
-        btTransform transform;
-        transform.setIdentity();
-        transform.setOrigin( btVector3 ( p_form.getPos().x, p_form.getPos().y, p_form.getPos().z) );
-        transform.setRotation( btQuaternion(0, 0, 0, 1) );
-
-        btCollisionShape *btShape = new btBvhTriangleMeshShape( btmesh, true );
-
-        // Give it a default MotionState
-        btDefaultMotionState* fallMotionState =
-                new btDefaultMotionState( transform);
-
-        btScalar mass = 0;
-        btVector3 fallInertia(0, 0, 0);
-        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, btShape, fallInertia);
-        body = new btRigidBody(fallRigidBodyCI);
+        if(!writeToBitstream) {
+            if( blocks->get( p_tile[i]) == NULL && p_tile[i] != EMPTY_BLOCK_ID ) {
+                p_tile[i] = 0;
+                return false;
+            }
+        }
     }
-
-    if( p_rigidBody) {
-        world->removeCollisionObject( p_rigidBody);
-        delete p_rigidBody;
-    }
-
-    p_updateRigidBody = false;
-
-    p_rigidBody = body;
-
-    world->addRigidBody( p_rigidBody );
-    return body;
-}*/
+    return true;
+}
 
 void Chunk::set( int X, int Y, int Z, int ID, bool change) {
     if( X < 0)
@@ -304,12 +194,6 @@ float PackToFloat(unsigned char x, unsigned char y, unsigned char z)
   float packedFloat = (float) ( ((double)packedColor) / ((double) (1 << 24)) );
 
   return packedFloat;
-}
-
-void Chunk::updateForm()
-{
-    p_form.setPos( glm::vec3( p_pos.x*CHUNK_SIZE*CHUNK_SCALE, p_pos.y*CHUNK_SIZE*CHUNK_SCALE, p_pos.z*CHUNK_SIZE*CHUNK_SCALE) );
-    p_form.setScale( glm::vec3( CHUNK_SCALE));
 }
 
 void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 texture) {
@@ -664,6 +548,12 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     p_updateRigidBody = true;
 
     printf( "Chunk::updateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
+}
+
+void Chunk::updateForm()
+{
+    p_form.setPos( glm::vec3( p_pos.x*CHUNK_SIZE*CHUNK_SCALE, p_pos.y*CHUNK_SIZE*CHUNK_SCALE, p_pos.z*CHUNK_SIZE*CHUNK_SCALE) );
+    p_form.setScale( glm::vec3( CHUNK_SCALE));
 }
 
 void Chunk::updateVbo() {

@@ -16,7 +16,7 @@
 
 #define EMPTY_BLOCK_ID 0
 
-#define MAX_TILE_ID 32.767 // dont have more blocks then this
+#define MAX_TILE_ID 32767 // dont have more blocks then this
 
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
@@ -35,24 +35,7 @@ public:
 
     bool createPhysicBody( b3World *world);
 
-    bool serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
-    {
-        for( int i = start; i < end; i++) {
-            bitstream->Serialize( writeToBitstream, p_tile[i]);
-            if( p_tile[i] > MAX_TILE_ID) {
-                printf( "chunk::serialize corrupt data x%d y%d z%d Data %d to %d tileID#%d\n", (int)p_pos.x, (int)p_pos.y, (int)p_pos.z, start, end, p_tile[i]);
-                p_tile[i] = EMPTY_BLOCK_ID;
-                return false;
-            }
-            if(!writeToBitstream) {
-                if( blocks->get( p_tile[i]) == NULL && p_tile[i] != EMPTY_BLOCK_ID ) {
-                    p_tile[i] = 0;
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+    bool serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks);
 
     inline glm::vec3 getPos() { return p_pos; }
 
@@ -61,21 +44,20 @@ public:
     int getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
-    void updateForm();
+
 
     void addFaceX( bool flip, glm::vec3 pos, glm::vec3 data);
     void addFaceY( bool flip, glm::vec3 pos, glm::vec3 data);
     void addFaceZ( bool flip, glm::vec3 pos, glm::vec3 data);
 
     void updateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
-    void DestoryVbo();
+    void updateForm();
     void updateVbo();
+
     void draw( Shader* shader, glm::mat4 view, glm::mat4 projection);
 
     int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }
-
-//    btRigidBody *getPhysicBody() { return p_rigidBody; }
 
     GLuint getVbo() { return p_vboVertex; }
     void changed( bool set) { p_changed = set; }

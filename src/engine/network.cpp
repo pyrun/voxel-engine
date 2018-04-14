@@ -263,9 +263,9 @@ void network::start()
         l_obj->p_name = "box";
         l_obj->setPosition( glm::vec3( 0, 40, 5) );
 
-        p_replicaManager.Reference( l_obj);
+        //p_replicaManager.Reference( l_obj);
 
-        //addObject( l_obj);
+        addObject( l_obj);
 	}
 }
 
@@ -537,26 +537,33 @@ bool network::process( int delta)
 
 void network::drawEntitys( Shader *shader, glm::mat4 view, glm::mat4 projection)
 {
-    unsigned int idx;
-    for (idx=0; idx < p_replicaManager.GetReplicaCount(); idx++) {
-        network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex(idx)));
+    unsigned int l_id;
+    for (l_id=0; l_id < p_replicaManager.GetReplicaCount(); l_id++) {
+        network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex( l_id)));
 
+        // create type if dont exit
         if( l_obj->getType() == NULL) {
             object_type *l_type = p_types->get( l_obj->p_name.C_String());
-            if( l_type)
+            if( l_type) // found -> set
                 l_obj->setType( l_type);
         } else {
+            // if no physic body -> crate one
             if( l_obj->getBody() == NULL) {
                 b3BodyDef bdef;
+                // set up def.
                 bdef.type = b3BodyType::e_dynamicBody;
                 b3Body* body = getWorld()->getPhysicWorld()->CreateBody(bdef);
+
+                /// todo
                 if( isServer())
                     l_obj->setBody( body);
             }
         }
 
+        // set physic transform to model transform
         l_obj->process();
 
+        // draw
         l_obj->draw( shader, view, projection);
     }
 }
