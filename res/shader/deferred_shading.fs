@@ -7,7 +7,7 @@ in vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
-uniform sampler2D gDepthMap;
+uniform sampler2D gShadow;
 
 struct Light {
     vec3 Position;
@@ -18,8 +18,8 @@ struct Light {
     float Radius;
 };
 const int NR_LIGHTS = 32;
+
 uniform Light lights[NR_LIGHTS];
-uniform vec3 viewPos;
 
 void main()
 {  
@@ -27,10 +27,10 @@ void main()
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
+    vec3 Shadow = texture(gShadow, TexCoords).rgb;
     
     // then calculate lighting as usual
     vec3 lighting  = vec3( 0, 0, 0);
-    vec3 viewDir  = normalize( viewPos - FragPos);
     for(int i = 0; i < NR_LIGHTS; ++i)
     {
          // calculate distance between light source and current fragment
@@ -48,6 +48,8 @@ void main()
             lighting += diffuse;        
         }
     }
+
+    lighting *= Shadow;
 
     FragColor = vec4( lighting, 1.0);
 }

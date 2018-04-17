@@ -226,7 +226,7 @@ class network
 
         bool process( int delta);
 
-        void drawEntitys( Shader *shader, glm::mat4 view, glm::mat4 projection);
+        void drawEntitys( Shader *shader);
 
         void create_object();
 

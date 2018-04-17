@@ -155,23 +155,29 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     glm::mat4 l_view = p_graphic->getLightView();
 
     p_graphic->getDisplay()->clear( false);
-    p_graphic->renderShadowStart();
     l_shader->Bind();
-    p_network->getWorld()->draw( p_graphic, l_shader, view, projection);
-    p_graphic->renderShadowEnd();
+    p_graphic->renderShadow( l_shader);
+    //l_shader->update( MAT_PROJECTION, projection);
+    //l_shader->update( MAT_VIEW, view);
+    p_network->getWorld()->draw( p_graphic, l_shader);
+    p_network->drawEntitys( l_shader);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // finish
 
+    // diff
     p_graphic->renderDeferredShadingStart();
 
     l_shader = p_graphic->getGbuffer();
     l_shader->Bind();
-    p_network->getWorld()->draw( p_graphic, l_shader, view, projection);
+    l_shader->update( MAT_PROJECTION, projection);
+    l_shader->update( MAT_VIEW, view);
+    p_network->getWorld()->draw( p_graphic, l_shader);
 
     l_shader = p_graphic->getObjectShader();
     l_shader->Bind();
-    p_network->drawEntitys( l_shader, view, projection);
-
-    p_graphic->renderDeferredShadingEnd();
-
+    l_shader->update( MAT_PROJECTION, projection);
+    l_shader->update( MAT_VIEW, view);
+    p_network->drawEntitys( l_shader);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void engine::fly( int l_delta) {
@@ -200,7 +206,6 @@ void engine::run() {
     int l_delta = 0;
 
     Timer l_timer_test;
-
     /*ServerCreated_ServerSerialized* l_hand = NULL;
 
     if( p_network->isServer()) {
@@ -211,6 +216,12 @@ void engine::run() {
     }*/
 
     //l_hand->p_type = p_network->getObjectList()->get( l_hand->p_name.C_String());
+
+    if( p_openvr) { // dirty hack
+        glm::vec2 l_oldSize = p_graphic->getDisplay()->getSize();
+        p_graphic->getDisplay()->setSize( p_openvr->getScreenSize());
+        p_graphic->resizeDeferredShading();
+    }
 
     p_graphic->getCamera()->GetPos().y = 20;
 
@@ -247,23 +258,24 @@ void engine::run() {
         }
 
         /// render #1 openVR
-        /*if( p_openvr ) {
+        if( p_openvr ) {
+            glm::mat4 l_projection = p_openvr->getCurrentProjectionMatrix( vr::Eye_Left);
+            glm::mat4 l_view_cam =  p_openvr->getCurrentViewMatrix( vr::Eye_Left) * p_graphic->getCamera()->getViewWithoutUp();
+            render( l_view_cam, l_projection);
             p_openvr->renderForLeftEye();
-            l_mvp = p_openvr->getViewProjectionMatrixLeft() * p_graphic->getCamera()->getViewWithoutUp();
-            render( l_mvp);
-            p_openvr->renderModels( l_mvp);
+            p_graphic->renderDeferredShadingEnd();
             p_openvr->renderEndLeftEye();
 
+            l_projection = p_openvr->getCurrentProjectionMatrix( vr::Eye_Right);
+            l_view_cam = p_openvr->getCurrentViewMatrix( vr::Eye_Right) * p_graphic->getCamera()->getViewWithoutUp();
+            render( l_view_cam, l_projection);
             p_openvr->renderForRightEye();
-            l_mvp = p_openvr->getViewProjectionMatrixRight() * p_graphic->getCamera()->getViewWithoutUp();
-            render( l_mvp);
-            p_openvr->renderModels( l_mvp);
+            p_graphic->renderDeferredShadingEnd();
             p_openvr->renderEndRightEye();
-
 
             //l_timer.Start();
             p_openvr->renderFrame();
-        }*/
+        }
 
 
         /// render #2 window
@@ -274,6 +286,8 @@ void engine::run() {
 
         l_timer_test.Start();
         render( l_view_cam, l_projection);
+        p_graphic->getDisplay()->clear( false);
+        p_graphic->renderDeferredShadingEnd();
 
         if( p_network->getWorld()) {
             viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter

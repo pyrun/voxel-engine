@@ -534,7 +534,7 @@ bool network::process( int delta)
     return l_quit;
 }
 
-void network::drawEntitys( Shader *shader, glm::mat4 view, glm::mat4 projection)
+void network::drawEntitys( Shader *shader)
 {
     unsigned int l_id;
     for (l_id=0; l_id < p_replicaManager.GetReplicaCount(); l_id++) {
@@ -563,7 +563,7 @@ void network::drawEntitys( Shader *shader, glm::mat4 view, glm::mat4 projection)
         l_obj->process();
 
         // draw
-        l_obj->draw( shader, view, projection);
+        l_obj->draw( shader);
     }
 }
 

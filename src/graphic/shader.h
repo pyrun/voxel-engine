@@ -6,6 +6,12 @@
 
 #include "transform.h"
 
+enum shader_mat{
+    MAT_VIEW = 0,
+    MAT_PROJECTION,
+    MAT_MODEL
+};
+
 class ShaderVector {
 public:
     int x;
@@ -40,13 +46,13 @@ public:
 
 	void Bind();
 	void setSize( GLfloat x, GLfloat y);
+	void setLightMatrix( glm::mat4 matrix);
 	//void setTextureUnit(unsigned int TextureUnit);
 	void setVec3(const std::string &name, const glm::vec3 &value) const;
 	void setFloat(const std::string &name, float value) const;
 	void setInt(const std::string &name, int value) const;
 
-	void update( glm::mat4 model, glm::mat4 view, glm::mat4 projection);
-	void updateWithout(  Transform *t_transform, glm::mat4 mvp) ;
+	void update( shader_mat mat, glm::mat4 matrix);
 
 	inline GLint& GetProgram() { return p_program; }
 	void BindArray( GLuint Data, int Type, GLenum Type_Attrib = GL_FLOAT, int Attrib_size = 4);
@@ -57,7 +63,7 @@ protected:
 private:
     static const unsigned int NUM_ATTRIBUTE = 3;
 	static const unsigned int NUM_SHADERS = 2;
-	static const unsigned int NUM_UNIFORMS = 4;
+	static const unsigned int NUM_UNIFORMS = 5;
 	int p_attribute_flag[NUM_ATTRIBUTE];
 	void operator=(const Shader& shader) {}
 	Shader(const Shader& shader) {}

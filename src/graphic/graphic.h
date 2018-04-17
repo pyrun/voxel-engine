@@ -25,15 +25,11 @@ public:
 
     void resizeDeferredShading();
 
-    void renderShadowStart();
-    void renderShadowEnd();
+    void renderShadow( Shader *shader);;
 
     void renderQuad();
     void renderDeferredShadingStart();
-    void renderDeferredShadingEnd();
-
-    void renderShadowmapStart();
-    void renderShadowmapEnd();
+    void renderDeferredShadingEnd( unsigned int fbo = 0);
 
     SDL_Surface* loadSurface(std::string File);
     void draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip);
@@ -75,7 +71,7 @@ private:
     // buffer for deferred shading
     unsigned int p_fbo_buffer;
     unsigned int p_depth;
-    unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec;
+    unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec, p_texture_shadow;
 
     // spotlight source
     int p_index_light;
@@ -87,6 +83,7 @@ private:
     unsigned int p_texture_shadow_depth;
     glm::mat4 p_lightProjection;
     glm::mat4 p_lightView;
+    glm::vec3 p_lightPos;
 };
 
 #endif // graphic_H

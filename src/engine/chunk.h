@@ -54,7 +54,7 @@ public:
     void updateForm();
     void updateVbo();
 
-    void draw( Shader* shader, glm::mat4 view, glm::mat4 projection);
+    void draw( Shader* shader);
 
     int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }

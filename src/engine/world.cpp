@@ -413,22 +413,22 @@ void world::addDeleteChunk( glm::tvec3<int> pos ) {
     p_deletingList.push_back( l_obj);
 }
 
-void world::draw( graphic *graphic, Shader *shader, glm::mat4 view, glm::mat4 projection) {
+void world::draw( graphic *graphic, Shader *shader) {
 
     shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
 
     p_image->Bind();
 
     // draw node
-    drawNode( shader, view, projection);
+    drawNode( shader);
 }
 
-void world::drawNode( Shader* shader, glm::mat4 view, glm::mat4 projection) {
+void world::drawNode( Shader* shader) {
     Chunk *l_node = p_chunk_start;
     for( ;; ) {
         if( l_node == NULL)
             break;
-        l_node->draw( shader, view, projection);
+        l_node->draw( shader);
 
         // next
         l_node = l_node->next;

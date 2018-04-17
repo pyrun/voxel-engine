@@ -7,5 +7,6 @@ out vec2 TexCoords;
 void main()
 {
     TexCoords = vertexNormals;
+
     gl_Position = vec4(vertexPosition, 1.0);
 }

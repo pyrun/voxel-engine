@@ -25,6 +25,11 @@ public:
         p_height = screen_height;
 	}
 
+	void setSize( glm::vec2 size) {
+        p_width = size.x;
+        p_height = size.y;
+	}
+
 	void setBackgroundColor( float red = 1.0f, float green= 1.0f, float blue = 1.0f, float alpha = 1.0f) {
 	    p_red = red;
 	    p_green = green;

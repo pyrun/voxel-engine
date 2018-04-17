@@ -26,7 +26,7 @@ class object_type {
         void updateVbo();
         void updateVao();
 
-        void draw( glm::mat4 model, Shader* shader, glm::mat4 view, glm::mat4 projection);
+        void draw( glm::mat4 model, Shader* shader);
 
         std::string getName() { return p_name; }
         glm::vec3 getScale() { return p_size; }
@@ -64,7 +64,7 @@ class object {
         void init();
 
         void process();
-        void draw( Shader* shader, glm::mat4 view, glm::mat4 projection);
+        void draw( Shader* shader);
 
         void update_model();
 

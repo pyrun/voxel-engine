@@ -570,6 +570,36 @@ glm::mat4 openvr::getCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	return matMVP;
 }
 
+glm::mat4 openvr::getCurrentProjectionMatrix(vr::Hmd_Eye nEye)
+{
+	glm::mat4x4 matMVP;
+	if (nEye == vr::Eye_Left)
+	{
+		matMVP = p_mat4ProjectionLeft;
+	}
+	else if (nEye == vr::Eye_Right)
+	{
+		matMVP = p_mat4ProjectionRight;
+	}
+
+	return matMVP;
+}
+
+glm::mat4 openvr::getCurrentViewMatrix(vr::Hmd_Eye nEye)
+{
+	glm::mat4x4 matMVP;
+	if (nEye == vr::Eye_Left)
+	{
+		matMVP = p_mat4eyePosLeft * p_mat4HMDPose;
+	}
+	else if (nEye == vr::Eye_Right)
+	{
+		matMVP = p_mat4eyePosRight *  p_mat4HMDPose;
+	}
+
+	return matMVP;
+}
+
 glm::mat4 openvr::getHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 {
 	if (!p_hmd)

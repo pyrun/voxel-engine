@@ -81,8 +81,7 @@
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
-					<Add directory="../../bullet3/src" />
-					<Add directory="graphic/" />
+					<Add directory="../../bounce/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -92,9 +91,7 @@
 					<Add option="-lRakNet" />
 					<Add option="-DMINIUPNP_STATICLIB" />
 					<Add option="-lminiupnpc" />
-					<Add option="-lBulletDynamics" />
-					<Add option="-lBulletCollision" />
-					<Add option="-lLinearMath" />
+					<Add option="-lbounce" />
 					<Add library="ws2_32" />
 					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
@@ -102,7 +99,7 @@
 					<Add directory="../../openvr-mingw/lib" />
 					<Add directory="../../RakNet/Lib" />
 					<Add directory="../../Miniupnpc/lib" />
-					<Add directory="../../bullet3/lib" />
+					<Add directory="../../bounce/lib" />
 				</Linker>
 			</Target>
 		</Build>

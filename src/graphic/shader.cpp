@@ -27,6 +27,7 @@ Shader::Shader(const std::string& fileName) {
 	p_uniforms[1] = glGetUniformLocation(p_program, "view");
 	p_uniforms[2] = glGetUniformLocation(p_program, "model");
 	p_uniforms[3] = glGetUniformLocation(p_program, "tilesize");
+	p_uniforms[4] = glGetUniformLocation(p_program, "lightSpaceMatrix");
 
 	p_attribute[0] = glGetAttribLocation(p_program, "vertexPosition");
 	p_attribute[1] = glGetAttribLocation(p_program, "vertexNormals");
@@ -74,6 +75,10 @@ void Shader::setSize( GLfloat x, GLfloat y) {
     glUniform2f( p_uniforms[3], x, y);
 }
 
+void Shader::setLightMatrix( glm::mat4 matrix) {
+    glUniformMatrix4fv( p_uniforms[4], 1, GL_FALSE, glm::value_ptr( matrix));
+}
+
 void Shader::setVec3(const std::string &name, const glm::vec3 &value) const
 {
     glUniform3fv( glGetUniformLocation( p_program, name.c_str()), 1, &value[0]);
@@ -89,24 +94,22 @@ void Shader::setInt(const std::string &name, int value) const
     glUniform1i(glGetUniformLocation( p_program, name.c_str()), value);
 }
 
-void Shader::update( glm::mat4 model, glm::mat4 view, glm::mat4 projection) {
-    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, glm::value_ptr( projection));
-    glUniformMatrix4fv(p_uniforms[1], 1, GL_FALSE, glm::value_ptr( view));
-    glUniformMatrix4fv(p_uniforms[2], 1, GL_FALSE, glm::value_ptr( model));
-}
+void Shader::update( shader_mat mat, glm::mat4 matrix) {
+    unsigned int l_uniform = 0;
+    switch( mat) {
+        case MAT_PROJECTION:
+            l_uniform = 0;
+        break;
+        case MAT_VIEW:
+            l_uniform = 1;
+        break;
+        case MAT_MODEL:
+            l_uniform = 2;
+        break;
+    }
 
-void Shader::updateWithout(  Transform *t_transform, glm::mat4 mvp) {
-    //GetMVPOrtho
-    float x = t_transform->getPos().x;
-    float y = t_transform->getPos().y;
-    float z = t_transform->getPos().z;
-
-
-    //mvp = mvp * glm::vec4( x, y, z, 1.0);
-
-    mvp = glm::translate( mvp, glm::vec3(x, y, z));
-
-    glUniformMatrix4fv(p_uniforms[0], 1, GL_FALSE, &mvp[0][0]);
+    // send matrix
+    glUniformMatrix4fv(p_uniforms[ l_uniform], 1, GL_FALSE, glm::value_ptr( matrix));
 }
 
 void Shader::BindArray( GLuint Data, int Type, GLenum Type_Attrib, int Attrib_size ) {

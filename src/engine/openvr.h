@@ -43,6 +43,8 @@ class openvr
         void updateHMDMatrixPose();
 
         void renderForLeftEye();
+        unsigned int getFboForLeftEye() { return leftEyeDesc.m_nRenderFramebufferId; }
+        unsigned int getFboForRightEye() { return rightEyeDesc.m_nRenderFramebufferId; }
         glm::mat4 getViewProjectionMatrixLeft() { return getCurrentViewProjectionMatrix(vr::Eye_Left); }
         void renderEndLeftEye();
 
@@ -57,8 +59,12 @@ class openvr
         void processVREvent( const vr::VREvent_t & event );
 
         glm::mat4 getCurrentViewProjectionMatrix( vr::Hmd_Eye nEye );
+        glm::mat4 getCurrentProjectionMatrix(vr::Hmd_Eye nEye);
+        glm::mat4 getCurrentViewMatrix(vr::Hmd_Eye nEye);
         glm::mat4 getHMDMatrixProjectionEye( vr::Hmd_Eye nEye );
         glm::mat4 getHMDMatrixPoseEye( vr::Hmd_Eye nEye );
+
+        glm::vec2 getScreenSize() { return glm::vec2( p_nRenderWidth, p_nRenderHeight); }
     protected:
 
     private:

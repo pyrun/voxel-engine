@@ -620,14 +620,14 @@ void Chunk::updateVbo() {
     printf( "UpdateVbo %dms %d * %d = %d\n", timer.GetTicks(), sizeof(glm::vec3), getAmount(), getAmount() * sizeof(glm::vec3));
 }
 
-void Chunk::draw( Shader* shader, glm::mat4 view, glm::mat4 projection) {
+void Chunk::draw( Shader* shader) {
     if( p_vboVertex == 0 && !p_updateVbo)
         return;
     if( p_updateVbo)
         updateVbo();
 
     // Shader einstellen
-    shader->update( p_form.getModel(), view, projection);
+    shader->update( MAT_MODEL, p_form.getModel());
 
     // use the vao
     glBindVertexArray( p_vboVao);
