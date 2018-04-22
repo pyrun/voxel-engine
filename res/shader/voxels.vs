@@ -7,22 +7,28 @@ layout( location = 2 ) in vec3 vertexTexture;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 lightSpaceMatrix;
 
-out vec3 fragPos;
-out vec3 normal;
-out vec3 blockdata;
+out vec3 TexCoords;
+out vec3 FragPos;
+out vec3 Normal;
+out vec4 FragPosLightSpace;
 
-void main(void) {
+void main()
+{
     // pos
     vec4 worldPos = model * vec4( vertexPosition, 1.0);
-    fragPos = worldPos.xyz;
+    FragPos = worldPos.xyz; 
 
     // data
-    blockdata = vertexTexture;
+    TexCoords = vertexTexture;
 
     // normal
-    mat3 normalMatrix = transpose( inverse( mat3( model)));
-    normal = normalMatrix * vertexNormals;
+    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    Normal = normalMatrix * vertexNormals;
+
+    // shadow
+    FragPosLightSpace = lightSpaceMatrix * vec4( FragPos, 1.0);
 
     // position
     gl_Position = projection * view * worldPos;

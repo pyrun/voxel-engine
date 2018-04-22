@@ -25,11 +25,12 @@ public:
 
     void resizeDeferredShading();
 
-    void renderShadow( Shader *shader);;
-
+    void renderShadow( Shader *shader);
+    void renderDeferredShading();
     void renderQuad();
-    void renderDeferredShadingStart();
-    void renderDeferredShadingEnd( unsigned int fbo = 0);
+
+    void addShadowMatrix( Shader *shader);
+    void bindDeferredShading();
 
     SDL_Surface* loadSurface(std::string File);
     void draw( SDL_Surface* Image, double X, double Y, int W, int H, int SpriteX, int SpriteY, bool Flip);
@@ -78,7 +79,7 @@ private:
     std::vector<light> p_lights;
 
     // shadow buffer and settings
-    const unsigned int p_shadow_width = 1024, p_shadow_height = 1024;
+    const unsigned int p_shadow_width = 2048, p_shadow_height = 2048;
     unsigned int p_fbo_shadow_depth;
     unsigned int p_texture_shadow_depth;
     glm::mat4 p_lightProjection;

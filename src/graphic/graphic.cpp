@@ -22,19 +22,23 @@ graphic::graphic( config *config) {
     initDeferredShading();
     initShadowsMapping();
 
-    p_lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
+
+    p_lightPos = glm::vec3(-8.0f, 40.0f, -1.0f);
+
 
     // set up light camera
-    p_lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
+    p_lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, graphic_znear, graphic_zfar);
     p_lightView = glm::lookAt( p_lightPos,
-                              glm::vec3( 0.0f, 0.0f,  0.0f),
+                              glm::vec3( 10.0f, 0.0f,  20.0f),
                               glm::vec3( 0.0f, 1.0f,  0.0f));
 
     // test lights
-    createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
+
+    /*createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
     createLight( glm::vec3( 0, 15, 6), glm::vec3( 1, 1.0, 1.0));
-    createLight( glm::vec3( 6, 15, 6), glm::vec3( 1, 0.5, 0.5));
+    createLight( glm::vec3( 6, 15, 6), glm::vec3( 1, 0.5, 0.5));*/
     createLight( glm::vec3( 0, 15, 0), glm::vec3( 1, 1, 1));
+    createLight( glm::vec3( 0, 5, 0), glm::vec3( 1, 1, 1));
 }
 
 graphic::~graphic() {
@@ -61,22 +65,21 @@ void graphic::initShadowsMapping() {
 
     glGenTextures(1, &p_texture_shadow_depth);
     glBindTexture(GL_TEXTURE_2D, p_texture_shadow_depth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-                 p_shadow_width, p_shadow_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, p_shadow_width, p_shadow_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_shadow_depth);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_texture_shadow_depth, 0);
+    //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_texture_shadow_depth, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, p_texture_shadow_depth, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // creating view of point
-
 }
 
 void graphic::initDeferredShading() {
@@ -164,10 +167,49 @@ void graphic::renderShadow( Shader *shader) {
     shader->update( MAT_PROJECTION, p_lightProjection);
     shader->update( MAT_VIEW, p_lightView);
     glViewport(0, 0, p_shadow_width, p_shadow_height);
-
     glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_shadow_depth);
         glClear(GL_DEPTH_BUFFER_BIT);
     // render scene
+}
+
+void graphic::renderDeferredShading() {
+    glm::vec2 l_scrn = p_display->getSize();
+
+    p_deferred_shading->Bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, p_texture_position);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, p_texture_normal);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
+    // send light relevant uniforms
+    for (unsigned int i = 0; i < p_lights.size(); i++)
+    {
+        p_deferred_shading->setVec3("lights[" + std::to_string(i) + "].Position", p_lights[i].getPos());
+        p_deferred_shading->setVec3("lights[" + std::to_string(i) + "].Color", p_lights[i].getColor());
+
+        // update attenuation parameters and calculate radius
+        float constant  = 10.0;
+        float linear    = 1.5;
+        float quadratic = 1.1;
+        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
+        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+        // then calculate radius of light volume/sphere
+        const float maxBrightness = std::fmaxf( std::fmaxf(p_lights[i].getColor().r, p_lights[i].getColor().g), p_lights[i].getColor().b);
+        float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
+    }
+    p_deferred_shading->setVec3( "viewPos", getCamera()->GetPos());
+
+    // render
+    renderQuad();
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fbo_buffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, l_scrn.x, l_scrn.y, 0, 0, l_scrn.x, l_scrn.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 void graphic::renderQuad()
@@ -204,7 +246,24 @@ void graphic::renderQuad()
     glBindVertexArray(0);
 }
 
-void graphic::renderDeferredShadingStart() {
+void graphic::addShadowMatrix( Shader *shader) {
+    glm::mat4 l_lightmatrix = p_lightProjection * p_lightView;
+    shader->setLightMatrix( l_lightmatrix);
+    //shader->update( MAT_PROJECTION, p_lightProjection);
+    //shader->update( MAT_VIEW, p_lightView);
+
+    shader->setInt( "texture_image", 0);
+    shader->setInt( "shadow_map", 1);
+
+    // bind texture for shadow
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, p_texture_shadow_depth);
+
+    shader->setVec3("lightPos", p_lightPos);
+    shader->setVec3("viewPos", p_camera->GetPos());
+}
+
+void graphic::bindDeferredShading() {
     // render scene in geometry/color data
     getDisplay()->clear( true);
 
@@ -212,45 +271,6 @@ void graphic::renderDeferredShadingStart() {
     getDisplay()->clear( false);
 }
 
-void graphic::renderDeferredShadingEnd( unsigned int fbo) {
-    glm::vec2 l_scrn = p_display->getSize();
-
-    p_deferred_shading->Bind();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, p_texture_position);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, p_texture_normal);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
-    // send light relevant uniforms
-    for (unsigned int i = 0; i < p_lights.size(); i++)
-    {
-        p_deferred_shading->setVec3("lights[" + std::to_string(i) + "].Position", p_lights[i].getPos());
-        p_deferred_shading->setVec3("lights[" + std::to_string(i) + "].Color", p_lights[i].getColor());
-
-        // update attenuation parameters and calculate radius
-        float constant  = 1.0;
-        float linear    = 0.1;
-        float quadratic = 0.1;
-        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
-        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-        // then calculate radius of light volume/sphere
-        const float maxBrightness = std::fmaxf( std::fmaxf(p_lights[i].getColor().r, p_lights[i].getColor().g), p_lights[i].getColor().b);
-        float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-        p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
-    }
-    p_deferred_shading->setVec3( "viewPos", getCamera()->GetPos());
-
-    // render
-    renderQuad();
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fbo_buffer);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, l_scrn.x, l_scrn.y, 0, 0, l_scrn.x, l_scrn.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-}
 
 SDL_Surface* graphic::loadSurface(std::string File) {
     // Laden der Datei

@@ -29,27 +29,32 @@ void main()
     vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
     vec3 Shadow = texture(gShadow, TexCoords).rgb;
     
-    // then calculate lighting as usual
     vec3 lighting  = vec3( 0, 0, 0);
+    if( Shadow.x > 0.1)
+        lighting = Diffuse;
+
+    // then calculate lighting as usual
     for(int i = 0; i < NR_LIGHTS; ++i)
     {
          // calculate distance between light source and current fragment
         float distance = length(lights[i].Position - FragPos);
         if(distance < lights[i].Radius)
         {
-            // diffuse
+            //lighting = Diffuse; 
             vec3 lightDir = normalize(lights[i].Position - FragPos);
-            vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * lights[i].Color;
+            vec3 diffuse = max(dot(Normal, lightDir), 0) * Diffuse * lights[i].Color;
+        
+            float attenuation = 5.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);
 
-            // attenuation
-            float distance = length(lights[i].Position - FragPos);
-            float attenuation = 1.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);
             diffuse *= attenuation;
-            lighting += diffuse;        
+            lighting += diffuse;
+
+            /*float attenuation = 50.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);
+            
+            diffuse *= attenuation;
+            lighting += diffuse;*/
         }
     }
-
-    lighting *= Shadow;
 
     FragColor = vec4( lighting, 1.0);
 }

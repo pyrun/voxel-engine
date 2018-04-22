@@ -96,18 +96,18 @@ void block_list::draw( graphic* graphic) {
         }
 
         // Alle Seiten Zeichnen
-        block_image* side;
+        block_image* l_side;
         for( int n = 0; n < (int)block->getSideAmount(); n++) {
             // Seiten
-            side = block->getSide( n);
+            l_side = block->getSide( n);
 
             if( t_x >= l_maxwidth) {
                 t_x = 0;
                 t_y++;
             }
-            graphic->draw( side->getSurface(), BLOCK_SIZE*t_x, BLOCK_SIZE*t_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
-            side->getPosX() = t_x;
-            side->getPosY() = t_y;
+            graphic->draw( l_side->getSurface(), BLOCK_SIZE*t_x, BLOCK_SIZE*t_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
+            l_side->getPosX() = t_x;
+            l_side->getPosY() = t_y;
             t_x++;
         }
     }

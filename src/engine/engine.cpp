@@ -160,23 +160,26 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     //l_shader->update( MAT_PROJECTION, projection);
     //l_shader->update( MAT_VIEW, view);
     p_network->getWorld()->draw( p_graphic, l_shader);
-    p_network->drawEntitys( l_shader);
+    //p_network->drawEntitys( l_shader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // finish
 
-    // diff
-    p_graphic->renderDeferredShadingStart();
+    // DeferredShading
+    p_graphic->bindDeferredShading();
+    p_graphic->getDisplay()->clear( false);
 
-    l_shader = p_graphic->getGbuffer();
+    l_shader = p_graphic->getVoxelShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
+    p_graphic->addShadowMatrix( l_shader);
     p_network->getWorld()->draw( p_graphic, l_shader);
 
-    l_shader = p_graphic->getObjectShader();
+    /*l_shader = p_graphic->getObjectShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
-    p_network->drawEntitys( l_shader);
+    p_graphic->addShadowMatrix( l_shader);
+    p_network->drawEntitys( l_shader);*/
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -263,14 +266,14 @@ void engine::run() {
             glm::mat4 l_view_cam =  p_openvr->getCurrentViewMatrix( vr::Eye_Left) * p_graphic->getCamera()->getViewWithoutUp();
             render( l_view_cam, l_projection);
             p_openvr->renderForLeftEye();
-            p_graphic->renderDeferredShadingEnd();
+            p_graphic->renderDeferredShading();
             p_openvr->renderEndLeftEye();
 
             l_projection = p_openvr->getCurrentProjectionMatrix( vr::Eye_Right);
             l_view_cam = p_openvr->getCurrentViewMatrix( vr::Eye_Right) * p_graphic->getCamera()->getViewWithoutUp();
             render( l_view_cam, l_projection);
             p_openvr->renderForRightEye();
-            p_graphic->renderDeferredShadingEnd();
+            p_graphic->renderDeferredShading();
             p_openvr->renderEndRightEye();
 
             //l_timer.Start();
@@ -287,7 +290,7 @@ void engine::run() {
         l_timer_test.Start();
         render( l_view_cam, l_projection);
         p_graphic->getDisplay()->clear( false);
-        p_graphic->renderDeferredShadingEnd();
+        p_graphic->renderDeferredShading();
 
         if( p_network->getWorld()) {
             viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter
