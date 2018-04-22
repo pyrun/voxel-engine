@@ -29,13 +29,28 @@ float ShadowCalculation()
     float currentDepth = projCoords.z;
     // calculate bias (based on depth map resolution and slope)
     vec3 normal = normalize( Normal);
-    vec3 lightDir = normalize( FragPosLightSpace.xyz);
+    vec3 lightDir = normalize( lightPos - FragPos);
 
-    float bias = 0.00002;
+    float bias = max(0.0000001 * (1.0 - dot(normal, lightDir)), 0.0001);  
+    float shadow = 0.0;
 
-    float shadow = currentDepth-bias> closestDepth  ? 0.0 : 1.0;  
-        
-    return shadow;
+    vec2 texelSize = 1.0 / textureSize( shadow_map, 0);
+    int index = 0;
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            index = index + 1;
+            float pcfDepth = texture( shadow_map, projCoords.xy + vec2(x, y) * texelSize ).r; 
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+    if( shadow < 0.1)
+        shadow = 0;
+
+    return 1.0-shadow;
 }
 
 
@@ -56,11 +71,11 @@ void main()
     // store the fragment position vector in the first gbuffer texture
     gPosition = vec4( FragPos, 1);
     // also store the per-fragment normals into the gbuffer
+    
     gNormal = vec4( normalize(Normal), 1);
 
     gTexture = texture( texture_image, Texture);
-
+    
     float shadow = ShadowCalculation();   
-
     gShadow = vec4( shadow, shadow, shadow, 1);
 }

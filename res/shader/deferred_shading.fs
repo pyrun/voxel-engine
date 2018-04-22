@@ -27,11 +27,11 @@ void main()
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
-    vec3 Shadow = texture(gShadow, TexCoords).rgb;
+    float Shadow = texture(gShadow, TexCoords).r;
     
     vec3 lighting  = vec3( 0, 0, 0);
-    if( Shadow.x > 0.1)
-        lighting = Diffuse;
+    if( Shadow > 0.01)
+        lighting = Diffuse*vec3(Shadow);
 
     // then calculate lighting as usual
     for(int i = 0; i < NR_LIGHTS; ++i)

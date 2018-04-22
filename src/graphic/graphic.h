@@ -79,7 +79,8 @@ private:
     std::vector<light> p_lights;
 
     // shadow buffer and settings
-    const unsigned int p_shadow_width = 2048, p_shadow_height = 2048;
+    const float p_shadow_ortho = 20.0f;
+    const unsigned int p_shadow_width = 1536, p_shadow_height = 1536;
     unsigned int p_fbo_shadow_depth;
     unsigned int p_texture_shadow_depth;
     glm::mat4 p_lightProjection;

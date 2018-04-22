@@ -160,7 +160,7 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     //l_shader->update( MAT_PROJECTION, projection);
     //l_shader->update( MAT_VIEW, view);
     p_network->getWorld()->draw( p_graphic, l_shader);
-    //p_network->drawEntitys( l_shader);
+    p_network->drawEntitys( l_shader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // finish
 
     // DeferredShading
@@ -174,12 +174,12 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     p_graphic->addShadowMatrix( l_shader);
     p_network->getWorld()->draw( p_graphic, l_shader);
 
-    /*l_shader = p_graphic->getObjectShader();
+    l_shader = p_graphic->getObjectShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
     p_graphic->addShadowMatrix( l_shader);
-    p_network->drawEntitys( l_shader);*/
+    p_network->drawEntitys( l_shader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
