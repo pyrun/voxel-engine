@@ -4,7 +4,6 @@
 graphic::graphic( config *config) {
     p_index_light = 0;
     p_vao_quad = 0;
-    p_fbo_shadow_depth = 0;
 
     // creating window
     p_display = new display( config);
@@ -14,27 +13,13 @@ graphic::graphic( config *config) {
     p_deferred_shading = new Shader( "shader/deferred_shading");
     p_voxel = new Shader( "shader/voxels");
     p_object = new Shader( "shader/object");
-    p_shadow = new Shader( "shader/shadow");
 
     // set up camera
     p_camera = new Camera( glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
 
     initDeferredShading();
-    initShadowsMapping();
-
-    p_lightPos = glm::vec3(-8.0f, 40.0f, -1.0f);
-
-
-    // set up light camera
-
-    p_lightProjection = glm::ortho(-p_shadow_ortho, p_shadow_ortho, -p_shadow_ortho, p_shadow_ortho, graphic_znear, graphic_zfar);
-    //p_lightProjection_far = glm::ortho(-p_shadow_ortho*3, p_shadow_ortho*3, -p_shadow_ortho*3, p_shadow_ortho*3, graphic_znear, graphic_zfar);
-    p_lightView = glm::lookAt( p_lightPos,
-                              p_lightPos + glm::vec3( 0.0f, 0.0f,  -1.0f),
-                              glm::vec3( 0.0f, 1.0f,  0.0f));
 
     // test lights
-
     /*createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
     createLight( glm::vec3( 0, 15, 6), glm::vec3( 1, 1.0, 1.0));
     createLight( glm::vec3( 6, 15, 6), glm::vec3( 1, 0.5, 0.5));*/
@@ -45,7 +30,6 @@ graphic::graphic( config *config) {
 graphic::~graphic() {
     delete p_gbuffer;
     delete p_deferred_shading;
-    delete p_shadow;
     delete p_camera;
     delete p_voxel;
     delete p_display;
@@ -59,28 +43,6 @@ void graphic::resizeWindow( int screen_width, int screen_height) {
     p_camera->resize( (float)screen_width/(float)screen_height);
 
     resizeDeferredShading();
-}
-
-void graphic::initShadowsMapping() {
-    glGenFramebuffers(1, &p_fbo_shadow_depth);
-
-    glGenTextures(1, &p_texture_shadow_depth);
-    glBindTexture(GL_TEXTURE_2D, p_texture_shadow_depth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, p_shadow_width, p_shadow_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_shadow_depth);
-    //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_texture_shadow_depth, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, p_texture_shadow_depth, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void graphic::initDeferredShading() {
@@ -113,17 +75,9 @@ void graphic::initDeferredShading() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, p_texture_colorSpec, 0);
 
-    // 4 - shadow map
-    glGenTextures(1, &p_texture_shadow);
-    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, p_texture_shadow, 0);
-
     // 4 - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    unsigned int l_attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-    glDrawBuffers( 4, l_attachments);
+    unsigned int l_attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+    glDrawBuffers( 3, l_attachments);
 
     // 5 - depth buffer
     glGenRenderbuffers(1, &p_depth);
@@ -157,25 +111,8 @@ void graphic::resizeDeferredShading() {
     glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
     glBindRenderbuffer(GL_RENDERBUFFER, p_depth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, l_scrn.x, l_scrn.y);
-}
-
-void graphic::renderShadow( Shader *shader) {
-    float camX = sin( SDL_GetTicks()/1000.f) * 1000;
-    float camZ = cos( SDL_GetTicks()/1000.f) * 1000;
-    p_lightPos = glm::vec3(camX, 1000.0, camZ);
-    p_lightView = glm::lookAt( p_camera->GetPos()+p_lightPos, p_camera->GetPos()+glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-
-    shader->update( MAT_PROJECTION, p_lightProjection);
-    shader->update( MAT_VIEW, p_lightView);
-    glViewport(0, 0, p_shadow_width, p_shadow_height);
-    glBindFramebuffer(GL_FRAMEBUFFER, p_fbo_shadow_depth);
-        glClear(GL_DEPTH_BUFFER_BIT);
-    // render scene
 }
 
 void graphic::renderDeferredShading() {
@@ -188,8 +125,6 @@ void graphic::renderDeferredShading() {
     glBindTexture(GL_TEXTURE_2D, p_texture_normal);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
     // send light relevant uniforms
     for (unsigned int i = 0; i < p_lights.size(); i++)
     {
@@ -207,7 +142,6 @@ void graphic::renderDeferredShading() {
         float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
         p_deferred_shading->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
     }
-    p_deferred_shading->setVec3( "viewPos", getCamera()->GetPos());
 
     // render
     renderQuad();
@@ -250,23 +184,6 @@ void graphic::renderQuad()
     glBindVertexArray(p_vao_quad);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
-}
-
-void graphic::addShadowMatrix( Shader *shader) {
-    glm::mat4 l_lightmatrix = p_lightProjection * p_lightView;
-    shader->setLightMatrix( l_lightmatrix);
-    //shader->update( MAT_PROJECTION, p_lightProjection);
-    //shader->update( MAT_VIEW, p_lightView);
-
-    shader->setInt( "texture_image", 0);
-    shader->setInt( "shadow_map", 1);
-
-    // bind texture for shadow
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, p_texture_shadow_depth);
-
-    shader->setVec3("lightPos", p_lightPos);
-    shader->setVec3("viewPos", p_camera->GetPos());
 }
 
 void graphic::bindDeferredShading() {

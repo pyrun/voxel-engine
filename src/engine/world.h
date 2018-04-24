@@ -27,7 +27,7 @@ class world_data_list {
 
 class world {
 public:
-    world( texture *image, block_list* B_List);
+    world( block_list* block_list);
     virtual ~world();
 
     int GetTile( int x, int y, int z);
@@ -54,10 +54,12 @@ public:
     bool getDestory() { return p_destroy; }
     inline int getAmountChunks() const { return p_chunk_amount; }
     Chunk *getNode() { return p_chunk_start; }
-    SDL_mutex *getMutex() { return p_mutex; }
+    SDL_mutex *getMutex() { return p_mutex_handle; }
     b3World *getPhysicWorld() { return p_physicScene; }
 protected:
 private:
+    std::string p_name;
+
     bool p_buysvector;
     bool p_world_tree_empty;
 
@@ -68,9 +70,8 @@ private:
     Chunk* p_chunk_last;
     block_list *p_blocklist;
     bool p_destroy;
-    texture *p_image;
 
-    SDL_mutex *p_mutex;
+    SDL_mutex *p_mutex_handle;
     SDL_mutex *p_mutex_physic;
     SDL_Thread *p_thread_update[WORLD_UPDATE_THRENDS];
     SDL_Thread *p_thread_handle;
@@ -79,7 +80,6 @@ private:
     std::vector<world_data_list> p_creatingList;
     std::vector<world_data_list> p_deletingList;
 
-    //ShadowMap Shadow;
     float p_time;
 
     debug_draw p_renderer;

@@ -18,26 +18,37 @@ engine::engine() {
     p_openvr = NULL;
     p_isRunnig = true;
     p_framecap = true;
+    p_world_player = NULL;
     p_timecap = 12; // ms -> 90hz
 
-    // start subystems
     p_config = new config();
     p_graphic = new graphic( p_config);
-    p_blocklist = new block_list("blocks");
-    // set values after start
-    p_blocklist->draw( p_graphic);
 
-    p_tilemap = new texture( p_config->get( "tilemap", "engine", "tileset.png"));
-    p_network = new network( p_config, p_tilemap, p_blocklist);
+    // set block list up
+    p_blocklist = new block_list( p_config);
+    p_blocklist->init( p_graphic, p_config);
+
+    // set up start world
+    world *l_world = new world( p_blocklist);
+    int l_size = 5;
+    int l_end = -1;
+    for( int x = -l_size; x <= l_size; x++)
+        for( int y = -l_size; y <= l_size; y++)
+            for( int z = l_end; z <= 0; z++)
+                l_world->addChunk( glm::vec3( x, z, y), true);
+    p_worlds.push_back( l_world);
+
+    p_world_player = p_worlds[0];
+
+    //p_network = new network( p_config, p_tilemap, p_blocklist);
 }
 
 engine::~engine() {
     if( p_openvr)
         delete p_openvr;
-    delete p_tilemap;
     delete p_blocklist;
     delete p_graphic;
-    delete p_network;
+    //delete p_network;
     delete p_config;
 }
 
@@ -49,7 +60,8 @@ void engine::startVR() {
 void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
     float depth;
 
-    world *l_world = p_network->getWorld();
+    if( p_world_player == NULL)
+        return;
 
     // voxel Anzeigen
     glReadPixels( p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
@@ -74,7 +86,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
         mz = floorf(testpos.z/CHUNK_SCALE);
 
         // falls wir ein block finden das kein "Air" ist dann sind wir fertig
-        int tile = l_world->GetTile( mx, my, mz);
+        int tile = p_world_player->GetTile( mx, my, mz);
         if( !tile )
             continue;
 
@@ -116,11 +128,11 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if(face == 5)
                 mZ--;
 
-            if( l_world->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID) {
-                Chunk *tmp = l_world->getChunkWithPos( mX, mY, mZ);
+            if( p_world_player->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID) {
+                Chunk *tmp = p_world_player->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
-                    p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
-                    //l_world->SetTile( tmp, mX, mY, mZ, p_blocklist->getByID( "water")->getID());
+                    //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
+                    p_world_player->SetTile( tmp, mX, mY, mZ, p_blocklist->getByName( "treewood")->getID());
                 } else {
                     printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
                 }
@@ -130,12 +142,12 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             break;
         }
         if( tile && p_input.Map.Destory && !p_input.MapOld.Destory) {
-            Chunk *tmp = l_world->getChunkWithPos( mx, my, mz);
+            Chunk *tmp = p_world_player->getChunkWithPos( mx, my, mz);
             if( tmp) {
-                p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
-                //l_world->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
+                //p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
+                p_world_player->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
             } else {
-                p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
+                //p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
                 printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
             break;
@@ -150,36 +162,28 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 }
 
 void engine::render( glm::mat4 view, glm::mat4 projection) {
-    Shader *l_shader = p_graphic->getShadow();
-    glm::mat4 l_proj = p_graphic->getLightProjection();
-    glm::mat4 l_view = p_graphic->getLightView();
+    Shader *l_shader = NULL;
 
-    p_graphic->getDisplay()->clear( false);
-    l_shader->Bind();
-    p_graphic->renderShadow( l_shader);
-    //l_shader->update( MAT_PROJECTION, projection);
-    //l_shader->update( MAT_VIEW, view);
-    p_network->getWorld()->draw( p_graphic, l_shader);
-    p_network->drawEntitys( l_shader);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // finish
-
-    // DeferredShading
+    // biding deferred shading
     p_graphic->bindDeferredShading();
     p_graphic->getDisplay()->clear( false);
 
+    // render voxel
     l_shader = p_graphic->getVoxelShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
-    p_graphic->addShadowMatrix( l_shader);
-    p_network->getWorld()->draw( p_graphic, l_shader);
+    p_world_player->draw( p_graphic, l_shader);
 
-    l_shader = p_graphic->getObjectShader();
+    // render object
+    /*l_shader = p_graphic->getObjectShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
     p_graphic->addShadowMatrix( l_shader);
-    p_network->drawEntitys( l_shader);
+    p_network->drawEntitys( l_shader);*/
+
+    // we are done
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -203,6 +207,7 @@ void engine::fly( int l_delta) {
 void engine::run() {
     // set variables
     Timer l_timer;
+    std::string l_title;
     struct clock l_clock;
     glm::mat4 l_mvp;
 
@@ -250,8 +255,8 @@ void engine::run() {
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
 
-        if( p_network->process( l_delta))
-            p_isRunnig = false;
+        //if( p_network->process( l_delta))
+        //    p_isRunnig = false;
 
         if( p_input.Map.Inventory && !p_input.MapOld.Inventory ) {
             //if( l_hand)
@@ -292,9 +297,7 @@ void engine::run() {
         p_graphic->getDisplay()->clear( false);
         p_graphic->renderDeferredShading();
 
-        if( p_network->getWorld()) {
-            viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter
-        }
+        viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter
 
         p_graphic->getDisplay()->swapBuffers();
 
@@ -315,12 +318,12 @@ void engine::run() {
         l_average_delta_time = l_average_delta_time/(float)p_framerate.size();
 
         double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
-        p_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
-        p_title = p_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
-        p_title = p_title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
-        if(  p_network->getWorld())
-            p_title = p_title + " Chunks_" + NumberToString( (double) p_network->getWorld()->getAmountChunks());
-        p_graphic->getDisplay()->setTitle( p_title);
+        l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
+        l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
+        l_title = l_title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
+        //if(  p_network->getWorld())
+        //    l_title = l_title + " Chunks_" + NumberToString( (double) p_network->getWorld()->getAmountChunks());
+        p_graphic->getDisplay()->setTitle( l_title);
 
         // one at evry frame
         l_clock.tick();

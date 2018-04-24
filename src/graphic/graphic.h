@@ -20,16 +20,11 @@ public:
 
     void resizeWindow( int screen_width, int screen_height);
 
-    void initShadowsMapping();
     void initDeferredShading();
-
     void resizeDeferredShading();
-
-    void renderShadow( Shader *shader);
     void renderDeferredShading();
     void renderQuad();
 
-    void addShadowMatrix( Shader *shader);
     void bindDeferredShading();
 
     SDL_Surface* loadSurface(std::string File);
@@ -47,13 +42,9 @@ public:
 
     Shader *getVoxelShader() { return p_voxel; }
     Shader *getObjectShader() { return p_object; }
-    Shader *getShadow() { return p_shadow; }
     Shader *getGbuffer() { return p_gbuffer; }
 
     inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
-
-    glm::mat4 getLightProjection() { return p_lightProjection; }
-    glm::mat4 getLightView() { return p_lightView; }
 protected:
 private:
     Camera *p_camera;
@@ -61,7 +52,6 @@ private:
 
     Shader *p_gbuffer;
     Shader *p_deferred_shading;
-    Shader *p_shadow;
     Shader* p_voxel;
     Shader *p_object;
 
@@ -72,20 +62,11 @@ private:
     // buffer for deferred shading
     unsigned int p_fbo_buffer;
     unsigned int p_depth;
-    unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec, p_texture_shadow;
+    unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec;
 
     // spotlight source
     int p_index_light;
     std::vector<light> p_lights;
-
-    // shadow buffer and settings
-    const float p_shadow_ortho = 20.0f;
-    const unsigned int p_shadow_width = 1536, p_shadow_height = 1536;
-    unsigned int p_fbo_shadow_depth;
-    unsigned int p_texture_shadow_depth;
-    glm::mat4 p_lightProjection;
-    glm::mat4 p_lightView;
-    glm::vec3 p_lightPos;
 };
 
 #endif // graphic_H

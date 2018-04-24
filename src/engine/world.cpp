@@ -50,42 +50,47 @@ static int world_thread_physic(void *data)
     return 0;
 }
 
-world::world( texture *image, block_list* B_List) {
+world::world( block_list* block_list) {
     p_buysvector = false;
     p_chunk_amount = 0;
     p_chunk_start = NULL;
     p_chunk_last = NULL;
     p_world_tree_empty = true;
-    p_blocklist = B_List;
+    p_blocklist = block_list;
     p_destroy = false;
-    p_image = image;
     p_physicScene = NULL;
+    p_time = SDL_GetTicks();
 
-    // thrends
-    p_mutex = SDL_CreateMutex ();
-    p_mutex_physic = SDL_CreateMutex ();
+    // creating two mutex
+    p_mutex_handle = SDL_CreateMutex();
+    p_mutex_physic = SDL_CreateMutex();
+
+    // creating the threads
     p_thread_handle = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
     p_thread_physic = SDL_CreateThread( world_thread_physic, "world_thread_physic", (void *)this);
 
-    // physic
+    // creating physic handle
     p_physicScene = new b3World();
     p_physicScene->SetGravity( b3Vec3(0.0f, -9.8f, 0.0f));
-    p_time = SDL_GetTicks();
 }
 
 world::~world() {
-    int l_return;
+    int l_return; // didnt use
+
+    // wait for thread end
     p_destroy = true;
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         SDL_WaitThread( p_thread_update[i], &l_return);
     SDL_WaitThread( p_thread_handle, &l_return);
     SDL_WaitThread( p_thread_physic, &l_return);
-    SDL_DestroyMutex( p_mutex);
+
+    // destroy the mutex
+    SDL_DestroyMutex( p_mutex_handle);
     SDL_DestroyMutex( p_mutex_physic);
 
-    // Löschen der Welt
+    // free ram
     deleteChunks( p_chunk_start);
     while( p_chunk_amount != 0) {
         SDL_Delay(1);
@@ -193,9 +198,9 @@ void world::process_thrend_handle() {
     {
         Chunk *l_node = getChunk( p_creatingList[i].position);
         if( l_node == NULL) {
-            SDL_LockMutex ( p_mutex);
+            SDL_LockMutex ( p_mutex_handle);
             createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
-            SDL_UnlockMutex ( p_mutex);
+            SDL_UnlockMutex ( p_mutex_handle);
             p_creatingList.erase( p_creatingList.begin()+ i);
 
             break;
@@ -206,9 +211,9 @@ void world::process_thrend_handle() {
     {
         Chunk *l_node = getChunk( l_pos.position);
         if( l_node != NULL) {
-            SDL_LockMutex ( p_mutex);
+            SDL_LockMutex ( p_mutex_handle);
             deleteChunk( l_node);
-            SDL_UnlockMutex ( p_mutex);
+            SDL_UnlockMutex ( p_mutex_handle);
         }
     }
     p_deletingList.clear();
@@ -222,14 +227,14 @@ void world::process_thrend_update() {
         if( l_node == NULL)
             break;
 
-        SDL_LockMutex ( p_mutex);
+        SDL_LockMutex ( p_mutex_handle);
         if( l_node->isChanged()) {
             l_node->changed( false);
-            SDL_UnlockMutex ( p_mutex);
+            SDL_UnlockMutex ( p_mutex_handle);
             if( l_list)
                 l_node->updateArray( l_list);
         } else {
-            SDL_UnlockMutex ( p_mutex);
+            SDL_UnlockMutex ( p_mutex_handle);
         }
 
         l_node = l_node->next;
@@ -417,7 +422,7 @@ void world::draw( graphic *graphic, Shader *shader) {
 
     shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
 
-    p_image->Bind();
+    p_blocklist->getTilemapTexture()->Bind();
 
     // draw node
     drawNode( shader);

@@ -1,21 +1,17 @@
 <config>
+    <block_list>
+        <path>blocks</path>
+        <tilemap>tileset</tilemap>
+    </block_list>
     <engine>
         <tilemap>tileset.png</tilemap>
         <fly>true</fly>
-        <debug_physic>false</debug_physic>
     </engine>
     <graphic>
         <title>selur</title>
-        <width>1028</width>
-        <height>597</height>
+        <width>1003</width>
+        <height>605</height>
         <window_x>805240832</window_x>
         <window_y>805240832</window_y>
     </graphic>
-    <network>
-        <port>27558</port>
-        <max_player>32</max_player>
-    </network>
-    <objects>
-        <folder>objects/</folder>
-    </objects>
 </config>

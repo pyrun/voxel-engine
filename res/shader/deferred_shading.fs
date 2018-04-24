@@ -7,7 +7,6 @@ in vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
-uniform sampler2D gShadow;
 
 struct Light {
     vec3 Position;
@@ -27,11 +26,8 @@ void main()
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
-    float Shadow = texture(gShadow, TexCoords).r;
     
-    vec3 lighting  = vec3( 0, 0, 0);
-    if( Shadow > 0.01)
-        lighting = Diffuse*vec3(Shadow);
+    vec3 lighting  = Diffuse;
 
     // then calculate lighting as usual
     for(int i = 0; i < NR_LIGHTS; ++i)

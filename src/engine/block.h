@@ -45,8 +45,8 @@ class block_image  {
         void loadImage( graphic* graphic);
         void setImage( SDL_Surface* p_surface);
         void setImageName( std::string name);
-        int &getPosX() { return p_posx; }
-        int &getPosY() { return p_posy; }
+        glm::vec2 getPosition() { return p_position; }
+        void setPosition(glm::vec2 position) { p_position = position; }
         SDL_Surface *getSurface() { return p_surface; }
         std::string getImageName() { return p_imagename; }
         block_side getSide() { return p_side; }
@@ -54,8 +54,7 @@ class block_image  {
         void addSide( block_side side) { p_side = p_side | side; }
     private:
         SDL_Surface* p_surface;
-        int p_posx;
-        int p_posy;
+        glm::vec2 p_position;
         std::string p_imagename;
         block_side p_side;
 };
@@ -105,21 +104,24 @@ class block {
 
 class block_list {
     public:
-        block_list( std::string Path);
+        block_list( config *config);
         ~block_list();
-        void draw( graphic* graphic);
-        // Umrechnen wo welche textur liegt
+
+        void init( graphic* graphic, config *config);
+
         glm::vec2 getTexturByType( int Type, block_side side);
+
         block* get( int ID);
         block* getByName( std::string name);
+
         int getAmountblocks() { return (int)p_blocks.size(); }
+        texture *getTilemapTexture() { return p_tilemap; }
     private:
+        texture *p_tilemap;
         std::string p_path;
         std::vector<block> p_blocks;
     protected:
-        bool GetSuffix(const std::string &file, const std::string &suffix);
-        bool GetSuffix6502(const std::string& str, const std::string& end);
-        bool FileExists(std::string StrFilename);
+        bool fileExists(std::string filename);
         void loadblock (std::string path, std::string name);
 };
 #endif // BLOCK_H

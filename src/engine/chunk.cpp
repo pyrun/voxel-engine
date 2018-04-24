@@ -318,6 +318,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
 
     glm::vec3 l_pos = getPos();
 
+    p_indices_x_pos = p_indices.size();
     // View from positive x
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = CHUNK_SIZE - 1; x >= 0; x--) {
@@ -357,6 +358,7 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     }
 
     // View from negative x
+    p_indices_x_neg = p_indices.size();
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = 0; x < CHUNK_SIZE; x++)  {
             for(int y = 0; y < CHUNK_SIZE; y++) {
@@ -395,7 +397,40 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
         }
     }
 
+    // View from positive y
+    p_indices_y_pos = p_indices.size();
+    for(int z = 0; z < CHUNK_SIZE; z++) {
+         for(int y = 0; y < CHUNK_SIZE; y++){
+             for(int x = 0; x < CHUNK_SIZE; x++) {
+                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
+                    continue;
+                int type = getTile( x, y, z);
+                if( type == 0) {
+                    b_visibility = false;
+                    continue;
+                }
+                if(  y != CHUNK_SIZE-1 && CheckTile(x, y+1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y+1, z))->getAlpha() ) {
+                    b_visibility = false;
+                    continue;
+                }
+                if( y == CHUNK_SIZE-1 && Up != NULL && Up->CheckTile(x, 0, z) && Up->getTile( x, 0, z)) {
+                    b_visibility = false;
+                    continue;
+                }
+                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z)) {
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
+                } else {
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_TOP);
+                    addFaceY( true, glm::vec3( x, y+1, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
+                }
+                b_visibility = true;
+            }
+        }
+    }
+
     // View from negative y
+    p_indices_y_neg = p_indices.size();
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int y = CHUNK_SIZE - 1; y >= 0; y--)
             for(int x = 0; x < CHUNK_SIZE; x++) {
@@ -427,69 +462,8 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
         }
     }
 
-
-    // View from positive y
-    for(int z = 0; z < CHUNK_SIZE; z++) {
-         for(int y = 0; y < CHUNK_SIZE; y++){
-             for(int x = 0; x < CHUNK_SIZE; x++) {
-                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
-                    continue;
-                int type = getTile( x, y, z);
-                if( type == 0) {
-                    b_visibility = false;
-                    continue;
-                }
-                if(  y != CHUNK_SIZE-1 && CheckTile(x, y+1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y+1, z))->getAlpha() ) {
-                    b_visibility = false;
-                    continue;
-                }
-                if( y == CHUNK_SIZE-1 && Up != NULL && Up->CheckTile(x, 0, z) && Up->getTile( x, 0, z)) {
-                    b_visibility = false;
-                    continue;
-                }
-                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z)) {
-                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
-                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
-                } else {
-                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_TOP);
-                    addFaceY( true, glm::vec3( x, y+1, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
-                }
-                b_visibility = true;
-            }
-        }
-    }
-
-    // View from negative z
-    for(int z = CHUNK_SIZE - 1; z >= 0; z--) {
-         for(int x = 0; x < CHUNK_SIZE; x++){
-            for(int y = 0; y < CHUNK_SIZE; y++) {
-                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
-                    continue;
-                int type = getTile( x, y, z);
-                if( type == 0) {
-                    b_visibility = false;
-                    continue;
-                }
-                if(  z != 0 && CheckTile(x, y, z-1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z-1))->getAlpha() ) {
-                    b_visibility = false;
-                    continue;
-                }
-                if( z == 0 && Left != NULL && Left->CheckTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)) {
-                    b_visibility = false;
-                    continue;
-                }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z) == getTile( x, y-1, z)) {
-                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
-                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z);
-                } else {
-                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_LEFT);
-                    addFaceZ( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
-                }
-                b_visibility = true;
-            }
-        }
-    }
     // View from positive z
+    p_indices_z_pos = p_indices.size();
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = 0; x < CHUNK_SIZE; x++) {
             for(int y = 0; y < CHUNK_SIZE; y++) {
@@ -519,6 +493,38 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                 b_visibility = true;
             }
 
+        }
+    }
+
+    // View from negative z
+    p_indices_z_neg = p_indices.size();
+    for(int z = CHUNK_SIZE - 1; z >= 0; z--) {
+         for(int x = 0; x < CHUNK_SIZE; x++){
+            for(int y = 0; y < CHUNK_SIZE; y++) {
+                if( getTile( x, y, z) == NULL) // tile nicht vorhanden
+                    continue;
+                int type = getTile( x, y, z);
+                if( type == 0) {
+                    b_visibility = false;
+                    continue;
+                }
+                if(  z != 0 && CheckTile(x, y, z-1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z-1))->getAlpha() ) {
+                    b_visibility = false;
+                    continue;
+                }
+                if( z == 0 && Left != NULL && Left->CheckTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)) {
+                    b_visibility = false;
+                    continue;
+                }
+                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z) == getTile( x, y-1, z)) {
+                    p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
+                    p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z);
+                } else {
+                    Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_LEFT);
+                    addFaceZ( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
+                }
+                b_visibility = true;
+            }
         }
     }
 
@@ -578,7 +584,7 @@ void Chunk::updateVbo() {
 
     // index buffer
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
-    glBufferData( GL_ELEMENT_ARRAY_BUFFER, p_indices.size() * sizeof( unsigned int ), &p_indices[0], GL_STATIC_DRAW);
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, p_indices.size() * sizeof( unsigned int ), &p_indices[0], GL_DYNAMIC_DRAW);
 
     // vbo updaten
     // vertex
@@ -632,8 +638,12 @@ void Chunk::draw( Shader* shader) {
     // use the vao
     glBindVertexArray( p_vboVao);
 
+    /*glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, (p_indices_y_pos-p_indices_x_neg) * sizeof( unsigned int ), &p_indices[ p_indices_x_neg], GL_DYNAMIC_DRAW);
+
     // draw the elements
-    glDrawElements( GL_TRIANGLES, p_elements, GL_UNSIGNED_INT, 0);
+    glDrawElements( GL_TRIANGLES, p_indices_y_pos-p_indices_x_neg, GL_UNSIGNED_INT, NULL);*/
+    glDrawElements( GL_TRIANGLES, p_elements, GL_UNSIGNED_INT, NULL);
 
     // disable
     glBindVertexArray( 0);

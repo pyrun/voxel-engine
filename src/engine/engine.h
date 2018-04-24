@@ -42,7 +42,7 @@ public:
     void fly( int l_delta);
     void run();
 
-    network *getNetwork() { return p_network; }
+    //network *getNetwork() { return p_network; }
 protected:
 
     void drawBox( glm::mat4 viewProjection, glm::vec3 pos);
@@ -53,12 +53,12 @@ private:
     graphic* p_graphic;
     config *p_config;
     openvr *p_openvr;
-    network *p_network;
 
-    texture *p_tilemap;
+    // world
+    std::vector<world *> p_worlds;
+    world *p_world_player;
 
-    std::string p_title;
-
+    // frame rate
     bool p_framecap;
     int p_timecap;
     std::vector<int> p_framerate;

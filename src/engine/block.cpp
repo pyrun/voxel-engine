@@ -52,92 +52,100 @@ block_image* block::get( block_side side)
     return &p_image[0];
 }
 
-/**< block list */
-block_list::block_list( std::string path) {
-    this->p_path = path;
+// block list
+block_list::block_list( config *config) {
     DIR* l_handle;
     struct dirent* l_dirEntry;
+    std::string l_path;
+    std::string l_name;
+    std::string l_block_path;
     std::vector<std::string> ObjectList;
 
-    p_blocks.clear();
+    // set path
+    l_path = config->get( "path", "block_list", "blocks");
+    this->p_path = l_path;
 
     // open folder
-    l_handle = opendir( path.c_str());
+    l_handle = opendir( l_path.c_str());
     if ( l_handle != NULL ) {
         while ( 0 != ( l_dirEntry = readdir( l_handle ) ))  {
-            std::string l_name = l_dirEntry->d_name;
-            std::string l_block_path =  path + "/"+ l_name + "/";
-            if( FileExists( l_block_path + "definition.xml" ) ) {
+            l_name = l_dirEntry->d_name;
+            l_block_path =  l_path + "/"+ l_name + "/";
+            if( fileExists( l_block_path + "definition.xml" ))
                 loadblock( l_block_path, l_name);
-            }
         }
     } else {
-        // Fehler beim öffnen
-        printf( "block_list Ordner \"%s\" ist nicht vorhanden!\n", path.c_str());
+        printf( "block_list Ordner \"%s\" ist nicht vorhanden!\n", l_path.c_str());
     }
     closedir( l_handle );
 }
 
 block_list::~block_list() {
+    delete p_tilemap;
     p_blocks.clear();
 }
 
-void block_list::draw( graphic* graphic) {
-    int t_x = 0;
-    int t_y = 0;
+void block_list::init( graphic* graphic, config *config) {
+    int l_block_x = 0;
+    int l_block_y = 0;
+    std::string l_filename_tilemap;
 
     const int l_maxwidth = TILESET_WIDTH/BLOCK_SIZE;
 
-    // asu allen blöcken eine Grafik erstellen
+    // get file path
+    l_filename_tilemap = config->get( "tilemap", "block_list", "tileset");
+
+    // draw every block into a image
     for( int i = 0; i < (int)p_blocks.size(); i++) {
         block *block = &p_blocks[i];
         if( block->getLoadedImage() == false ) {
             block->loadImage( graphic);
         }
 
-        // Alle Seiten Zeichnen
+        // draw only once by side
         block_image* l_side;
         for( int n = 0; n < (int)block->getSideAmount(); n++) {
-            // Seiten
             l_side = block->getSide( n);
-
-            if( t_x >= l_maxwidth) {
-                t_x = 0;
-                t_y++;
+            // check limit width block texture
+            if( l_block_x >= l_maxwidth) {
+                l_block_x = 0;
+                l_block_y++;
             }
-            graphic->draw( l_side->getSurface(), BLOCK_SIZE*t_x, BLOCK_SIZE*t_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
-            l_side->getPosX() = t_x;
-            l_side->getPosY() = t_y;
-            t_x++;
+            graphic->draw( l_side->getSurface(), BLOCK_SIZE*l_block_x, BLOCK_SIZE*l_block_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
+            // save data to the block (for later use)
+            l_side->setPosition( glm::vec2( l_block_x, l_block_y));
+            l_block_x++;
         }
     }
-    // Bild speichern damit man es später nochmal laden kann(+ bild von texturen erhalten für andere anwendungen)
-    graphic->saveImageBMP( "tileset");
+
+    // save the image
+    graphic->saveImageBMP( l_filename_tilemap.c_str());
+
+    // now load it :)
+    p_tilemap = new texture( l_filename_tilemap + ".png");
 }
 
 glm::vec2 block_list::getTexturByType( int Type, block_side side) {
     block* l_block = get(Type);
-    if( l_block == NULL)
+    if( l_block == NULL) {
        printf( "block not found\n");
-    block_image* t_image;
-    glm::vec2 v_possition;
+       return glm::vec2( 0, 0);
+    }
+    block_image* l_image;
     // aus dein Seiten lesen
     switch( side) {
-        case BLOCK_SIDE_FRONT: t_image = l_block->get( BLOCK_SIDE_FRONT); break;
-        case BLOCK_SIDE_BACK: t_image = l_block->get( BLOCK_SIDE_BACK); break;
-        case BLOCK_SIDE_LEFT: t_image = l_block->get( BLOCK_SIDE_LEFT); break;
-        case BLOCK_SIDE_RIGHT: t_image = l_block->get( BLOCK_SIDE_RIGHT); break;
-        case BLOCK_SIDE_TOP: t_image = l_block->get( BLOCK_SIDE_TOP); break;
-        case BLOCK_SIDE_BUTTOM: t_image = l_block->get( BLOCK_SIDE_BUTTOM); break;
+        case BLOCK_SIDE_FRONT: l_image = l_block->get( BLOCK_SIDE_FRONT); break;
+        case BLOCK_SIDE_BACK: l_image = l_block->get( BLOCK_SIDE_BACK); break;
+        case BLOCK_SIDE_LEFT: l_image = l_block->get( BLOCK_SIDE_LEFT); break;
+        case BLOCK_SIDE_RIGHT: l_image = l_block->get( BLOCK_SIDE_RIGHT); break;
+        case BLOCK_SIDE_TOP: l_image = l_block->get( BLOCK_SIDE_TOP); break;
+        case BLOCK_SIDE_BUTTOM: l_image = l_block->get( BLOCK_SIDE_BUTTOM); break;
         default:
-            t_image = l_block->get( BLOCK_SIDE_NONE);
+            l_image = l_block->get( BLOCK_SIDE_NONE);
             printf("block_list::GetTexturByType Hier läuft was DEFINITIV falsch <3\n");
         break; // falls mal was DEFINITIV falsch läuft mal melden <3
     }
-    // Position vom bild auslesen
-    v_possition.x = t_image->getPosX();
-    v_possition.y = t_image->getPosY();
-    return v_possition;
+    return l_image->getPosition();
 }
 
 block* block_list::get( int ID) {
@@ -156,29 +164,15 @@ block* block_list::getByName( std::string name) {
     return NULL;
 }
 
-bool block_list::GetSuffix(const std::string &file, const std::string &suffix) {
-    return file.size() >= suffix.size() && file.compare(file.size() - suffix.size(), suffix.size(), suffix) == 0;
-}
-
-bool block_list::GetSuffix6502(const std::string& str, const std::string& end) {
-    size_t slen = str.size(), elen = end.size();
-    if (slen <= elen) return false;
-    while (elen) {
-        if (str[--slen] != end[--elen]) return false;
-    }
-    return true;
-}
-
-bool block_list::FileExists(std::string StrFilename) {
-    std::ifstream file;
-    // file open
-    file.open ( StrFilename.c_str());
-    if (file.is_open()) {
-        file.close();
+bool block_list::fileExists(std::string filename) {
+    std::ifstream l_file;
+    // file open and close
+    l_file.open ( filename.c_str());
+    if (l_file.is_open()) {
+        l_file.close();
         return true;
     }
-    // file close
-    file.close();
+    l_file.close();
     return false;
 }
 

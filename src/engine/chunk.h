@@ -88,7 +88,15 @@ private:
     b3ShapeDef *p_shape;
     b3Mesh *p_mesh;
 
+    // side
     std::vector<unsigned int> p_indices;
+    unsigned int p_indices_x_pos;
+    unsigned int p_indices_x_neg;
+    unsigned int p_indices_y_pos;
+    unsigned int p_indices_y_neg;
+    unsigned int p_indices_z_pos;
+    unsigned int p_indices_z_neg;
+
     std::vector<glm::vec3> p_vertices;
     std::vector<glm::vec3> p_normal;
     std::vector<glm::vec3> p_texture;
