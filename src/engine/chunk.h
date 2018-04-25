@@ -41,7 +41,7 @@ public:
 
     inline int getAmount() { return p_vertices.size(); }
     void set( int X, int Y, int Z, int ID, bool change = true);
-    int getTile( int X, int Y, int Z);
+    unsigned short getTile( int X, int Y, int Z);
     bool CheckTile( int X, int Y, int Z);
 
 
@@ -82,7 +82,8 @@ private:
     GLuint p_vboNormal;
     GLuint p_vboData;
 
-    int* p_tile;
+    unsigned short* p_tile;
+    unsigned short* p_lighting;
 
     b3Body* p_body;
     b3ShapeDef *p_shape;
@@ -90,12 +91,6 @@ private:
 
     // side
     std::vector<unsigned int> p_indices;
-    unsigned int p_indices_x_pos;
-    unsigned int p_indices_x_neg;
-    unsigned int p_indices_y_pos;
-    unsigned int p_indices_y_neg;
-    unsigned int p_indices_z_pos;
-    unsigned int p_indices_z_neg;
 
     std::vector<glm::vec3> p_vertices;
     std::vector<glm::vec3> p_normal;

@@ -29,7 +29,8 @@ Chunk::Chunk( int X, int Y, int Z, int Seed) {
 
     int t = SDL_GetTicks();
 
-    p_tile = new int[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]; //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
+    p_tile = new unsigned short[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]; //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
+    p_lighting = new unsigned short[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
 
     for (int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
         p_tile[ i ] = EMPTY_BLOCK_ID;
@@ -60,6 +61,7 @@ Chunk::~Chunk() {
 //                    p_tile[ Register] = NULL;
                 }
     delete[] p_tile;
+    delete[] p_lighting;
 
     //printf( "~Chunk(): remove p_tile in %dms\n", timer.GetTicks());
     timer.Start();
@@ -164,7 +166,7 @@ void Chunk::set( int X, int Y, int Z, int ID, bool change) {
     p_changed = change;
 }
 
-int Chunk::getTile( int X, int Y, int Z) {
+unsigned short Chunk::getTile( int X, int Y, int Z) {
     if( X < 0)
         return EMPTY_BLOCK_ID;
     if( Y < 0)
@@ -318,7 +320,6 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
 
     glm::vec3 l_pos = getPos();
 
-    p_indices_x_pos = p_indices.size();
     // View from positive x
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = CHUNK_SIZE - 1; x >= 0; x--) {
@@ -358,7 +359,6 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     }
 
     // View from negative x
-    p_indices_x_neg = p_indices.size();
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = 0; x < CHUNK_SIZE; x++)  {
             for(int y = 0; y < CHUNK_SIZE; y++) {
@@ -398,7 +398,6 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     }
 
     // View from positive y
-    p_indices_y_pos = p_indices.size();
     for(int z = 0; z < CHUNK_SIZE; z++) {
          for(int y = 0; y < CHUNK_SIZE; y++){
              for(int x = 0; x < CHUNK_SIZE; x++) {
@@ -430,11 +429,9 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     }
 
     // View from negative y
-    p_indices_y_neg = p_indices.size();
     for(int z = 0; z < CHUNK_SIZE; z++) {
-        for(int y = CHUNK_SIZE - 1; y >= 0; y--)
+        for(int y = CHUNK_SIZE - 1; y >= 0; y--) {
             for(int x = 0; x < CHUNK_SIZE; x++) {
-              {
                 if( getTile( x, y, z) == NULL) // tile nicht vorhanden
                     continue;
                 int type = getTile( x, y, z);
@@ -463,7 +460,6 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
     }
 
     // View from positive z
-    p_indices_z_pos = p_indices.size();
     for(int z = 0; z < CHUNK_SIZE; z++) {
         for(int x = 0; x < CHUNK_SIZE; x++) {
             for(int y = 0; y < CHUNK_SIZE; y++) {
@@ -492,12 +488,10 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                 }
                 b_visibility = true;
             }
-
         }
     }
 
     // View from negative z
-    p_indices_z_neg = p_indices.size();
     for(int z = CHUNK_SIZE - 1; z >= 0; z--) {
          for(int x = 0; x < CHUNK_SIZE; x++){
             for(int y = 0; y < CHUNK_SIZE; y++) {
@@ -632,19 +626,26 @@ void Chunk::draw( Shader* shader) {
     if( p_updateVbo)
         updateVbo();
 
-    // Shader einstellen
+    // calculation view
+    float l_diameter = sqrtf( CHUNK_SIZE*CHUNK_SIZE*3);
+    glm::mat4 l_mvp = shader->getVP() * p_form.getModel();
+    glm::vec4 l_center =  l_mvp * glm::vec4( glm::vec3(CHUNK_SIZE/2), 1); // center of the chunk
+    l_center.x /= l_center.w;
+    l_center.y /= l_center.w;
+
+    // behind the camera
+    if( l_center.z < -CHUNK_SIZE)
+        return;
+
+    // outside the draw view
+    if( fabsf( l_center.x) > 1 + fabsf( CHUNK_SIZE * 2 / l_center.w) || fabsf( l_center.y) > 1 + fabsf( CHUNK_SIZE * 2 / l_center.w))
+        return;
+
+    // set model matrix
     shader->update( MAT_MODEL, p_form.getModel());
 
-    // use the vao
+    // draw
     glBindVertexArray( p_vboVao);
-
-    /*glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, p_vboIndex);
-    glBufferData( GL_ELEMENT_ARRAY_BUFFER, (p_indices_y_pos-p_indices_x_neg) * sizeof( unsigned int ), &p_indices[ p_indices_x_neg], GL_DYNAMIC_DRAW);
-
-    // draw the elements
-    glDrawElements( GL_TRIANGLES, p_indices_y_pos-p_indices_x_neg, GL_UNSIGNED_INT, NULL);*/
     glDrawElements( GL_TRIANGLES, p_elements, GL_UNSIGNED_INT, NULL);
-
-    // disable
     glBindVertexArray( 0);
 }

@@ -68,7 +68,6 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
 
     glm::vec4 viewport = glm::vec4(0, 0, p_graphic->getWidth(), p_graphic->getHeight());
     glm::vec3 wincoord = glm::vec3(p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, depth);
-    //glm::vec3 objcoord = glm::unProject(wincoord, p_graphic->getCamera()->GetView(), p_graphic->getCamera()->GetProjection(), viewport);
 
     glm::vec3 testpos = p_graphic->getCamera()->GetPos();
     glm::vec3 prevpos = p_graphic->getCamera()->GetPos();

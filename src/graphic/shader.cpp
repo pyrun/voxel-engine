@@ -99,9 +99,11 @@ void Shader::update( shader_mat mat, glm::mat4 matrix) {
     switch( mat) {
         case MAT_PROJECTION:
             l_uniform = 0;
+            p_projection = matrix;
         break;
         case MAT_VIEW:
             l_uniform = 1;
+            p_view = matrix;
         break;
         case MAT_MODEL:
             l_uniform = 2;

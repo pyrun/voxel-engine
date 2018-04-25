@@ -59,6 +59,7 @@ public:
 	virtual ~Shader();
 
 	GLuint getAntribute( int i) { return p_attribute[i]; }
+	glm::mat4 getVP() { return p_projection * p_view; }
 protected:
 private:
     static const unsigned int NUM_ATTRIBUTE = 3;
@@ -78,6 +79,9 @@ private:
 	GLint p_uniforms[NUM_UNIFORMS];
 
 	GLfloat p_old_alpha_value;
+
+	glm::mat4 p_projection;
+	glm::mat4 p_view;
 };
 
 #endif
