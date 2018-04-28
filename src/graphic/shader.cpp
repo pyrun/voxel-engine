@@ -16,6 +16,7 @@ Shader::Shader(const std::string& fileName) {
 	glBindAttribLocation(p_program, 0, "vertexPosition");
 	glBindAttribLocation(p_program, 1, "vertexNormals");
 	glBindAttribLocation(p_program, 2, "vertexTexture");
+	glBindAttribLocation(p_program, 3, "vertexLighting");
 
 	glLinkProgram(p_program);
 	CheckShaderError(p_program, GL_LINK_STATUS, true, "Error linking shader program");
@@ -32,6 +33,7 @@ Shader::Shader(const std::string& fileName) {
 	p_attribute[0] = glGetAttribLocation(p_program, "vertexPosition");
 	p_attribute[1] = glGetAttribLocation(p_program, "vertexNormals");
 	p_attribute[2] = glGetAttribLocation(p_program, "vertexTexture");
+	p_attribute[3] = glGetAttribLocation(p_program, "vertexLighting");
 
     // GL error anzeigen
     GLenum error =  glGetError(); if(error) {

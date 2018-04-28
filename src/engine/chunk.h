@@ -42,13 +42,16 @@ public:
     inline int getAmount() { return p_vertices.size(); }
     void set( int X, int Y, int Z, int ID, bool change = true);
     unsigned short getTile( int X, int Y, int Z);
-    bool CheckTile( int X, int Y, int Z);
+    bool checkTile( int x, int y, int z);
 
+    int getSunlight(int x, int y, int z);
+    void setSunlight(int x, int y, int z, int val);
+    int getTorchlight(int x, int y, int z);
+    void setTorchlight(int x, int y, int z, int val);
 
-
-    void addFaceX( bool flip, glm::vec3 pos, glm::vec3 data);
-    void addFaceY( bool flip, glm::vec3 pos, glm::vec3 data);
-    void addFaceZ( bool flip, glm::vec3 pos, glm::vec3 data);
+    void addFaceX( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
+    void addFaceY( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
+    void addFaceZ( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
 
     void updateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
     void updateForm();
@@ -81,9 +84,10 @@ private:
     GLuint p_vboVertex;
     GLuint p_vboNormal;
     GLuint p_vboData;
+    GLuint p_vboLight;
 
     unsigned short* p_tile;
-    unsigned short* p_lighting;
+    unsigned char* p_lighting;
 
     b3Body* p_body;
     b3ShapeDef *p_shape;
@@ -95,9 +99,18 @@ private:
     std::vector<glm::vec3> p_vertices;
     std::vector<glm::vec3> p_normal;
     std::vector<glm::vec3> p_texture;
+    std::vector<glm::vec3> p_light;
 
     /*std::vector<ChunkVboVertexStruct> p_vertices;
     std::vector<ChunkVboDataStruct> p_data;*/
+};
+
+struct ChunkLightNode {
+    ChunkLightNode(short indx, Chunk* ch) : index(indx), chunk(ch) {}
+
+    short index; //this is the x y z coordinate!
+
+    Chunk* chunk; //pointer to the chunk that owns it!
 };
 
 #endif // CHUNK_H

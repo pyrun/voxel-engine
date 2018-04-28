@@ -62,7 +62,7 @@ public:
 	glm::mat4 getVP() { return p_projection * p_view; }
 protected:
 private:
-    static const unsigned int NUM_ATTRIBUTE = 3;
+    static const unsigned int NUM_ATTRIBUTE = 4;
 	static const unsigned int NUM_SHADERS = 2;
 	static const unsigned int NUM_UNIFORMS = 5;
 	int p_attribute_flag[NUM_ATTRIBUTE];

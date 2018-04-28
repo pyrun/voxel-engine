@@ -108,6 +108,7 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
             // Noise generieren
             float high = scaled_raw_noise_2d( 0.5, 0.25, (float)posx/interval_range, (float)posz/interval_range);
             high += scaled_raw_noise_2d( 0, -0.02, (float)posx/interval_range_form, (float)posz/interval_range_form);
+            int t = scaled_raw_noise_2d( 0, 15, (float)posx/interval_range_form, (float)posz/interval_range_form);
 
             // Höhe errechnen
             for(int cy = 0; cy < CHUNK_SIZE; cy++) {
@@ -123,6 +124,8 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
                     if( posy+1 > Island_high*high+ border)
                         type = l_grass;
                 }
+                if( type == l_grass )
+                    c_chunk->setSunlight( cx, cy, cz, t%15);
                 c_chunk->set( cx, cy, cz, type, false);
             }
         }

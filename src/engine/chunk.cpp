@@ -30,10 +30,12 @@ Chunk::Chunk( int X, int Y, int Z, int Seed) {
     int t = SDL_GetTicks();
 
     p_tile = new unsigned short[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]; //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
-    p_lighting = new unsigned short[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+    p_lighting = new unsigned char[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
 
-    for (int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+    for (int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
         p_tile[ i ] = EMPTY_BLOCK_ID;
+        p_lighting[ i ] = 1;
+    }
 
     updateForm();
 
@@ -71,6 +73,7 @@ Chunk::~Chunk() {
     glDeleteBuffers(1, &p_vboVertex);
     glDeleteBuffers(1, &p_vboNormal);
     glDeleteBuffers(1, &p_vboData);
+    glDeleteBuffers(1, &p_vboLight);
     glDeleteVertexArrays( 1, &p_vboVao);
 
     printf( "~Chunk(): remove vbo data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
@@ -176,29 +179,33 @@ unsigned short Chunk::getTile( int X, int Y, int Z) {
     return p_tile[ TILE_REGISTER( X, Y, Z)];
 }
 
-bool Chunk::CheckTile( int X, int Y, int Z) {
-    if( p_tile[ TILE_REGISTER( X, Y, Z)] == EMPTY_BLOCK_ID)
-        return false;
-    return true;
+bool Chunk::checkTile( int x, int y, int z) {
+    return p_tile[ TILE_REGISTER( x, y, z)] == EMPTY_BLOCK_ID?false:true;
 }
 
-//Helper method to go from a float to packed char
-unsigned char ConvertChar(float value) {
-  //Scale and bias
-  value = (value + 1.0f) * 0.5f;
-  return (unsigned char)(value*255.0f);
+// get XXXX0000
+int Chunk::getSunlight(int x, int y, int z) {
+    return (p_lighting[ TILE_REGISTER( x, y, z)] >> 4) & 0xF;
 }
 
-//Pack 3 values into 1 float
-float PackToFloat(unsigned char x, unsigned char y, unsigned char z)
-{
-  unsigned int packedColor = (x << 16) | (y << 8) | z;
-  float packedFloat = (float) ( ((double)packedColor) / ((double) (1 << 24)) );
-
-  return packedFloat;
+// set XXXX0000
+void Chunk::setSunlight(int x, int y, int z, int val) {
+    p_lighting[ TILE_REGISTER( x, y, z)] = (p_lighting[ TILE_REGISTER( x, y, z)] & 0xF) | (val << 4);
 }
 
-void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 texture) {
+
+// get 0000XXXX
+int Chunk::getTorchlight(int x, int y, int z) {
+
+    return p_lighting[ TILE_REGISTER( x, y, z)] & 0xF;
+}
+
+// set 0000XXXX
+void Chunk::setTorchlight(int x, int y, int z, int val) {
+    p_lighting[ TILE_REGISTER( x, y, z)] = (p_lighting[ TILE_REGISTER( x, y, z)] & 0xF0) | val;
+}
+
+void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 texture, glm::vec3 blockPos) {
     int l_flip = 0;
     int l_indices = p_indices.size();
     int l_vertices = p_vertices.size();
@@ -206,6 +213,7 @@ void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 texture) {
     p_indices.resize( p_indices.size() + 6);
     p_vertices.resize( p_vertices.size() + 4);
     p_texture.resize( p_texture.size() + 4);
+    p_light.resize( p_light.size() + 4 );
 
     // flip
     if( flip)
@@ -230,9 +238,16 @@ void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 texture) {
     p_texture[ l_vertices + 1] = texture;
     p_texture[ l_vertices + 2] = texture;
     p_texture[ l_vertices + 3] = texture;
+
+    // set lighting
+    int l_lighting = getSunlight( blockPos.x, blockPos.y, blockPos.z);
+    p_light[ l_vertices + 0] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 1] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 2] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 3] = glm::vec3( l_lighting/16.f);
 }
 
-void Chunk::addFaceY( bool flip, glm::vec3 pos, glm::vec3 texture) {
+void Chunk::addFaceY( bool flip, glm::vec3 pos, glm::vec3 texture, glm::vec3 blockPos) {
     int l_flip = 0;
     int l_indices = p_indices.size();
     int l_vertices = p_vertices.size();
@@ -240,6 +255,7 @@ void Chunk::addFaceY( bool flip, glm::vec3 pos, glm::vec3 texture) {
     p_indices.resize( p_indices.size() + 6);
     p_vertices.resize( p_vertices.size() + 4);
     p_texture.resize( p_texture.size() + 4);
+    p_light.resize( p_light.size() + 4 );
 
     // flip
     if( flip)
@@ -264,9 +280,16 @@ void Chunk::addFaceY( bool flip, glm::vec3 pos, glm::vec3 texture) {
     p_texture[ l_vertices + 1] = texture;
     p_texture[ l_vertices + 2] = texture;
     p_texture[ l_vertices + 3] = texture;
+
+    // set lighting
+    int l_lighting = getSunlight( blockPos.x, blockPos.y, blockPos.z);
+    p_light[ l_vertices + 0] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 1] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 2] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 3] = glm::vec3( l_lighting/16.f);
 }
 
-void Chunk::addFaceZ( bool flip, glm::vec3 pos, glm::vec3 texture) {
+void Chunk::addFaceZ( bool flip, glm::vec3 pos, glm::vec3 texture, glm::vec3 blockPos) {
     int l_flip = 0;
     int l_indices = p_indices.size();
     int l_vertices = p_vertices.size();
@@ -274,6 +297,7 @@ void Chunk::addFaceZ( bool flip, glm::vec3 pos, glm::vec3 texture) {
     p_indices.resize( p_indices.size() + 6);
     p_vertices.resize( p_vertices.size() + 4);
     p_texture.resize( p_texture.size() + 4);
+    p_light.resize( p_light.size() + 4 );
 
     // flip
     if( flip)
@@ -298,6 +322,13 @@ void Chunk::addFaceZ( bool flip, glm::vec3 pos, glm::vec3 texture) {
     p_texture[ l_vertices + 1] = texture;
     p_texture[ l_vertices + 2] = texture;
     p_texture[ l_vertices + 3] = texture;
+
+    // set lighting
+    int l_lighting = getSunlight( blockPos.x, blockPos.y, blockPos.z);
+    p_light[ l_vertices + 0] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 1] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 2] = glm::vec3( l_lighting/16.f);
+    p_light[ l_vertices + 3] = glm::vec3( l_lighting/16.f);
 }
 
 void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Left, Chunk *Right, Chunk *Up, Chunk *Down) {
@@ -335,22 +366,22 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     continue;
                 }
                 // Line of sight blocked?
-                if( x != 0 && CheckTile(x-1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x-1, y, z) )->getAlpha() )
+                if( x != 0 && checkTile(x-1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x-1, y, z) )->getAlpha() )
                 {
                     b_visibility = false;
                     continue;
                 }
                 // View from negative x
-                if( x == 0 && Back != NULL && Back->CheckTile(CHUNK_SIZE-1, y, z) && Back->getTile( CHUNK_SIZE-1, y, z)) {
+                if( x == 0 && Back != NULL && Back->checkTile(CHUNK_SIZE-1, y, z) && Back->getTile( CHUNK_SIZE-1, y, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) ) {
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y+1, z+1);
                 } else {
                     Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_FRONT);
-                    addFaceX( true, glm::vec3( x-1, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
+                    addFaceX( true, glm::vec3( x-1, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0), glm::vec3( x, y, z));
                 }
 
                 b_visibility = true;
@@ -376,21 +407,21 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     continue;
                 }
 
-                if(  x != CHUNK_SIZE-1 && CheckTile(x+1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x+1, y, z))->getAlpha() ) {
+                if(  x != CHUNK_SIZE-1 && checkTile(x+1, y, z) && List->get( type)->getAlpha() == List->get( getTile( x+1, y, z))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
                 // View from positive x
-                if( x == CHUNK_SIZE-1 && Front != NULL && Front->CheckTile( 0, y, z) && Front->getTile( 0, y, z)) {
+                if( x == CHUNK_SIZE-1 && Front != NULL && Front->checkTile( 0, y, z) && Front->getTile( 0, y, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) ) {
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
                     Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_BACK);
-                    addFaceX( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
+                    addFaceX( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0), glm::vec3( x, y, z));
                 }
                 b_visibility = true;
             }
@@ -408,20 +439,20 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if(  y != CHUNK_SIZE-1 && CheckTile(x, y+1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y+1, z))->getAlpha() ) {
+                if(  y != CHUNK_SIZE-1 && checkTile(x, y+1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y+1, z))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( y == CHUNK_SIZE-1 && Up != NULL && Up->CheckTile(x, 0, z) && Up->getTile( x, 0, z)) {
+                if( y == CHUNK_SIZE-1 && Up != NULL && Up->checkTile(x, 0, z) && Up->getTile( x, 0, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z)) {
+                if(b_visibility && x != 0 && checkTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( x, y, z) == getSunlight( x-1, y, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
                     Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_TOP);
-                    addFaceY( true, glm::vec3( x, y+1, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
+                    addFaceY( true, glm::vec3( x, y+1, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1), glm::vec3( x, y, z));
                 }
                 b_visibility = true;
             }
@@ -439,20 +470,20 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if( y != 0 && CheckTile(x, y-1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y-1, z))->getAlpha() ) {
+                if( y != 0 && checkTile(x, y-1, z) && List->get( type)->getAlpha() == List->get( getTile( x, y-1, z))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( y == 0 && Down != NULL && Down->CheckTile(x, CHUNK_SIZE-1, z) && Down->getTile( x, CHUNK_SIZE-1, z)) {
+                if( y == 0 && Down != NULL && Down->checkTile(x, CHUNK_SIZE-1, z) && Down->getTile( x, CHUNK_SIZE-1, z)) {
                     b_visibility = false;
                     continue;
                 }
-                if(b_visibility && x != 0 && CheckTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z)) {
+                if(b_visibility && x != 0 && checkTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( x, y, z) == getSunlight( x-1, y, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y, z+1);
                 } else {
                     Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_BUTTOM);
-                    addFaceY( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1));
+                    addFaceY( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 1), glm::vec3( x, y, z));
                 }
                 b_visibility = true;
             }
@@ -470,21 +501,21 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if( z != CHUNK_SIZE-1 && CheckTile(x, y, z+1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z+1))->getAlpha() ) {
+                if( z != CHUNK_SIZE-1 && checkTile(x, y, z+1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z+1))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
                 // View from positive z
-                if( z == CHUNK_SIZE-1 && Right != NULL && Right->CheckTile(x, y, 0) && Right->getTile( x, y, 0)) {
+                if( z == CHUNK_SIZE-1 && Right != NULL && Right->checkTile(x, y, 0) && Right->getTile( x, y, 0)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y-1, z) == getTile( x, y, z)) {
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && getTile( x, y-1, z) == getTile( x, y, z) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z+1);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
                     Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_RIGHT);
-                    addFaceZ( true, glm::vec3( x, y, z+1), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
+                    addFaceZ( true, glm::vec3( x, y, z+1), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0), glm::vec3( x, y, z));
                 }
                 b_visibility = true;
             }
@@ -502,20 +533,20 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if(  z != 0 && CheckTile(x, y, z-1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z-1))->getAlpha() ) {
+                if(  z != 0 && checkTile(x, y, z-1) && List->get( type)->getAlpha() == List->get( getTile( x, y, z-1))->getAlpha() ) {
                     b_visibility = false;
                     continue;
                 }
-                if( z == 0 && Left != NULL && Left->CheckTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)) {
+                if( z == 0 && Left != NULL && Left->checkTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)) {
                     b_visibility = false;
                     continue;
                 }
-                if( b_visibility && y != 0 && CheckTile(x, y-1, z) && getTile( x, y, z) == getTile( x, y-1, z)) {
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && getTile( x, y, z) == getTile( x, y-1, z) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z);
                 } else {
                     Side_Textur_Pos = List->getTexturByType( type, BLOCK_SIDE_LEFT);
-                    addFaceZ( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0));
+                    addFaceZ( false, glm::vec3( x, y, z), glm::vec3( Side_Textur_Pos.x, Side_Textur_Pos.y, 0), glm::vec3( x, y, z));
                 }
                 b_visibility = true;
             }
@@ -574,6 +605,7 @@ void Chunk::updateVbo() {
         glGenBuffers(1, &p_vboVertex);
         glGenBuffers(1, &p_vboNormal);
         glGenBuffers(1, &p_vboData);
+        glGenBuffers(1, &p_vboLight);
     }
 
     // index buffer
@@ -590,6 +622,9 @@ void Chunk::updateVbo() {
     // data
     glBindBuffer(GL_ARRAY_BUFFER, p_vboData);
     glBufferData(GL_ARRAY_BUFFER, p_texture.size() * sizeof(glm::vec3), &p_texture[0], GL_STATIC_DRAW);
+    // light
+    glBindBuffer(GL_ARRAY_BUFFER, p_vboLight);
+    glBufferData(GL_ARRAY_BUFFER, p_light.size() * sizeof(glm::vec3), &p_light[0], GL_STATIC_DRAW);
 
     // VAO
     glBindVertexArray( p_vboVao);
@@ -611,6 +646,11 @@ void Chunk::updateVbo() {
     glEnableVertexAttribArray( 2);
     glBindBuffer( GL_ARRAY_BUFFER, p_vboData);
     glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    // data
+    glEnableVertexAttribArray( 3);
+    glBindBuffer( GL_ARRAY_BUFFER, p_vboLight);
+    glVertexAttribPointer( 3, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     glBindVertexArray(0);
 

@@ -7,6 +7,7 @@ layout (location = 2) out vec4 gTexture;
 in vec3 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
+in vec3 Lighting;
 
 uniform vec2 tilesize;
 
@@ -32,5 +33,5 @@ void main()
     
     gNormal = vec4( normalize(Normal), 1);
 
-    gTexture = texture( texture_image, Texture);
+    gTexture = texture( texture_image, Texture)*vec4( vec3(Lighting), 1);
 }
