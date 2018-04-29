@@ -6,13 +6,15 @@
 
 Chunk::Chunk( int X, int Y, int Z, int Seed) {
     // node reset
+    p_x_pos = NULL;
+    p_x_neg = NULL;
+    p_y_pos = NULL;
+    p_y_neg = NULL;
+    p_z_pos = NULL;
+    p_z_neg = NULL;
+
     next = NULL;
-    front = NULL;
-    back = NULL;
-    right = NULL;
-    left = NULL;
-    up = NULL;
-    down = NULL;
+
     p_body = NULL;
 
     p_vboVertex = 0;
@@ -47,13 +49,6 @@ Chunk::~Chunk() {
     timer.Start();
     // node reset
     next = NULL;
-    // side reset
-    front = NULL;
-    back = NULL;
-    right = NULL;
-    left = NULL;
-    up = NULL;
-    down = NULL;
     // Löschen p_tile
     for (int cz = 0; cz < CHUNK_SIZE; cz++)
         for (int cx = 0; cx < CHUNK_SIZE; cx++)
@@ -155,15 +150,32 @@ bool Chunk::serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int s
     return true;
 }
 
-void Chunk::set( int X, int Y, int Z, int ID, bool change) {
-    if( X < 0)
-        return;
-    if( Y < 0)
-        return;
-    if( Z < 0)
-        return;
+void Chunk::setSide( Chunk *chunk, Chunk_side side) {
+    switch( side) {
+        case CHUNK_SIDE_X_POS: p_x_pos = chunk; break;
+        case CHUNK_SIDE_X_NEG: p_x_neg = chunk; break;
+        case CHUNK_SIDE_Y_POS: p_y_pos = chunk; break;
+        case CHUNK_SIDE_Y_NEG: p_y_neg = chunk; break;
+        case CHUNK_SIDE_Z_POS: p_z_pos = chunk; break;
+        case CHUNK_SIDE_Z_NEG: p_z_neg = chunk; break;
+    }
+}
+
+Chunk *Chunk::getSide( Chunk_side side) {
+    switch( side) {
+        case CHUNK_SIDE_X_POS: return p_x_pos; break;
+        case CHUNK_SIDE_X_NEG: return p_x_neg; break;
+        case CHUNK_SIDE_Y_POS: return p_y_pos; break;
+        case CHUNK_SIDE_Y_NEG: return p_y_neg; break;
+        case CHUNK_SIDE_Z_POS: return p_z_pos; break;
+        case CHUNK_SIDE_Z_NEG: return p_z_neg; break;
+    }
+    return NULL;
+}
+
+void Chunk::set( glm::vec3 position, int ID, bool change) {
     // tile nehmen
-    p_tile[ TILE_REGISTER( X, Y, Z)] = ID;
+    p_tile[ TILE_REGISTER( (int)position.x, (int)position.y, (int)position.z)] = ID;
 
     // welt hat sich verändert
     p_changed = change;
@@ -184,25 +196,25 @@ bool Chunk::checkTile( int x, int y, int z) {
 }
 
 // get XXXX0000
-int Chunk::getSunlight(int x, int y, int z) {
-    return (p_lighting[ TILE_REGISTER( x, y, z)] >> 4) & 0xF;
+int Chunk::getSunlight( glm::vec3 position) {
+    return (p_lighting[ TILE_REGISTER((int)position.x, (int)position.y, (int)position.z)] >> 4) & 0xF;
 }
 
 // set XXXX0000
-void Chunk::setSunlight(int x, int y, int z, int val) {
-    p_lighting[ TILE_REGISTER( x, y, z)] = (p_lighting[ TILE_REGISTER( x, y, z)] & 0xF) | (val << 4);
+void Chunk::setSunlight( glm::vec3 position, int val) {
+    p_lighting[ TILE_REGISTER((int)position.x, (int)position.y, (int)position.z)] = (p_lighting[ TILE_REGISTER( (int)position.x, (int)position.y, (int)position.z)] & 0xF) | (val << 4);
 }
 
 
 // get 0000XXXX
-int Chunk::getTorchlight(int x, int y, int z) {
+int Chunk::getTorchlight( glm::vec3 position) {
 
-    return p_lighting[ TILE_REGISTER( x, y, z)] & 0xF;
+    return p_lighting[ TILE_REGISTER( (int)position.x, (int)position.y, (int)position.z)] & 0xF;
 }
 
 // set 0000XXXX
-void Chunk::setTorchlight(int x, int y, int z, int val) {
-    p_lighting[ TILE_REGISTER( x, y, z)] = (p_lighting[ TILE_REGISTER( x, y, z)] & 0xF0) | val;
+void Chunk::setTorchlight( glm::vec3 position, int val) {
+    p_lighting[ TILE_REGISTER( (int)position.x, (int)position.y, (int)position.z)] = (p_lighting[ TILE_REGISTER( (int)position.x, (int)position.y, (int)position.z)] & 0xF0) | val;
 }
 
 void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 texture, glm::vec3 blockPos) {
@@ -240,7 +252,7 @@ void Chunk::addFaceX( bool flip, glm::vec3 pos, glm::vec3 texture, glm::vec3 blo
     p_texture[ l_vertices + 3] = texture;
 
     // set lighting
-    int l_lighting = getSunlight( blockPos.x, blockPos.y, blockPos.z);
+    int l_lighting = getSunlight( blockPos);
     p_light[ l_vertices + 0] = glm::vec3( l_lighting/16.f);
     p_light[ l_vertices + 1] = glm::vec3( l_lighting/16.f);
     p_light[ l_vertices + 2] = glm::vec3( l_lighting/16.f);
@@ -282,7 +294,7 @@ void Chunk::addFaceY( bool flip, glm::vec3 pos, glm::vec3 texture, glm::vec3 blo
     p_texture[ l_vertices + 3] = texture;
 
     // set lighting
-    int l_lighting = getSunlight( blockPos.x, blockPos.y, blockPos.z);
+    int l_lighting = getSunlight( blockPos);
     p_light[ l_vertices + 0] = glm::vec3( l_lighting/16.f);
     p_light[ l_vertices + 1] = glm::vec3( l_lighting/16.f);
     p_light[ l_vertices + 2] = glm::vec3( l_lighting/16.f);
@@ -324,14 +336,14 @@ void Chunk::addFaceZ( bool flip, glm::vec3 pos, glm::vec3 texture, glm::vec3 blo
     p_texture[ l_vertices + 3] = texture;
 
     // set lighting
-    int l_lighting = getSunlight( blockPos.x, blockPos.y, blockPos.z);
+    int l_lighting = getSunlight( blockPos);
     p_light[ l_vertices + 0] = glm::vec3( l_lighting/16.f);
     p_light[ l_vertices + 1] = glm::vec3( l_lighting/16.f);
     p_light[ l_vertices + 2] = glm::vec3( l_lighting/16.f);
     p_light[ l_vertices + 3] = glm::vec3( l_lighting/16.f);
 }
 
-void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Left, Chunk *Right, Chunk *Up, Chunk *Down) {
+void Chunk::updateArray( block_list *List) {
     int i = 0;
     glm::vec2 Side_Textur_Pos;
     Timer timer;
@@ -372,11 +384,11 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     continue;
                 }
                 // View from negative x
-                if( x == 0 && Back != NULL && Back->checkTile(CHUNK_SIZE-1, y, z) && Back->getTile( CHUNK_SIZE-1, y, z)) {
+                /*if( x == 0 && getSide( CHUNK_SIDE_X_POS) != NULL && Back->checkTile(CHUNK_SIZE-1, y, z) && Back->getTile( CHUNK_SIZE-1, y, z)) {
                     b_visibility = false;
                     continue;
-                }
-                if( b_visibility && y != 0 && checkTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
+                }*/
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) && getSunlight( glm::vec3( x, y, z) ) == getSunlight( glm::vec3( x, y-1, z) )) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x, y+1, z+1);
                 } else {
@@ -412,11 +424,11 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     continue;
                 }
                 // View from positive x
-                if( x == CHUNK_SIZE-1 && Front != NULL && Front->checkTile( 0, y, z) && Front->getTile( 0, y, z)) {
+                /*if( x == CHUNK_SIZE-1 && Front != NULL && Front->checkTile( 0, y, z) && Front->getTile( 0, y, z)) {
                     b_visibility = false;
                     continue;
-                }
-                if( b_visibility && y != 0 && checkTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
+                }*/
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && ( l_tile == getTile( x, y-1, z)) && getSunlight( glm::vec3( x, y, z)) == getSunlight( glm::vec3( x, y-1, z))) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
@@ -443,11 +455,11 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if( y == CHUNK_SIZE-1 && Up != NULL && Up->checkTile(x, 0, z) && Up->getTile( x, 0, z)) {
+                /*if( y == CHUNK_SIZE-1 && Up != NULL && Up->checkTile(x, 0, z) && Up->getTile( x, 0, z)) {
                     b_visibility = false;
                     continue;
-                }
-                if(b_visibility && x != 0 && checkTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( x, y, z) == getSunlight( x-1, y, z)) {
+                }*/
+                if(b_visibility && x != 0 && checkTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( glm::vec3( x, y, z)) == getSunlight( glm::vec3( x-1, y, z))) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
@@ -474,11 +486,11 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if( y == 0 && Down != NULL && Down->checkTile(x, CHUNK_SIZE-1, z) && Down->getTile( x, CHUNK_SIZE-1, z)) {
+                /*if( y == 0 && Down != NULL && Down->checkTile(x, CHUNK_SIZE-1, z) && Down->getTile( x, CHUNK_SIZE-1, z)) {
                     b_visibility = false;
                     continue;
-                }
-                if(b_visibility && x != 0 && checkTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( x, y, z) == getSunlight( x-1, y, z)) {
+                }*/
+                if(b_visibility && x != 0 && checkTile(x-1, y, z) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( glm::vec3( x, y, z)) == getSunlight( glm::vec3( x-1, y, z))) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x+1, y, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y, z+1);
                 } else {
@@ -506,11 +518,11 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     continue;
                 }
                 // View from positive z
-                if( z == CHUNK_SIZE-1 && Right != NULL && Right->checkTile(x, y, 0) && Right->getTile( x, y, 0)) {
+                /*if( z == CHUNK_SIZE-1 && Right != NULL && Right->checkTile(x, y, 0) && Right->getTile( x, y, 0)) {
                     b_visibility = false;
                     continue;
-                }
-                if( b_visibility && y != 0 && checkTile(x, y-1, z) && getTile( x, y-1, z) == getTile( x, y, z) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
+                }*/
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && getTile( x, y-1, z) == getTile( x, y, z) && getSunlight( glm::vec3( x, y, z)) == getSunlight( glm::vec3( x, y-1, z))) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z+1);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z+1);
                 } else {
@@ -537,11 +549,11 @@ void Chunk::updateArray( block_list *List, Chunk *Back, Chunk *Front, Chunk *Lef
                     b_visibility = false;
                     continue;
                 }
-                if( z == 0 && Left != NULL && Left->checkTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)) {
+                /*if( z == 0 && Left != NULL && Left->checkTile(x, y, CHUNK_SIZE-1) && Left->getTile( x, y, CHUNK_SIZE-1)) {
                     b_visibility = false;
                     continue;
-                }
-                if( b_visibility && y != 0 && checkTile(x, y-1, z) && getTile( x, y, z) == getTile( x, y-1, z) && getSunlight( x, y, z) == getSunlight( x, y-1, z)) {
+                }*/
+                if( b_visibility && y != 0 && checkTile(x, y-1, z) && getTile( x, y, z) == getTile( x, y-1, z) && getSunlight( glm::vec3( x, y, z)) == getSunlight( glm::vec3( x, y-1, z))) {
                     p_vertices[ p_vertices.size() - 3] = glm::vec3( x, y+1, z);
                     p_vertices[ p_vertices.size() - 1] = glm::vec3( x+1, y+1, z);
                 } else {

@@ -183,14 +183,62 @@ Chunk* world::getChunkWithPos( int x, int y, int z) {
     return NULL;
 }
 
-void world::SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID) {
+void world::setTile( Chunk *chunk, glm::vec3 position, int id) {
     if( chunk == NULL) {
-        printf( "SetTile: Cant set tile!\n");
+        printf( "world::setTile: chunk is defined as NULL\n");
         return;
     }
-    glm::vec3 l_pos = chunk->getPos() * glm::vec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+    glm::vec3 l_chunk_position = chunk->getPos() * glm::vec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
 
-    chunk->set( tile_x-l_pos.x, tile_y-l_pos.y, tile_z-l_pos.z, ID);
+    position = position - l_chunk_position;
+
+    chunk->set( position, id);
+
+    chunk->setSunlight( position, 0);
+
+    calcSunRay( chunk, position);
+    calcSunRay( chunk, position + glm::vec3( 1, 0, 0), true);
+    calcSunRay( chunk, position + glm::vec3(-1, 0, 0), true);
+    calcSunRay( chunk, position + glm::vec3( 0, 0, 1), true);
+    calcSunRay( chunk, position + glm::vec3( 0, 0,-1), true);
+}
+
+void world::calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock) {
+    Chunk *l_chunk = chunk;
+    glm::vec3 l_position = position;
+    int l_dark = 15;
+    /*while( l_chunk->getSide( CHUNK_SIDE_Y_POS) != NULL)
+        l_chunk = l_chunk->getSide( CHUNK_SIDE_Y_POS);*/
+
+    l_position.y = CHUNK_SIZE;
+    for( ;;) {
+        l_position.y = l_position.y - 1;
+        if( l_position.y < 0) {
+            l_chunk = l_chunk->getSide( CHUNK_SIDE_Y_NEG);
+            l_position.y = CHUNK_SIZE -1;
+        }
+
+        if( l_chunk == NULL)
+            return;
+
+        if( l_chunk->checkTile( l_position.x, l_position.y, l_position.z)) {
+            if( !firstBlock )
+                l_chunk->setSunlight( l_position, l_dark);
+            // now dark ;)
+            l_dark = 0;
+        }
+        if( l_dark == 0) // we hit the ground
+            continue;
+        // check around
+        if( l_chunk->checkTile( l_position.x-1, l_position.y, l_position.z))
+            l_chunk->setSunlight( l_position + glm::vec3(-1, 0, 0), 15);
+        if( l_chunk->checkTile( l_position.x+1, l_position.y, l_position.z))
+            l_chunk->setSunlight( l_position + glm::vec3(+1, 0, 0), 15);
+        if( l_chunk->checkTile( l_position.x, l_position.y, l_position.z+1))
+            l_chunk->setSunlight( l_position + glm::vec3( 0, 0, 1), 15);
+        if( l_chunk->checkTile( l_position.x, l_position.y, l_position.z-1))
+            l_chunk->setSunlight( l_position + glm::vec3( 0, 0,-1), 15);
+    }
 }
 
 void world::process_thrend_handle() {
@@ -303,32 +351,20 @@ void world::deleteChunk( Chunk* node) {
                 p_chunk_start = tmp->next;
             else tmpOld->next = tmp->next;
 
-            // chunk seiten löschen
-            Chunk *snode;
-            if( CheckChunk( pos_x+1, pos_y, pos_z)) {
-                snode = getChunk( glm::vec3(pos_x+1, pos_y, pos_z));
-                snode->back = NULL;
-            }
-            if( CheckChunk( pos_x-1, pos_y, pos_z)) {
-                snode = getChunk( glm::vec3(pos_x-1, pos_y, pos_z));
-                snode->front = NULL;
-            }
-            if( CheckChunk( pos_x, pos_y+1, pos_z)) {
-                snode = getChunk( glm::vec3(pos_x, pos_y+1, pos_z));
-                snode->down = NULL;
-            }
-            if( CheckChunk( pos_x, pos_y-1, pos_z)) {
-                snode = getChunk( glm::vec3(pos_x, pos_y-1, pos_z));
-                snode->up = NULL;
-            }
-            if( CheckChunk( pos_x, pos_y, pos_z+1)) {
-                snode = getChunk( glm::vec3(pos_x, pos_y, pos_z+1));
-                snode->left = NULL;
-            }
-            if( CheckChunk( pos_x, pos_y, pos_z-1)) {
-                snode = getChunk( glm::vec3(pos_x, pos_y, pos_z-1));
-                snode->right = NULL;
-            }
+            // delete pointer of sides
+            if( node->getSide( CHUNK_SIDE_X_POS) )
+                node->setSide( NULL, CHUNK_SIDE_X_POS);
+            if( node->getSide( CHUNK_SIDE_X_NEG) )
+                node->setSide( NULL, CHUNK_SIDE_X_NEG);
+            if( node->getSide( CHUNK_SIDE_Y_POS) )
+                node->setSide( NULL, CHUNK_SIDE_Y_POS);
+            if( node->getSide( CHUNK_SIDE_Y_NEG) )
+                node->setSide( NULL, CHUNK_SIDE_Y_NEG);
+            if( node->getSide( CHUNK_SIDE_Z_POS) )
+                node->setSide( NULL, CHUNK_SIDE_Z_POS);
+            if( node->getSide( CHUNK_SIDE_Z_NEG) )
+                node->setSide( NULL, CHUNK_SIDE_Z_NEG);
+
             // löschen
             delete tmp;
             // runterzählen
@@ -342,9 +378,11 @@ void world::deleteChunk( Chunk* node) {
 
 Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape, bool update) {
     Chunk *node;
+    Chunk *l_side;
+    glm::vec3 l_pos = glm::vec3( pos_x, pos_y, pos_z);
 
     // Chunk erstellen
-    node = new Chunk( pos_x, pos_y, pos_z, 102457);
+    node = new Chunk( l_pos.x, l_pos.y, l_pos.z, 102457);
     node->next = NULL;
 
     if( generateLandscape)
@@ -355,7 +393,7 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandsca
     Chunk *tmp = p_chunk_start;
     int z = 0;
 
-    // Falls hauptzweik nicht exestiert erstllen
+    // add chunk to the node
     if( p_chunk_start == NULL) {
         p_chunk_start = node;
     } else {
@@ -366,7 +404,39 @@ Chunk *world::createChunk( int pos_x, int pos_y, int pos_z, bool generateLandsca
         tmp->next = node;
     }
 
-    // finish -> go to update section
+    // set the sides
+    l_side = getChunk( l_pos + glm::vec3( 1, 0, 0));
+    if( l_side) {
+        l_side->setSide( node, CHUNK_SIDE_X_NEG);
+        node->setSide( l_side, CHUNK_SIDE_X_POS);
+    }
+    l_side = getChunk( l_pos + glm::vec3(-1, 0, 0));
+    if( l_side) {
+        l_side->setSide( node, CHUNK_SIDE_X_POS);
+        node->setSide( l_side, CHUNK_SIDE_X_NEG);
+    }
+    l_side = getChunk( l_pos + glm::vec3( 0, 1, 0));
+    if( l_side) {
+        l_side->setSide( node, CHUNK_SIDE_Y_NEG);
+        node->setSide( l_side, CHUNK_SIDE_Y_POS);
+    }
+    l_side = getChunk( l_pos + glm::vec3( 0,-1, 0));
+    if( l_side) {
+        l_side->setSide( node, CHUNK_SIDE_Y_POS);
+        node->setSide( l_side, CHUNK_SIDE_Y_NEG);
+    }
+    l_side = getChunk( l_pos + glm::vec3( 0, 0, 1));
+    if( l_side) {
+        l_side->setSide( node, CHUNK_SIDE_Z_NEG);
+        node->setSide( l_side, CHUNK_SIDE_Z_POS);
+    }
+    l_side = getChunk( l_pos + glm::vec3( 0, 0,-1));
+    if( l_side) {
+        l_side->setSide( node, CHUNK_SIDE_Z_POS);
+        node->setSide( l_side, CHUNK_SIDE_Z_NEG);
+    }
+
+    // set flag "need update"
     if( update)
         node->changed( true);
 

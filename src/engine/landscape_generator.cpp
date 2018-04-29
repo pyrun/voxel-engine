@@ -125,8 +125,8 @@ void Landscape_Generator( Chunk* c_chunk, block_list* b_list) {
                         type = l_grass;
                 }
                 if( type == l_grass )
-                    c_chunk->setSunlight( cx, cy, cz, t%15);
-                c_chunk->set( cx, cy, cz, type, false);
+                    c_chunk->setSunlight( glm::vec3( cx, cy, cz), 15);
+                c_chunk->set( glm::vec3(cx, cy, cz), type, false);
             }
         }
     }

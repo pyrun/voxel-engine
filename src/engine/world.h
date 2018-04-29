@@ -32,7 +32,8 @@ public:
 
     int GetTile( int x, int y, int z);
     Chunk *getChunkWithPos( int x, int y, int z);
-    void SetTile( Chunk *chunk, int tile_x, int tile_y, int tile_z, int ID);
+    void setTile( Chunk *chunk, glm::vec3 position, int id);
+    void calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock = false);
 
     void process_thrend_handle();
     void process_thrend_update();

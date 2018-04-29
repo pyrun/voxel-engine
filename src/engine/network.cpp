@@ -295,7 +295,7 @@ void network::sendBlockChange( Chunk *chunk, glm::vec3 pos, int id) {
     bool l_broadcast;
     // first change here
     if( isServer()) {
-        p_starchip->SetTile( chunk, pos.x, pos.y, pos.z, id);
+        //p_starchip->SetTile( chunk, pos.x, pos.y, pos.z, id);
     }
 
     // now send
@@ -336,7 +336,7 @@ void network::receiveBlockChange( BitStream *bitstream) {
 
     printf( "network::readBlockChange %.2f %.2f %.2f %d\n", l_pos.x, l_pos.y, l_pos.z, l_id);
 
-    getWorld()->SetTile( l_chunk, l_pos.x, l_pos.y, l_pos.z, l_id);
+    getWorld()->setTile( l_chunk, l_pos, l_id);
 
     if( isServer()) {
         // now send

@@ -131,20 +131,20 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 Chunk *tmp = p_world_player->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
                     //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
-                    p_world_player->SetTile( tmp, mX, mY, mZ, p_blocklist->getByName( "treewood")->getID());
+                    p_world_player->setTile( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
                 } else {
                     printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
                 }
             }
 
-            printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mx, my, mz, tile);
+            printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mX, mY, mZ, tile);
             break;
         }
         if( tile && p_input.Map.Destory && !p_input.MapOld.Destory) {
             Chunk *tmp = p_world_player->getChunkWithPos( mx, my, mz);
             if( tmp) {
                 //p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
-                p_world_player->SetTile( tmp, mx, my, mz, EMPTY_BLOCK_ID);
+                p_world_player->setTile( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
             } else {
                 //p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
                 printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");

@@ -20,40 +20,45 @@
 
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
+enum Chunk_side{
+    CHUNK_SIDE_X_POS = 0,
+    CHUNK_SIDE_X_NEG,
+    CHUNK_SIDE_Y_POS,
+    CHUNK_SIDE_Y_NEG,
+    CHUNK_SIDE_Z_POS,
+    CHUNK_SIDE_Z_NEG,
+};
+
 class Chunk {
 public:
     Chunk( int X, int Y, int Z, int Seed);
     virtual ~Chunk();
 
-    Chunk *front;
-    Chunk *back;
-    Chunk *right;
-    Chunk *left;
-    Chunk *up;
-    Chunk *down;
+    // pointer
     Chunk *next;
 
     bool createPhysicBody( b3World *world);
-
-    bool serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks);
+    bool serialize( bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks);
 
     inline glm::vec3 getPos() { return p_pos; }
+    void setSide( Chunk *chunk, Chunk_side side);
+    Chunk *getSide( Chunk_side side);
 
     inline int getAmount() { return p_vertices.size(); }
-    void set( int X, int Y, int Z, int ID, bool change = true);
+    void set( glm::vec3 position, int ID, bool change = true);
     unsigned short getTile( int X, int Y, int Z);
     bool checkTile( int x, int y, int z);
 
-    int getSunlight(int x, int y, int z);
-    void setSunlight(int x, int y, int z, int val);
-    int getTorchlight(int x, int y, int z);
-    void setTorchlight(int x, int y, int z, int val);
+    int getSunlight( glm::vec3 position);
+    void setSunlight( glm::vec3 position, int val);
+    int getTorchlight( glm::vec3 position);
+    void setTorchlight( glm::vec3 position, int val);
 
     void addFaceX( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
     void addFaceY( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
     void addFaceZ( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
 
-    void updateArray( block_list *List, Chunk *Back = NULL, Chunk *Front = NULL, Chunk *Left = NULL, Chunk *Right = NULL, Chunk *Up = NULL, Chunk *Down = NULL);
+    void updateArray( block_list *List);
     void updateForm();
     void updateVbo();
 
@@ -100,6 +105,14 @@ private:
     std::vector<glm::vec3> p_normal;
     std::vector<glm::vec3> p_texture;
     std::vector<glm::vec3> p_light;
+
+    // sides
+    Chunk *p_x_pos;
+    Chunk *p_x_neg;
+    Chunk *p_y_pos;
+    Chunk *p_y_neg;
+    Chunk *p_z_pos;
+    Chunk *p_z_neg;
 
     /*std::vector<ChunkVboVertexStruct> p_vertices;
     std::vector<ChunkVboDataStruct> p_data;*/
