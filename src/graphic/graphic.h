@@ -62,7 +62,7 @@ private:
     // buffer for deferred shading
     unsigned int p_fbo_buffer;
     unsigned int p_depth;
-    unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec;
+    unsigned int p_texture_position, p_texture_normal, p_texture_colorSpec, p_texture_shadow;
 
     // spotlight source
     int p_index_light;

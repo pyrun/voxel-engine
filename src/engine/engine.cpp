@@ -30,7 +30,7 @@ engine::engine() {
 
     // set up start world
     world *l_world = new world( p_blocklist);
-    int l_size = 5;
+    int l_size = 2;
     int l_end = -1;
     for( int x = -l_size; x <= l_size; x++)
         for( int y = -l_size; y <= l_size; y++)
@@ -131,7 +131,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 Chunk *tmp = p_world_player->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
                     //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
-                    p_world_player->setTile( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
+                    p_world_player->changeBlock( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
                 } else {
                     printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
                 }
@@ -144,7 +144,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             Chunk *tmp = p_world_player->getChunkWithPos( mx, my, mz);
             if( tmp) {
                 //p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
-                p_world_player->setTile( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
+                p_world_player->changeBlock( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
             } else {
                 //p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
                 printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
@@ -309,7 +309,7 @@ void engine::run() {
 
         // framerate
         p_framerate.push_back( l_clock.delta);
-        if( p_framerate.size() > 100)
+        if( p_framerate.size() > 10)
             p_framerate.erase( p_framerate.begin());
         float l_average_delta_time = 0;
         for( int i = 0; i < (int)p_framerate.size(); i++)
@@ -320,8 +320,7 @@ void engine::run() {
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         l_title = l_title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
-        //if(  p_network->getWorld())
-        //    l_title = l_title + " Chunks_" + NumberToString( (double) p_network->getWorld()->getAmountChunks());
+        l_title = l_title + " Chunks_" + NumberToString( (double) p_world_player->getAmountChunks()) + "/" + NumberToString( (double)p_world_player->getAmountChunksVisible() );
         p_graphic->getDisplay()->setTitle( l_title);
 
         // one at evry frame

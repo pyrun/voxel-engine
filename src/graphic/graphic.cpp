@@ -75,9 +75,17 @@ void graphic::initDeferredShading() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, p_texture_colorSpec, 0);
 
+    // 4 - normal color buffer
+    glGenTextures(1, &p_texture_shadow);
+    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, p_texture_shadow, 0);
+
     // 4 - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    unsigned int l_attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-    glDrawBuffers( 3, l_attachments);
+    unsigned int l_attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+    glDrawBuffers( 4, l_attachments);
 
     // 5 - depth buffer
     glGenRenderbuffers(1, &p_depth);
@@ -111,6 +119,9 @@ void graphic::resizeDeferredShading() {
     glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
+    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, l_scrn.x, l_scrn.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
     glBindRenderbuffer(GL_RENDERBUFFER, p_depth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, l_scrn.x, l_scrn.y);
 }
@@ -125,6 +136,8 @@ void graphic::renderDeferredShading() {
     glBindTexture(GL_TEXTURE_2D, p_texture_normal);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, p_texture_colorSpec);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, p_texture_shadow);
     // send light relevant uniforms
     for (unsigned int i = 0; i < p_lights.size(); i++)
     {

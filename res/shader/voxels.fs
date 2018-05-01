@@ -3,6 +3,7 @@
 layout (location = 0) out vec4 gPosition;
 layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gTexture;
+layout (location = 3) out vec4 gShadow;
 
 in vec3 TexCoords;
 in vec3 FragPos;
@@ -33,5 +34,7 @@ void main()
     
     gNormal = vec4( normalize(Normal), 1);
 
-    gTexture = texture( texture_image, Texture)*vec4( vec3(Lighting), 1);
+    gTexture = texture( texture_image, Texture);
+    
+    gShadow = vec4( vec3(Lighting), 1);
 }

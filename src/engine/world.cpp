@@ -53,6 +53,7 @@ static int world_thread_physic(void *data)
 world::world( block_list* block_list) {
     p_buysvector = false;
     p_chunk_amount = 0;
+    p_chunk_visible_amount = 0;
     p_chunk_start = NULL;
     p_chunk_last = NULL;
     p_world_tree_empty = true;
@@ -183,6 +184,14 @@ Chunk* world::getChunkWithPos( int x, int y, int z) {
     return NULL;
 }
 
+void world::changeBlock( Chunk *chunk, glm::vec3 position, int id) {
+    world_change_block l_change;
+    l_change.position = position;
+    l_change.id = id;
+    l_change.chunk = chunk;
+    p_change_blocks.push_back( l_change);
+}
+
 void world::setTile( Chunk *chunk, glm::vec3 position, int id) {
     if( chunk == NULL) {
         printf( "world::setTile: chunk is defined as NULL\n");
@@ -192,52 +201,48 @@ void world::setTile( Chunk *chunk, glm::vec3 position, int id) {
 
     position = position - l_chunk_position;
 
-    chunk->set( position, id);
+    chunk->set( position, id, false);
 
-    chunk->setSunlight( position, 0);
+    //chunk->setSunlight( position, 0);
 
     calcSunRay( chunk, position);
-    calcSunRay( chunk, position + glm::vec3( 1, 0, 0), true);
-    calcSunRay( chunk, position + glm::vec3(-1, 0, 0), true);
-    calcSunRay( chunk, position + glm::vec3( 0, 0, 1), true);
-    calcSunRay( chunk, position + glm::vec3( 0, 0,-1), true);
+
+    if( (int)position.x == 0 && chunk->getSide( CHUNK_SIDE_X_NEG))
+        chunk->getSide( CHUNK_SIDE_X_NEG)->changed( true);
+    if( (int)position.x == CHUNK_SIZE-1 && chunk->getSide( CHUNK_SIDE_X_POS))
+        chunk->getSide( CHUNK_SIDE_X_POS)->changed( true);
+    if( (int)position.z == 0 && chunk->getSide( CHUNK_SIDE_Z_NEG))
+        chunk->getSide( CHUNK_SIDE_Z_NEG)->changed( true);
+    if( (int)position.z == CHUNK_SIZE-1 && chunk->getSide( CHUNK_SIDE_Z_POS))
+        chunk->getSide( CHUNK_SIDE_Z_POS)->changed( true);
+
+    chunk->changed( true);
 }
 
 void world::calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock) {
     Chunk *l_chunk = chunk;
     glm::vec3 l_position = position;
-    int l_dark = 15;
+    int l_ligthing = 15;
     /*while( l_chunk->getSide( CHUNK_SIDE_Y_POS) != NULL)
         l_chunk = l_chunk->getSide( CHUNK_SIDE_Y_POS);*/
 
     l_position.y = CHUNK_SIZE;
     for( ;;) {
-        l_position.y = l_position.y - 1;
+        l_position.y = l_position.y-1;
         if( l_position.y < 0) {
             l_chunk = l_chunk->getSide( CHUNK_SIDE_Y_NEG);
-            l_position.y = CHUNK_SIZE -1;
+            l_position.y = CHUNK_SIZE;
         }
-
         if( l_chunk == NULL)
             return;
 
-        if( l_chunk->checkTile( l_position.x, l_position.y, l_position.z)) {
-            if( !firstBlock )
-                l_chunk->setSunlight( l_position, l_dark);
-            // now dark ;)
-            l_dark = 0;
+        l_chunk->setSunlight( l_position, l_ligthing);
+        // hit ground?
+        if( l_chunk->checkTile( l_position - glm::vec3( 0, 1, 0) ) ) {
+            l_ligthing = 0;
+            //l_chunk->set( l_position, 5, false);
         }
-        if( l_dark == 0) // we hit the ground
-            continue;
-        // check around
-        if( l_chunk->checkTile( l_position.x-1, l_position.y, l_position.z))
-            l_chunk->setSunlight( l_position + glm::vec3(-1, 0, 0), 15);
-        if( l_chunk->checkTile( l_position.x+1, l_position.y, l_position.z))
-            l_chunk->setSunlight( l_position + glm::vec3(+1, 0, 0), 15);
-        if( l_chunk->checkTile( l_position.x, l_position.y, l_position.z+1))
-            l_chunk->setSunlight( l_position + glm::vec3( 0, 0, 1), 15);
-        if( l_chunk->checkTile( l_position.x, l_position.y, l_position.z-1))
-            l_chunk->setSunlight( l_position + glm::vec3( 0, 0,-1), 15);
+
     }
 }
 
@@ -250,7 +255,6 @@ void world::process_thrend_handle() {
             createChunk( p_creatingList[i].position.x, p_creatingList[i].position.y, p_creatingList[i].position.z, p_creatingList[i].landscape);
             SDL_UnlockMutex ( p_mutex_handle);
             p_creatingList.erase( p_creatingList.begin()+ i);
-
             break;
         }
     }
@@ -260,8 +264,10 @@ void world::process_thrend_handle() {
         Chunk *l_node = getChunk( l_pos.position);
         if( l_node != NULL) {
             SDL_LockMutex ( p_mutex_handle);
+            SDL_LockMutex ( p_mutex_physic);
             deleteChunk( l_node);
             SDL_UnlockMutex ( p_mutex_handle);
+            SDL_UnlockMutex ( p_mutex_physic);
         }
     }
     p_deletingList.clear();
@@ -279,14 +285,25 @@ void world::process_thrend_update() {
         if( l_node->isChanged()) {
             l_node->changed( false);
             SDL_UnlockMutex ( p_mutex_handle);
+            SDL_LockMutex ( p_mutex_physic);
             if( l_list)
                 l_node->updateArray( l_list);
+            break;
+            SDL_UnlockMutex ( p_mutex_physic);
         } else {
             SDL_UnlockMutex ( p_mutex_handle);
         }
-
         l_node = l_node->next;
     }
+
+    SDL_LockMutex ( p_mutex_handle);
+    for( int i = 0; i < (int)p_change_blocks.size(); i++) {
+        SDL_LockMutex ( p_mutex_physic);
+        setTile( p_change_blocks[i].chunk, p_change_blocks[i].position, p_change_blocks[i].id);
+        SDL_UnlockMutex ( p_mutex_physic);
+    }
+    p_change_blocks.clear();
+    SDL_UnlockMutex ( p_mutex_handle);
 }
 
 void world::process_thrend_physic() {
@@ -495,6 +512,7 @@ void world::draw( graphic *graphic, Shader *shader) {
     p_blocklist->getTilemapTexture()->Bind();
 
     // draw node
+    p_chunk_visible_amount = 0;
     drawNode( shader);
 }
 
@@ -503,7 +521,8 @@ void world::drawNode( Shader* shader) {
     for( ;; ) {
         if( l_node == NULL)
             break;
-        l_node->draw( shader);
+        if( l_node->draw( shader) )
+            p_chunk_visible_amount++;
 
         // next
         l_node = l_node->next;

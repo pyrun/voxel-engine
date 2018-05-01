@@ -47,7 +47,7 @@ public:
     inline int getAmount() { return p_vertices.size(); }
     void set( glm::vec3 position, int ID, bool change = true);
     unsigned short getTile( int X, int Y, int Z);
-    bool checkTile( int x, int y, int z);
+    bool checkTile( glm::vec3 position);
 
     int getSunlight( glm::vec3 position);
     void setSunlight( glm::vec3 position, int val);
@@ -62,7 +62,7 @@ public:
     void updateForm();
     void updateVbo();
 
-    void draw( Shader* shader);
+    bool draw( Shader* shader);
 
     int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }

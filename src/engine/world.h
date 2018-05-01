@@ -13,7 +13,7 @@
 
 #define WORLD_TILE_IDLE_TIME 2*1000 //2s
 
-#define WORLD_UPDATE_THRENDS 6
+#define WORLD_UPDATE_THRENDS 1
 
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0 / 60.0 )
 
@@ -25,6 +25,13 @@ class world_data_list {
         bool landscape;
 };
 
+class world_change_block {
+    public:
+        Chunk *chunk;
+        glm::vec3 position;
+        int id;
+};
+
 class world {
 public:
     world( block_list* block_list);
@@ -32,6 +39,7 @@ public:
 
     int GetTile( int x, int y, int z);
     Chunk *getChunkWithPos( int x, int y, int z);
+    void changeBlock( Chunk *chunk, glm::vec3 position, int id);
     void setTile( Chunk *chunk, glm::vec3 position, int id);
     void calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock = false);
 
@@ -54,6 +62,7 @@ public:
 
     bool getDestory() { return p_destroy; }
     inline int getAmountChunks() const { return p_chunk_amount; }
+    inline int getAmountChunksVisible() const { return p_chunk_visible_amount; }
     Chunk *getNode() { return p_chunk_start; }
     SDL_mutex *getMutex() { return p_mutex_handle; }
     b3World *getPhysicWorld() { return p_physicScene; }
@@ -67,6 +76,7 @@ private:
     b3World *p_physicScene;
 
     int p_chunk_amount;
+    int p_chunk_visible_amount;
     Chunk* p_chunk_start;
     Chunk* p_chunk_last;
     block_list *p_blocklist;
@@ -80,6 +90,7 @@ private:
 
     std::vector<world_data_list> p_creatingList;
     std::vector<world_data_list> p_deletingList;
+    std::vector<world_change_block> p_change_blocks;
 
     float p_time;
 
