@@ -125,7 +125,7 @@ void block_list::init( graphic* graphic, config *config) {
     p_tilemap = new texture( l_filename_tilemap + ".png");
 }
 
-glm::vec2 block_list::getTexturByType( int Type, block_side side) {
+glm::ivec2 block_list::getTexturByType( int Type, block_side side) {
     block* l_block = get(Type);
     if( l_block == NULL) {
        printf( "block not found\n");

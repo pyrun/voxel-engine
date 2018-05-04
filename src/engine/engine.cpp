@@ -30,7 +30,7 @@ engine::engine() {
 
     // set up start world
     world *l_world = new world( p_blocklist);
-    int l_size = 2;
+    int l_size = 6;
     int l_end = -1;
     for( int x = -l_size; x <= l_size; x++)
         for( int y = -l_size; y <= l_size; y++)
@@ -48,6 +48,9 @@ engine::~engine() {
         delete p_openvr;
     delete p_blocklist;
     delete p_graphic;
+    for( auto l_world:p_worlds)
+        delete l_world;
+    p_worlds.clear();
     //delete p_network;
     delete p_config;
 }
@@ -80,18 +83,18 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
         testpos += p_graphic->getCamera()->GetForward() * 0.02f;
 
         // hack die komma zahl ab z.B. 13,4 -> 13,0
-        mx = floorf(testpos.x/CHUNK_SCALE);
-        my = floorf(testpos.y/CHUNK_SCALE);
-        mz = floorf(testpos.z/CHUNK_SCALE);
+        mx = floorf(testpos.x);
+        my = floorf(testpos.y);
+        mz = floorf(testpos.z);
 
         // falls wir ein block finden das kein "Air" ist dann sind wir fertig
         int tile = p_world_player->GetTile( mx, my, mz);
         if( !tile )
             continue;
 
-        int px = floorf(prevpos.x/CHUNK_SCALE);
-        int py = floorf(prevpos.y/CHUNK_SCALE);
-        int pz = floorf(prevpos.z/CHUNK_SCALE);
+        int px = floorf(prevpos.x);
+        int py = floorf(prevpos.y);
+        int pz = floorf(prevpos.z);
 
         int face;
         // Welche Seite wird angeklickt

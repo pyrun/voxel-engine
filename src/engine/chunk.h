@@ -12,7 +12,6 @@
 #include "block.h"
 
 #define CHUNK_SIZE 32
-#define CHUNK_SCALE 1.0f
 
 #define EMPTY_BLOCK_ID 0
 
@@ -31,7 +30,7 @@ enum Chunk_side{
 
 class Chunk {
 public:
-    Chunk( int X, int Y, int Z, int Seed);
+    Chunk( glm::ivec3 position, int seed);
     virtual ~Chunk();
 
     // pointer
@@ -45,18 +44,17 @@ public:
     Chunk *getSide( Chunk_side side);
 
     inline int getAmount() { return p_vertices.size(); }
-    void set( glm::vec3 position, int ID, bool change = true);
+    void set( glm::ivec3 position, int ID, bool change = true);
     unsigned short getTile( int X, int Y, int Z);
-    bool checkTile( glm::vec3 position);
+    unsigned short getTile( glm::ivec3 position);
+    bool checkTile( glm::ivec3 position);
 
-    int getSunlight( glm::vec3 position);
-    void setSunlight( glm::vec3 position, int val);
-    int getTorchlight( glm::vec3 position);
-    void setTorchlight( glm::vec3 position, int val);
+    int getSunlight( glm::ivec3 position);
+    void setSunlight( glm::ivec3 position, int val);
+    int getTorchlight( glm::ivec3 position);
+    void setTorchlight( glm::ivec3 position, int val);
 
-    void addFaceX( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
-    void addFaceY( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
-    void addFaceZ( bool flip, glm::vec3 pos, glm::vec3 data, glm::vec3 blockPos);
+    void addFace( Chunk_side side, glm::ivec3 pos, glm::ivec3 texture, glm::ivec3 blockPos);
 
     void updateArray( block_list *List);
     void updateForm();
@@ -74,8 +72,7 @@ public:
     b3Body* getBody() { return p_body; }
 protected:
 private:
-    glm::tvec3<int> p_pos;
-
+    glm::ivec3 p_pos;
     Transform p_form;
 
     int p_elements;
@@ -101,10 +98,13 @@ private:
     // side
     std::vector<unsigned int> p_indices;
 
-    std::vector<glm::vec3> p_vertices;
-    std::vector<glm::vec3> p_normal;
-    std::vector<glm::vec3> p_texture;
-    std::vector<glm::vec3> p_light;
+    std::vector<glm::ivec3> p_vertices;
+    std::vector<glm::ivec3> p_normal;
+    std::vector<glm::ivec3> p_texture;
+    std::vector<glm::ivec3> p_light;
+
+    int p_indices_length;
+    int p_vertices_length;
 
     // sides
     Chunk *p_x_pos;

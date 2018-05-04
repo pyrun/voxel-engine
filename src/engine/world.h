@@ -1,6 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H 1
 
+#include <queue>
 #include <bounce/bounce.h>
 
 #include "../graphic/graphic.h"
@@ -11,8 +12,6 @@
 #include "../system/timer.h"
 #include "../graphic/debug_draw.h"
 
-#define WORLD_TILE_IDLE_TIME 2*1000 //2s
-
 #define WORLD_UPDATE_THRENDS 1
 
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0 / 60.0 )
@@ -21,15 +20,26 @@ Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
 class world_data_list {
     public:
-        glm::vec3 position;
+        glm::ivec3 position;
         bool landscape;
 };
 
 class world_change_block {
     public:
         Chunk *chunk;
-        glm::vec3 position;
+        glm::ivec3 position;
         int id;
+};
+
+class world_light_node {
+    public:
+        world_light_node( glm::vec3 position, Chunk* chunk) {
+            this->position = position;
+            this->chunk = chunk;
+        }
+
+        glm::ivec3 position; //this is the x y z coordinate!
+        Chunk* chunk; //pointer to the chunk that owns it!
 };
 
 class world {
@@ -43,13 +53,15 @@ public:
     void setTile( Chunk *chunk, glm::vec3 position, int id);
     void calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock = false);
 
+    void setTorchlight( Chunk *chunk, glm::vec3 position, int value);
+
     void process_thrend_handle();
     void process_thrend_update();
     void process_thrend_physic();
 
     void deleteChunks( Chunk* chunk);
     void deleteChunk( Chunk* node);
-    Chunk *createChunk( int pos_x, int pos_y, int pos_z, bool generateLandscape = false, bool update = true);
+    Chunk *createChunk( glm::ivec3 position, bool generateLandscape = false, bool update = true);
 
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
     Chunk* getChunk( glm::vec3 position);
@@ -91,6 +103,8 @@ private:
     std::vector<world_data_list> p_creatingList;
     std::vector<world_data_list> p_deletingList;
     std::vector<world_change_block> p_change_blocks;
+
+    std::queue <world_light_node> p_lights;
 
     float p_time;
 

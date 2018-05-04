@@ -24,7 +24,7 @@ void main()
     TexCoords = vertexTexture;
 
     // ligting
-    Lighting = vertexLighting;
+    Lighting = vertexLighting * 0.0625f; // 16 Kehrwert
 
     // normal
     mat3 normalMatrix = transpose(inverse(mat3(model)));

@@ -328,7 +328,7 @@ void network::receiveBlockChange( BitStream *bitstream) {
 
     l_chunk = getWorld()->getChunk( l_pos_chunk);
     if( !l_chunk)
-        l_chunk = getWorld()->createChunk( l_pos_chunk.x, l_pos_chunk.y, l_pos_chunk.z);
+        l_chunk = getWorld()->createChunk( l_pos_chunk);
     if( !l_chunk) {
         printf( "network::readBlockChange cant create chunk!\n");
         return;
@@ -356,18 +356,18 @@ void network::receiveBlockChange( BitStream *bitstream) {
 }
 
 void network::receiveChunk( BitStream *bitstream) {
-    int l_x, l_y, l_z;
+    glm::ivec3 l_chunk_position;
     int l_start, l_end;
 
-    bitstream->Read( l_x);
-    bitstream->Read( l_y);
-    bitstream->Read( l_z);
+    bitstream->Read( l_chunk_position.x);
+    bitstream->Read( l_chunk_position.y);
+    bitstream->Read( l_chunk_position.z);
     bitstream->Read( l_start);
     bitstream->Read( l_end);
 
-    Chunk *l_chunk = getWorld()->getChunk( glm::vec3( l_x, l_y, l_z) );
+    Chunk *l_chunk = getWorld()->getChunk( l_chunk_position);
     if( !l_chunk) {
-        l_chunk = getWorld()->createChunk( l_x, l_y, l_z, false, false);
+        l_chunk = getWorld()->createChunk( l_chunk_position, false, false);
     }
     if( !l_chunk) {
         printf( "network::readChunk cant create chunk!\n");

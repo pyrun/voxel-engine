@@ -45,8 +45,8 @@ class block_image  {
         void loadImage( graphic* graphic);
         void setImage( SDL_Surface* p_surface);
         void setImageName( std::string name);
-        glm::vec2 getPosition() { return p_position; }
-        void setPosition(glm::vec2 position) { p_position = position; }
+        glm::ivec2 getPosition() { return p_position; }
+        void setPosition(glm::ivec2 position) { p_position = position; }
         SDL_Surface *getSurface() { return p_surface; }
         std::string getImageName() { return p_imagename; }
         block_side getSide() { return p_side; }
@@ -54,7 +54,7 @@ class block_image  {
         void addSide( block_side side) { p_side = p_side | side; }
     private:
         SDL_Surface* p_surface;
-        glm::vec2 p_position;
+        glm::ivec2 p_position;
         std::string p_imagename;
         block_side p_side;
 };
@@ -109,7 +109,7 @@ class block_list {
 
         void init( graphic* graphic, config *config);
 
-        glm::vec2 getTexturByType( int Type, block_side side);
+        glm::ivec2 getTexturByType( int Type, block_side side);
 
         block* get( int ID);
         block* getByName( std::string name);
