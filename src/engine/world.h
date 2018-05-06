@@ -12,7 +12,7 @@
 #include "../system/timer.h"
 #include "../graphic/debug_draw.h"
 
-#define WORLD_UPDATE_THRENDS 1
+#define WORLD_UPDATE_THRENDS 3
 
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0 / 60.0 )
 
@@ -76,7 +76,6 @@ public:
     inline int getAmountChunks() const { return p_chunk_amount; }
     inline int getAmountChunksVisible() const { return p_chunk_visible_amount; }
     Chunk *getNode() { return p_chunk_start; }
-    SDL_mutex *getMutex() { return p_mutex_handle; }
     b3World *getPhysicWorld() { return p_physicScene; }
 protected:
 private:

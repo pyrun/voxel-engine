@@ -21,6 +21,7 @@ Chunk::Chunk( glm::ivec3 position, int seed) {
     p_elements = 0;
 
     p_changed = false;
+    p_at_update = false;
     p_updateVbo = false;
     p_updateRigidBody = false;
 
@@ -72,14 +73,14 @@ Chunk::~Chunk() {
     //printf( "~Chunk(): remove data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
 }
 
-bool Chunk::createPhysicBody( b3World *world) {
-    if( !p_updateRigidBody && world)
+bool Chunk::createPhysicBody( b3World *world, SDL_mutex *mutex) {
+    if( !p_updateRigidBody || !world || p_changed == true)
         return false;
 
     if( p_body) {
         world->DestroyBody( p_body);
-        b3Free( p_mesh->vertices);
-        b3Free( p_mesh->triangles);
+        delete p_mesh->vertices;
+        delete p_mesh->triangles;
         p_body = NULL;
         delete p_shape;
         delete p_mesh;
@@ -97,7 +98,7 @@ bool Chunk::createPhysicBody( b3World *world) {
     p_mesh = new b3Mesh();
 
     p_mesh->vertexCount = (int)p_vertices.size();
-    p_mesh->vertices = (b3Vec3*)b3Alloc( p_mesh->vertexCount * sizeof(b3Vec3));
+    p_mesh->vertices = new b3Vec3[ p_mesh->vertexCount];//(b3Vec3*)b3Alloc( p_mesh->vertexCount * sizeof(b3Vec3));
 
     for( int i = 0; i < (int)p_vertices.size(); i++) {
         p_mesh->vertices[i] = b3Vec3( p_vertices[i].x, p_vertices[i].y, p_vertices[i].z);
@@ -105,17 +106,19 @@ bool Chunk::createPhysicBody( b3World *world) {
 
     int l_triangleCount = (int)p_indices.size()/3;
     p_mesh->triangleCount  = l_triangleCount;
-    p_mesh->triangles  = (b3Triangle*)b3Alloc(p_mesh->triangleCount * sizeof(b3Triangle));
+    p_mesh->triangles  = new b3Triangle[ p_mesh->triangleCount]; //(b3Triangle*)b3Alloc(p_mesh->triangleCount * sizeof(b3Triangle));
 
     int l_triangle = 0;
     for( int i = 0; i < (int)p_indices.size(); i+=3) {
-        p_mesh->triangles[ l_triangle].v1 = (int)p_indices[i+0];
-        p_mesh->triangles[ l_triangle].v2 = (int)p_indices[i+1];
-        p_mesh->triangles[ l_triangle].v3 = (int)p_indices[i+2];
+        p_mesh->triangles[ l_triangle].v1 = p_indices[i+0];
+        p_mesh->triangles[ l_triangle].v2 = p_indices[i+1];
+        p_mesh->triangles[ l_triangle].v3 = p_indices[i+2];
         l_triangle++;
     }
 
+    SDL_LockMutex ( mutex);
     p_mesh->BuildTree();
+    SDL_UnlockMutex ( mutex);
 
     b3MeshShape l_meshShape;
     l_meshShape.m_mesh = p_mesh;
@@ -423,6 +426,11 @@ void Chunk::updateArray( block_list *List) {
     glm::ivec3 l_block;
     Timer timer;
 
+    // thread safe
+    if( p_at_update)
+        return;
+    p_at_update = true;
+
     if( !List )
         return;
 
@@ -669,6 +677,7 @@ void Chunk::updateArray( block_list *List) {
 
     p_updateVbo = true;
     p_updateRigidBody = true;
+    p_at_update = false;
 
     //printf( "Chunk::updateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
 }

@@ -30,7 +30,7 @@ engine::engine() {
 
     // set up start world
     world *l_world = new world( p_blocklist);
-    int l_size = 6;
+    int l_size = 5;
     int l_end = -1;
     for( int x = -l_size; x <= l_size; x++)
         for( int y = -l_size; y <= l_size; y++)
@@ -44,13 +44,13 @@ engine::engine() {
 }
 
 engine::~engine() {
+    for( auto l_world:p_worlds)
+        delete l_world;
+    p_worlds.clear();
     if( p_openvr)
         delete p_openvr;
     delete p_blocklist;
     delete p_graphic;
-    for( auto l_world:p_worlds)
-        delete l_world;
-    p_worlds.clear();
     //delete p_network;
     delete p_config;
 }

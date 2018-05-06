@@ -290,10 +290,9 @@ void world::process_thrend_update() {
         if( l_node->isChanged()) {
             l_node->changed( false);
             SDL_UnlockMutex ( p_mutex_handle);
-            SDL_LockMutex ( p_mutex_physic);
             if( l_list)
                 l_node->updateArray( l_list);
-            SDL_UnlockMutex ( p_mutex_physic);
+            break;
         } else {
             SDL_UnlockMutex ( p_mutex_handle);
         }
@@ -346,12 +345,9 @@ void world::process_thrend_physic() {
             break;
 
         // create body
-        SDL_LockMutex ( p_mutex_physic);
-        if( node->createPhysicBody( p_physicScene)) {
-            SDL_UnlockMutex ( p_mutex_physic);
+        if( node->createPhysicBody( p_physicScene, p_mutex_physic)) {
             break; // olny one
         }
-        SDL_UnlockMutex ( p_mutex_physic);
 
         // next
         node = node->next;

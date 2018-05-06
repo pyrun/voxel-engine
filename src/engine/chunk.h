@@ -36,7 +36,7 @@ public:
     // pointer
     Chunk *next;
 
-    bool createPhysicBody( b3World *world);
+    bool createPhysicBody( b3World *world, SDL_mutex *mutex);
     bool serialize( bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks);
 
     inline glm::vec3 getPos() { return p_pos; }
@@ -66,7 +66,7 @@ public:
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }
 
     GLuint getVbo() { return p_vboVertex; }
-    void changed( bool set) { p_changed = set; }
+    void changed( bool set, bool vbo_changed = false) { p_changed = set; p_updateVbo = vbo_changed; }
     bool isChanged() { return p_changed; }
 
     b3Body* getBody() { return p_body; }
@@ -78,6 +78,7 @@ private:
     int p_elements;
 
     bool p_changed;
+    bool p_at_update;
     bool p_updateVbo;
     bool p_updateRigidBody;
 
