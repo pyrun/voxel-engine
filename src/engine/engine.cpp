@@ -135,6 +135,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 if( tmp) {
                     //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
                     p_world_player->changeBlock( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
+                    //p_world_player->addTorchlight( tmp, glm::ivec3( mX, mY, mZ), 15);
                 } else {
                     printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
                 }
@@ -148,6 +149,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if( tmp) {
                 //p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
                 p_world_player->changeBlock( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
+
             } else {
                 //p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
                 printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");

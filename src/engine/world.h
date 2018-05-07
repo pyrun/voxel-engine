@@ -33,13 +33,15 @@ class world_change_block {
 
 class world_light_node {
     public:
-        world_light_node( glm::vec3 position, Chunk* chunk) {
+        world_light_node( glm::vec3 position, Chunk* chunk, short strength = 0) {
             this->position = position;
             this->chunk = chunk;
+            this->strength = strength;
         }
 
-        glm::ivec3 position; //this is the x y z coordinate!
-        Chunk* chunk; //pointer to the chunk that owns it!
+        glm::ivec3 position;
+        Chunk* chunk;
+        short strength; // just use for deleting
 };
 
 class world {
@@ -50,10 +52,11 @@ public:
     int GetTile( int x, int y, int z);
     Chunk *getChunkWithPos( int x, int y, int z);
     void changeBlock( Chunk *chunk, glm::vec3 position, int id);
-    void setTile( Chunk *chunk, glm::vec3 position, int id);
+    void setTile( Chunk *chunk, glm::ivec3 position, int id);
     void calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock = false);
 
-    void setTorchlight( Chunk *chunk, glm::vec3 position, int value);
+    void addTorchlight( Chunk *chunk, glm::ivec3 position, int value);
+    void delTorchlight( Chunk *chunk, glm::ivec3 position);
 
     void process_thrend_handle();
     void process_thrend_update();
@@ -64,7 +67,7 @@ public:
     Chunk *createChunk( glm::ivec3 position, bool generateLandscape = false, bool update = true);
 
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
-    Chunk* getChunk( glm::vec3 position);
+    Chunk* getChunk( glm::ivec3 position);
 
     void addChunk( glm::tvec3<int> pos, bool generateLandscape);
     void addDeleteChunk( glm::tvec3<int> pos );
@@ -103,7 +106,8 @@ private:
     std::vector<world_data_list> p_deletingList;
     std::vector<world_change_block> p_change_blocks;
 
-    std::queue <world_light_node> p_lights;
+    std::queue <world_light_node> p_lightsAdd;
+    std::queue <world_light_node> p_lightsDel;
 
     float p_time;
 

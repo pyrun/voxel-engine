@@ -192,16 +192,37 @@ void world::changeBlock( Chunk *chunk, glm::vec3 position, int id) {
     p_change_blocks.push_back( l_change);
 }
 
-void world::setTile( Chunk *chunk, glm::vec3 position, int id) {
+void world::setTile( Chunk *chunk, glm::ivec3 position, int id) {
     if( chunk == NULL) {
         printf( "world::setTile: chunk is defined as NULL\n");
         return;
     }
-    glm::vec3 l_chunk_position = chunk->getPos() * glm::vec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+    glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
 
     position = position - l_chunk_position;
 
     chunk->set( position, id, false);
+    if( id != EMPTY_BLOCK_ID) {
+        delTorchlight( chunk, position);
+    }/* else {
+
+        int l_torchlight = 0, l_light = 0;
+        // get light
+        glm::ivec3 l_matrix[6] = { {1, 0, 0},
+                                {-1, 0, 0},
+                                {0, 1, 0},
+                                {0, -1, 0},
+                                {0, 0, 1},
+                                {0, 0, -1}
+                                };
+        for( int i = 0; i < 6; i++) {
+            l_light = chunk->getTorchlight( position + l_matrix[i] );
+            if( l_light > l_torchlight)
+                l_torchlight = l_light;
+        }
+        addTorchlight( chunk, position+l_chunk_position, l_torchlight-1);
+    }*/
+
 
     //chunk->setSunlight( position, 0);
 
@@ -221,10 +242,11 @@ void world::setTile( Chunk *chunk, glm::vec3 position, int id) {
 
 void world::calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock) {
     Chunk *l_chunk = chunk;
-    glm::vec3 l_position = position;
+    glm::ivec3 l_position = position;
     int l_ligthing = 15;
     /*while( l_chunk->getSide( CHUNK_SIDE_Y_POS) != NULL)
         l_chunk = l_chunk->getSide( CHUNK_SIDE_Y_POS);*/
+    glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
 
     l_position.y = CHUNK_SIZE;
     for( ;;) {
@@ -237,18 +259,44 @@ void world::calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock) {
             return;
 
         l_chunk->setSunlight( l_position, l_ligthing);
+
         // hit ground?
-        if( l_chunk->checkTile( l_position - glm::vec3( 0, 1, 0) ) ) {
+        if( l_chunk->checkTile( l_position - glm::ivec3( 0, 1, 0) ) ) {
             l_ligthing = 0;
             //l_chunk->set( l_position, 5, false);
         }
 
+        if( l_ligthing == 0 && l_chunk->getSunlight( l_position) > 0)
+            addTorchlight( l_chunk, l_position + l_chunk_position, 15);
+
     }
 }
 
-void world::setTorchlight( Chunk *chunk, glm::vec3 position, int value) {
+void world::addTorchlight( Chunk *chunk, glm::ivec3 position, int value) {
+    // calculate the position by chunk
+    glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+    position = position - l_chunk_position;
+
+    printf( "world::addTorchlight %d/%d/%d\n", position.x, position.y, position.z);
+
+    // add too queue
     chunk->setTorchlight( position, value);
-    p_lights.emplace( position, chunk);
+    p_lightsAdd.emplace( position, chunk);
+}
+
+void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
+    int l_light;
+
+    // calculate the position by chunk
+    glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+    position = position - l_chunk_position;
+
+    printf( "world::delTorchlight %d/%d/%d\n", position.x, position.y, position.z);
+
+    // add too queue
+    l_light = chunk->getTorchlight( position + l_chunk_position);
+    chunk->setTorchlight( position, 0);
+    p_lightsDel.emplace( position, chunk, l_light);
 }
 
 void world::process_thrend_handle() {
@@ -276,6 +324,72 @@ void world::process_thrend_handle() {
         }
     }
     p_deletingList.clear();
+
+    glm::ivec3 l_shift_matrix[6] = { { -1,  0,  0},
+                                     { +1,  0,  0},
+                                     {  0, -1,  0},
+                                     {  0, +1,  0},
+                                     {  0,  0, -1},
+                                     {  0,  0, +1}};
+
+    std::vector<Chunk *> l_update;
+
+    while( p_lightsDel.empty() == false) {
+        // Get a reference to the front node.
+        world_light_node &l_light_node = p_lightsDel.front();
+
+        glm::ivec3 l_position = l_light_node.position;
+        Chunk* l_chunk = l_light_node.chunk;
+        int l_light_level = (int)l_light_node.strength;
+
+        // Pop the front node off the queue. We no longer need the node reference
+        p_lightsDel.pop();
+
+        // x
+        for( int i = 0; i < 6; i++) {
+            int l_neighborLevel = l_chunk->getTorchlight( l_position + l_shift_matrix[i] );
+            if (l_neighborLevel != 0 && l_neighborLevel < l_light_level) {
+                // Set its light level
+                l_update.push_back( l_chunk->setTorchlight( l_position + l_shift_matrix[i] , 0));
+
+                // Emplace new node to queue. (could use push as well)
+                p_lightsDel.emplace( l_position + l_shift_matrix[i] , l_chunk, l_neighborLevel);
+
+            } else if (l_neighborLevel >= l_light_level) {
+                p_lightsAdd.emplace( l_position + l_shift_matrix[i] , l_chunk);
+            }
+        }
+    }
+
+    while( p_lightsAdd.empty() == false) {
+        // Get a reference to the front node.
+        world_light_node &l_light_node = p_lightsAdd.front();
+
+        glm::ivec3 l_position = l_light_node.position;
+        Chunk* l_chunk = l_light_node.chunk;
+
+        // Grab the light level of the current node
+        int l_lightLevel = l_chunk->getTorchlight( l_position);
+
+        // Pop the front node off the queue. We no longer need the node reference
+        p_lightsAdd.pop();
+
+        for( int i = 0; i < 6; i++) {
+            if ( l_chunk->checkTile( l_position + l_shift_matrix[i] ) == false &&
+                l_chunk->getTorchlight( l_position + l_shift_matrix[i]) + 2 <= l_lightLevel) {
+                // Set its light level
+                l_update.push_back( l_chunk->setTorchlight( l_position + l_shift_matrix[i], l_lightLevel - 1));
+                // Construct index
+                glm::ivec3 l_new_position = l_position + l_shift_matrix[i];
+                // Emplace new node to queue
+                p_lightsAdd.emplace( l_new_position, l_chunk);
+            }
+        }
+    }
+
+    for( auto l_chunk:l_update) {
+        l_chunk->changed( true);
+    }
 }
 
 void world::process_thrend_update() {
@@ -307,34 +421,6 @@ void world::process_thrend_update() {
     }
     p_change_blocks.clear();
     SDL_UnlockMutex ( p_mutex_handle);
-
-    while( p_lights.empty() == false) {
-        // Get a reference to the front node.
-        world_light_node &l_light_node = p_lights.front();
-
-        glm::vec3 l_position = l_light_node.position;
-        Chunk* l_chunk = l_light_node.chunk;
-
-        // Grab the light level of the current node
-        int l_lightLevel = l_chunk->getTorchlight( l_position);
-
-        // Pop the front node off the queue. We no longer need the node reference
-        p_lights.pop();
-
-        if ( l_chunk->checkTile( l_position + glm::vec3( -1, 0, 0) ) == false &&
-                l_chunk->getTorchlight( l_position + glm::vec3( -1, 0, 0)) + 2 <= l_lightLevel) {
-
-            // Set its light level
-            l_chunk->setTorchlight( l_position + glm::vec3( -1, 0, 0), l_lightLevel - 1);
-
-            // Construct index
-            glm::vec3 l_new_position = l_position + glm::vec3( -1, 0, 0);
-
-
-            // Emplace new node to queue. (could use push as well)
-            p_lights.emplace( l_new_position, l_chunk);
-        }
-    }
 }
 
 void world::process_thrend_physic() {
@@ -503,7 +589,7 @@ bool world::CheckChunk( int X, int Y, int Z) {
 
 
 
-Chunk* world::getChunk( glm::vec3 position) {
+Chunk* world::getChunk( glm::ivec3 position) {
     Chunk *tmp = p_chunk_start;
     for( ;; ) {
         if( tmp == NULL)

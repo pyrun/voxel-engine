@@ -35,6 +35,13 @@ void main()
     gNormal = vec4( normalize(Normal), 1);
 
     gTexture = texture( texture_image, Texture);
+
+    vec3 lighting = vec3( 1.0f);
+
+    if( Lighting.x > Lighting.y)
+        lighting = lighting * Lighting.x;
+    else
+        lighting = lighting * Lighting.y;
     
-    gShadow = vec4( vec3(Lighting), 1);
+    gShadow = vec4( lighting, 1);
 }

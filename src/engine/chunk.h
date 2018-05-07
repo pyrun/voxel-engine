@@ -39,7 +39,7 @@ public:
     bool createPhysicBody( b3World *world, SDL_mutex *mutex);
     bool serialize( bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks);
 
-    inline glm::vec3 getPos() { return p_pos; }
+    inline glm::ivec3 getPos() { return p_pos; }
     void setSide( Chunk *chunk, Chunk_side side);
     Chunk *getSide( Chunk_side side);
 
@@ -52,7 +52,7 @@ public:
     int getSunlight( glm::ivec3 position);
     void setSunlight( glm::ivec3 position, int val);
     int getTorchlight( glm::ivec3 position);
-    void setTorchlight( glm::ivec3 position, int val);
+    Chunk *setTorchlight( glm::ivec3 position, int val);
 
     void addFace( Chunk_side side, glm::ivec3 pos, glm::ivec3 texture, glm::ivec3 blockPos);
 
