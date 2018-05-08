@@ -112,7 +112,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             face = 5;
 
         // Wenn es leer ist wird es gesetzt
-        if( tile && p_input.Map.Place && !p_input.MapOld.Place ) {
+        if( tile ) {
             int mX, mY, mZ;
             mX = mx;
             mY = my;
@@ -130,7 +130,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
             if(face == 5)
                 mZ--;
 
-            if( p_world_player->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID) {
+            if( p_world_player->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID && p_input.Map.Place && !p_input.MapOld.Place) {
                 Chunk *tmp = p_world_player->getChunkWithPos( mX, mY, mZ);
                 if( tmp) {
                     //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
@@ -141,8 +141,19 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 }
             }
 
-            printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mX, mY, mZ, tile);
-            break;
+            if( p_world_player->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID && p_input.Map.Inventory && !p_input.MapOld.Inventory) {
+                Chunk *tmp = p_world_player->getChunkWithPos( mX, mY, mZ);
+                if( tmp) {
+                    //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
+                    //p_world_player->changeBlock( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
+                    p_world_player->addTorchlight( tmp, glm::ivec3( mX, mY, mZ), 15);
+                } else {
+                    printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
+                }
+            }
+
+            //printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mX, mY, mZ, tile);
+            //break;
         }
         if( tile && p_input.Map.Destory && !p_input.MapOld.Destory) {
             Chunk *tmp = p_world_player->getChunkWithPos( mx, my, mz);
@@ -154,7 +165,7 @@ void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
                 //p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
                 printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
             }
-            break;
+            //break;
         }
 
         // tile

@@ -35,7 +35,7 @@ Chunk::Chunk( glm::ivec3 position, int seed) {
 
     for (int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
         p_tile[ i ] = EMPTY_BLOCK_ID;
-        p_lighting[ i ] = 1;
+        p_lighting[ i ] = 0;
     }
 
     updateForm();
