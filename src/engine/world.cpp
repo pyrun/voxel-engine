@@ -208,38 +208,6 @@ void world::setTile( Chunk *chunk, glm::ivec3 position, int id) {
     //chunk->changed( true);
 }
 
-void world::calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock) {
-    Chunk *l_chunk = chunk;
-    glm::ivec3 l_position = position;
-    int l_ligthing = 15;
-    /*while( l_chunk->getSide( CHUNK_SIDE_Y_POS) != NULL)
-        l_chunk = l_chunk->getSide( CHUNK_SIDE_Y_POS);*/
-    glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
-
-    l_position.y = CHUNK_SIZE;
-    for( ;;) {
-        l_position.y = l_position.y-1;
-        if( l_position.y < 0) {
-            l_chunk = l_chunk->getSide( CHUNK_SIDE_Y_NEG);
-            l_position.y = CHUNK_SIZE;
-        }
-        if( l_chunk == NULL)
-            return;
-
-        l_chunk->setSunlight( l_position, l_ligthing);
-
-        // hit ground?
-        if( l_chunk->checkTile( l_position - glm::ivec3( 0, 1, 0) ) ) {
-            l_ligthing = 0;
-            //l_chunk->set( l_position, 5, false);
-        }
-
-        if( l_ligthing == 0 && l_chunk->getSunlight( l_position) > 0)
-            addTorchlight( l_chunk, l_position + l_chunk_position, 15);
-
-    }
-}
-
 void world::addTorchlight( Chunk *chunk, glm::ivec3 position, int value) {
     // calculate the position by chunk
     glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);

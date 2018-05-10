@@ -238,85 +238,6 @@ bool Chunk::checkTile( glm::ivec3 position) {
     return p_tile[ TILE_REGISTER( position.x, position.y, position.z) ] == EMPTY_BLOCK_ID?false:true;
 }
 
-// get XXXX0000
-int Chunk::getSunlight( glm::ivec3 position) {
-    Chunk *l_side;
-
-    // x
-    l_side = getSide( CHUNK_SIDE_X_NEG);
-    if( position.x < 0 && l_side ) {
-        return l_side->getSunlight( position + glm::ivec3( CHUNK_SIZE, 0, 0));
-    }
-    l_side = getSide( CHUNK_SIDE_X_POS);
-    if( position.x >= CHUNK_SIZE && l_side ) {
-        return l_side->getSunlight( position - glm::ivec3( CHUNK_SIZE, 0, 0));
-    }
-    // y
-    l_side = getSide( CHUNK_SIDE_Y_NEG);
-    if( position.y < 0 && l_side ) {
-        return l_side->getSunlight( position + glm::ivec3( 0, CHUNK_SIZE, 0));
-    }
-    l_side = getSide( CHUNK_SIDE_Y_POS);
-    if( position.y >= CHUNK_SIZE && l_side ) {
-        return l_side->getSunlight( position - glm::ivec3( 0, CHUNK_SIZE, 0));
-    }
-    // z
-    l_side = getSide( CHUNK_SIDE_Z_NEG);
-    if( position.z < 0 && l_side ) {
-        return l_side->getSunlight( position + glm::ivec3( 0, 0, CHUNK_SIZE));
-    }
-    l_side = getSide( CHUNK_SIDE_Z_POS);
-    if( position.z >= CHUNK_SIZE && l_side ) {
-        return l_side->getSunlight( position - glm::ivec3( 0, 0, CHUNK_SIZE));
-    }
-    if( position.x < 0 || position.x >= CHUNK_SIZE ||
-        position.y < 0 || position.y >= CHUNK_SIZE ||
-        position.z < 0 || position.z >= CHUNK_SIZE)
-        return false;
-    return (p_lighting[ TILE_REGISTER((int)position.x, (int)position.y, (int)position.z)] >> 4) & 0xF;
-}
-
-// set XXXX0000
-void Chunk::setSunlight( glm::ivec3 position, int val) {
-    Chunk *l_side;
-    // x
-    if( position.x < 0 && getSide( CHUNK_SIDE_X_NEG)) {
-        l_side = getSide( CHUNK_SIDE_X_NEG);
-        l_side->setSunlight( position + glm::ivec3( CHUNK_SIZE, 0, 0), val );
-        return;
-    }
-    if( position.x >= CHUNK_SIZE && getSide( CHUNK_SIDE_X_POS)) {
-        l_side = getSide( CHUNK_SIDE_X_POS);
-        l_side->setSunlight( position - glm::ivec3( CHUNK_SIZE, 0, 0), val );
-        return;
-    }
-    // y
-    if( position.y < 0 && getSide( CHUNK_SIDE_Y_NEG)) {
-        l_side = getSide( CHUNK_SIDE_Y_POS);
-        l_side->setSunlight( position + glm::ivec3( 0, CHUNK_SIZE, 0), val );
-        return;
-    }
-    if( position.y >= CHUNK_SIZE && getSide( CHUNK_SIDE_Y_POS)) {
-        l_side = getSide( CHUNK_SIDE_Y_POS);
-        l_side->setSunlight( position - glm::ivec3( 0, CHUNK_SIZE, 0), val );
-        return;
-    }
-    // z
-    if( position.z < 0 && getSide( CHUNK_SIDE_Z_NEG)) {
-        l_side = getSide( CHUNK_SIDE_Z_NEG);
-        l_side->setSunlight( position + glm::ivec3( 0, 0, CHUNK_SIZE), val );
-        return;
-    }
-    if( position.z >= CHUNK_SIZE && getSide( CHUNK_SIDE_Z_POS)) {
-        l_side = getSide( CHUNK_SIDE_Z_POS);
-        l_side->setSunlight( position - glm::ivec3( 0, 0, CHUNK_SIZE), val );
-        return;
-    }
-
-    p_lighting[ TILE_REGISTER( position.x, position.y, position.z)] = (p_lighting[ TILE_REGISTER( position.x, position.y, position.z)] & 0xF) | (val << 4);
-}
-
-
 // get 0000XXXX
 int Chunk::getTorchlight( glm::ivec3 position) {
     Chunk *l_side;
@@ -476,12 +397,12 @@ void Chunk::addFace( Chunk_side side, glm::ivec3 pos, glm::ivec3 texture, glm::i
     p_texture[ l_vertices + 3] = texture;
 
     // set lighting
-    int l_lighting = getSunlight( blockPos + l_offset );
-    int l_lighting_torch = getTorchlight( blockPos + l_offset );
-    p_light[ l_vertices + 0] = glm::ivec3( l_lighting, l_lighting_torch, 0);
-    p_light[ l_vertices + 1] = glm::ivec3( l_lighting, l_lighting_torch, 0);
-    p_light[ l_vertices + 2] = glm::ivec3( l_lighting, l_lighting_torch, 0);
-    p_light[ l_vertices + 3] = glm::ivec3( l_lighting, l_lighting_torch, 0);
+    //int l_lighting = getTorchlight( blockPos + l_offset );
+    int l_lighting = getTorchlight( blockPos + l_offset );
+    p_light[ l_vertices + 0] = glm::ivec3( l_lighting, l_lighting, l_lighting);
+    p_light[ l_vertices + 1] = glm::ivec3( l_lighting, l_lighting, l_lighting);
+    p_light[ l_vertices + 2] = glm::ivec3( l_lighting, l_lighting, l_lighting);
+    p_light[ l_vertices + 3] = glm::ivec3( l_lighting, l_lighting, l_lighting);
 }
 
 void Chunk::updateArray( block_list *List) {
@@ -538,7 +459,7 @@ void Chunk::updateArray( block_list *List) {
                     b_visibility = false;
                     continue;
                 }*/
-                if( 0 && b_visibility && l_block.y != 0 && checkTile( l_block + glm::ivec3( 0, -1, 0)) && ( l_tile == getTile( l_block - glm::ivec3( 0, -1, 0)) ) && getSunlight( glm::ivec3( l_block.x, l_block.y-1, l_block.z) ) == getSunlight( glm::ivec3( l_block.x, l_block.y-2, l_block.z) )) {
+                if( 0 && b_visibility && l_block.y != 0 && checkTile( l_block + glm::ivec3( 0, -1, 0)) && ( l_tile == getTile( l_block - glm::ivec3( 0, -1, 0)) ) && getTorchlight( glm::ivec3( l_block.x, l_block.y-1, l_block.z) ) == getTorchlight( glm::ivec3( l_block.x, l_block.y-2, l_block.z) )) {
                     p_vertices[ p_vertices_length - 3] = l_block + glm::ivec3( 0, +1, 0);
                     p_vertices[ p_vertices_length - 1] = l_block + glm::ivec3( 0, +1, +1);
                 } else {
@@ -577,7 +498,7 @@ void Chunk::updateArray( block_list *List) {
                     b_visibility = false;
                     continue;
                 }*/
-                if( 0 && b_visibility && l_block.y != 0 && checkTile( l_block + glm::ivec3( 0, -1, 0)) && l_tile == getTile( l_block.x, l_block.y-1, l_block.z) && getSunlight(l_block) == getSunlight( l_block) ){
+                if( 0 && b_visibility && l_block.y != 0 && checkTile( l_block + glm::ivec3( 0, -1, 0)) && l_tile == getTile( l_block.x, l_block.y-1, l_block.z) && getTorchlight(l_block) == getTorchlight( l_block) ){
                     p_vertices[ p_vertices_length - 3] = glm::ivec3( l_block.x+1, l_block.y+1, l_block.z);
                     p_vertices[ p_vertices_length - 1] = glm::ivec3( l_block.x+1, l_block.y+1, l_block.z+1);
                 } else {
@@ -608,7 +529,7 @@ void Chunk::updateArray( block_list *List) {
                     b_visibility = false;
                     continue;
                 }*/
-                if( 0 && b_visibility && x != 0 && checkTile( glm::ivec3( x-1, y, z)) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( glm::ivec3( x, y, z)) == getSunlight( glm::ivec3( x-1, y, z))) {
+                if( 0 && b_visibility && x != 0 && checkTile( glm::ivec3( x-1, y, z)) && getTile( x-1, y, z) == getTile( x, y, z) && getTorchlight( glm::ivec3( x, y, z)) == getTorchlight( glm::ivec3( x-1, y, z))) {
                     p_vertices[ p_vertices_length - 3] = glm::ivec3( x+1, y+1, z);
                     p_vertices[ p_vertices_length - 1] = glm::ivec3( x+1, y+1, z+1);
                 } else {
@@ -639,7 +560,7 @@ void Chunk::updateArray( block_list *List) {
                     b_visibility = false;
                     continue;
                 }*/
-                if( 0 && b_visibility && x != 0 && checkTile( glm::ivec3( x-1, y, z)) && getTile( x-1, y, z) == getTile( x, y, z) && getSunlight( glm::ivec3( x, y, z)) == getSunlight( glm::ivec3( x-1, y, z))) {
+                if( 0 && b_visibility && x != 0 && checkTile( glm::ivec3( x-1, y, z)) && getTile( x-1, y, z) == getTile( x, y, z) && getTorchlight( glm::ivec3( x, y, z)) == getTorchlight( glm::ivec3( x-1, y, z))) {
                     p_vertices[ p_vertices_length - 3] = glm::ivec3( x+1, y, z);
                     p_vertices[ p_vertices_length - 1] = glm::ivec3( x+1, y, z+1);
                 } else {
@@ -671,7 +592,7 @@ void Chunk::updateArray( block_list *List) {
                     b_visibility = false;
                     continue;
                 }*/
-                if( 0 && b_visibility && y != 0 && checkTile( glm::ivec3( x, y-1, z)) && getTile( x, y-1, z) == getTile( x, y, z) && getSunlight( glm::ivec3( x, y, z)) == getSunlight( glm::ivec3( x, y-1, z))) {
+                if( 0 && b_visibility && y != 0 && checkTile( glm::ivec3( x, y-1, z)) && getTile( x, y-1, z) == getTile( x, y, z) && getTorchlight( glm::ivec3( x, y, z)) == getTorchlight( glm::ivec3( x, y-1, z))) {
                     p_vertices[ p_vertices_length - 3] = glm::ivec3( x, y+1, z+1);
                     p_vertices[ p_vertices_length - 1] = glm::ivec3( x+1, y+1, z+1);
                 } else {
@@ -702,7 +623,7 @@ void Chunk::updateArray( block_list *List) {
                     b_visibility = false;
                     continue;
                 }*/
-                if( 0 && b_visibility && l_block.y != 0 && checkTile( l_block - glm::ivec3( 0, 1, 0)) && getTile( l_block) == getTile( l_block.x, l_block.y-1, l_block.z) && getSunlight( l_block) == getSunlight( l_block - glm::ivec3( 0, 1, 0) )) {
+                if( 0 && b_visibility && l_block.y != 0 && checkTile( l_block - glm::ivec3( 0, 1, 0)) && getTile( l_block) == getTile( l_block.x, l_block.y-1, l_block.z) && getTorchlight( l_block) == getTorchlight( l_block - glm::ivec3( 0, 1, 0) )) {
                     p_vertices[ p_vertices_length - 3] = l_block + glm::ivec3( 0, 1, 0);
                     p_vertices[ p_vertices_length - 1] = l_block + glm::ivec3( 1, 1, 0);
                 } else {

@@ -53,7 +53,6 @@ public:
     Chunk *getChunkWithPos( int x, int y, int z);
     void changeBlock( Chunk *chunk, glm::vec3 position, int id);
     void setTile( Chunk *chunk, glm::ivec3 position, int id);
-    void calcSunRay( Chunk *chunk, glm::vec3 position, bool firstBlock = false);
 
     void addTorchlight( Chunk *chunk, glm::ivec3 position, int value);
     void delTorchlight( Chunk *chunk, glm::ivec3 position);

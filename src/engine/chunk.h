@@ -49,8 +49,6 @@ public:
     unsigned short getTile( glm::ivec3 position);
     bool checkTile( glm::ivec3 position);
 
-    int getSunlight( glm::ivec3 position);
-    void setSunlight( glm::ivec3 position, int val);
     int getTorchlight( glm::ivec3 position);
     Chunk *setTorchlight( glm::ivec3 position, int val);
 
