@@ -114,8 +114,10 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
     // input handling
     if( p_input.Map.Place && !p_input.MapOld.Place) {
         Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block_prev);
-        if( l_chunk)
-            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "treewood")->getID());
+        if( l_chunk) {
+            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "glowcrystal")->getID());
+            p_world_player->addTorchlight( l_chunk, l_block_prev, 15);
+        }
     }
 
     if( p_input.Map.Destory && !p_input.MapOld.Destory) {

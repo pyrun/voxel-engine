@@ -200,9 +200,8 @@ void world::setTile( Chunk *chunk, glm::ivec3 position, int id) {
 
     chunk->set( l_position, id, false);
 
-    delTorchlight( chunk, position);
-
-    //chunk->changed( true);
+    if( id == EMPTY_BLOCK_ID)
+        delTorchlight( chunk, position);
 }
 
 void world::addTorchlight( Chunk *chunk, glm::ivec3 position, int value) {
@@ -267,6 +266,32 @@ void world::process_thrend_handle() {
 
     std::vector<Chunk *> l_update;
 
+    while( p_lightsAdd.empty() == false) {
+        // Get a reference to the front node.
+        world_light_node &l_light_node = p_lightsAdd.front();
+
+        glm::ivec3 l_position = l_light_node.position;
+        Chunk* l_chunk = l_light_node.chunk;
+
+        // Grab the light level of the current node
+        int l_lightLevel = l_chunk->getTorchlight( l_position);
+
+        // Pop the front node off the queue. We no longer need the node reference
+        p_lightsAdd.pop();
+
+        for( int i = 0; i < 6; i++) {
+            if ( l_chunk->checkTile( l_position + l_shift_matrix[i] ) == false &&
+                l_chunk->getTorchlight( l_position + l_shift_matrix[i]) + 2 <= l_lightLevel) {
+                // Set its light level
+                l_update.push_back( l_chunk->setTorchlight( l_position + l_shift_matrix[i], l_lightLevel - 2));
+                // Construct index
+                glm::ivec3 l_new_position = l_position + l_shift_matrix[i];
+                // Emplace new node to queue
+                p_lightsAdd.emplace( l_new_position, l_chunk);
+            }
+        }
+    }
+
     while( p_lightsDel.empty() == false) {
         // Get a reference to the front node.
         world_light_node &l_light_node = p_lightsDel.front();
@@ -291,32 +316,6 @@ void world::process_thrend_handle() {
 
             } else if (l_neighborLevel >= l_light_level) {
                 p_lightsAdd.emplace( l_position + l_shift_matrix[i] , l_chunk);
-            }
-        }
-    }
-
-    while( p_lightsAdd.empty() == false) {
-        // Get a reference to the front node.
-        world_light_node &l_light_node = p_lightsAdd.front();
-
-        glm::ivec3 l_position = l_light_node.position;
-        Chunk* l_chunk = l_light_node.chunk;
-
-        // Grab the light level of the current node
-        int l_lightLevel = l_chunk->getTorchlight( l_position);
-
-        // Pop the front node off the queue. We no longer need the node reference
-        p_lightsAdd.pop();
-
-        for( int i = 0; i < 6; i++) {
-            if ( l_chunk->checkTile( l_position + l_shift_matrix[i] ) == false &&
-                l_chunk->getTorchlight( l_position + l_shift_matrix[i]) + 2 <= l_lightLevel) {
-                // Set its light level
-                l_update.push_back( l_chunk->setTorchlight( l_position + l_shift_matrix[i], l_lightLevel - 2));
-                // Construct index
-                glm::ivec3 l_new_position = l_position + l_shift_matrix[i];
-                // Emplace new node to queue
-                p_lightsAdd.emplace( l_new_position, l_chunk);
             }
         }
     }

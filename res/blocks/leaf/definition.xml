@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<block id="24">
+	<graphic>
+		<top>leaf.png</top>
+		<bottom>leaf.png</bottom>
+		<front>leaf.png</front>
+		<back>leaf.png</back>
+		<left>leaf.png</left>
+		<right>leaf.png</right>
+	</graphic>
+</block>

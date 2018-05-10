@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<block id="11">
+	<graphic>
+		<top>crystal.png</top>
+		<bottom>crystal.png</bottom>
+		<front>crystal.png</front>
+		<back>crystal.png</back>
+		<left>crystal.png</left>
+		<right>crystal.png</right>
+	</graphic>
+	<lighting>15</lighting>
+</block>
