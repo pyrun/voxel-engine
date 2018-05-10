@@ -35,7 +35,7 @@ public:
     virtual ~engine();
 
     void startVR();
-    void viewCurrentBlock( glm::mat4 viewProjection, int view_width);
+    void raycastView( glm::vec3 position, glm::vec3 lookat, int forward);
 
     void render( glm::mat4 view, glm::mat4 projection);
 

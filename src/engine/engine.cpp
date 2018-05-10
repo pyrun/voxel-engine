@@ -60,119 +60,68 @@ void engine::startVR() {
     p_framecap = false;
 }
 
-void engine::viewCurrentBlock( glm::mat4 viewProjection, int view_width) {
-    float depth;
+void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
+    glm::vec3 l_postion_ray = position;
+    glm::vec3 l_postion_prev = position;
+    glm::vec3 l_block = { 0, 0, 0};
+    glm::vec3 l_block_prev;
+    bool l_found = false;
 
     if( p_world_player == NULL)
         return;
 
-    // voxel Anzeigen
-    glReadPixels( p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+    for(int i = 0; i < forward; i++) {
+        l_postion_prev = l_postion_ray;
+        l_postion_ray += lookat * 0.1f;
 
-    glm::vec4 viewport = glm::vec4(0, 0, p_graphic->getWidth(), p_graphic->getHeight());
-    glm::vec3 wincoord = glm::vec3(p_graphic->getWidth() / 2, p_graphic->getHeight() / 2, depth);
+        l_block.x = floorf( l_postion_ray.x);
+        l_block.y = floorf( l_postion_ray.y);
+        l_block.z = floorf( l_postion_ray.z);
 
-    glm::vec3 testpos = p_graphic->getCamera()->GetPos();
-    glm::vec3 prevpos = p_graphic->getCamera()->GetPos();
-
-    // wo hin man sieht den block finden
-    int mx, my, mz;
-    for(int i = 0; i < view_width/2; i++) {
-        // Advance from our currect position to the direction we are looking at, in small steps
-        prevpos = testpos;
-        testpos += p_graphic->getCamera()->GetForward() * 0.02f;
-
-        // hack die komma zahl ab z.B. 13,4 -> 13,0
-        mx = floorf(testpos.x);
-        my = floorf(testpos.y);
-        mz = floorf(testpos.z);
-
-        // falls wir ein block finden das kein "Air" ist dann sind wir fertig
-        int tile = p_world_player->GetTile( mx, my, mz);
-        if( !tile )
-            continue;
-
-        int px = floorf(prevpos.x);
-        int py = floorf(prevpos.y);
-        int pz = floorf(prevpos.z);
-
-        int face;
-        // Welche Seite wird angeklickt
-        if(px > mx)
-            face = 0;
-        else if(px < mx)
-            face = 3;
-        else if(py > my)
-            face = 1;
-        else if(py < my)
-            face = 4;
-        else if(pz > mz)
-            face = 2;
-        else if(pz < mz)
-            face = 5;
-
-        // Wenn es leer ist wird es gesetzt
-        if( tile ) {
-            int mX, mY, mZ;
-            mX = mx;
-            mY = my;
-            mZ = mz;
-            if(face == 0)
-                mX++;
-            if(face == 3)
-                mX--;
-            if(face == 1)
-                mY++;
-            if(face == 4)
-                mY--;
-            if(face == 2)
-                mZ++;
-            if(face == 5)
-                mZ--;
-
-            if( p_world_player->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID && p_input.Map.Place && !p_input.MapOld.Place) {
-                Chunk *tmp = p_world_player->getChunkWithPos( mX, mY, mZ);
-                if( tmp) {
-                    //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
-                    p_world_player->changeBlock( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
-                    //p_world_player->addTorchlight( tmp, glm::ivec3( mX, mY, mZ), 15);
-                } else {
-                    printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
-                }
+        Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block);
+        if( l_chunk) {
+            glm::vec3 l_chunk_pos = l_chunk->getPos() * glm::ivec3( CHUNK_SIZE);
+            if( l_chunk->getTile( l_block - l_chunk_pos) != EMPTY_BLOCK_ID) { // check for block
+                l_found = true;
+                break;
             }
-
-            if( p_world_player->GetTile( mX, mY, mZ) == EMPTY_BLOCK_ID && p_input.Map.Inventory && !p_input.MapOld.Inventory) {
-                Chunk *tmp = p_world_player->getChunkWithPos( mX, mY, mZ);
-                if( tmp) {
-                    //p_network->sendBlockChange( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
-                    //p_world_player->changeBlock( tmp, glm::vec3( mX, mY, mZ), p_blocklist->getByName( "treewood")->getID());
-                    p_world_player->addTorchlight( tmp, glm::ivec3( mX, mY, mZ), 15);
-                } else {
-                    printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
-                }
-            }
-
-            //printf( "engine::ViewCurrentBlock Set: %d %d %d %d\n", mX, mY, mZ, tile);
-            //break;
         }
-        if( tile && p_input.Map.Destory && !p_input.MapOld.Destory) {
-            Chunk *tmp = p_world_player->getChunkWithPos( mx, my, mz);
-            if( tmp) {
-                //p_network->sendBlockChange( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
-                p_world_player->changeBlock( tmp, glm::vec3( mx, my, mz), EMPTY_BLOCK_ID);
+    }
+    if( !l_found)
+        return;
 
-            } else {
-                //p_network->getWorld()->addChunk( glm::vec3( 0, 0, 0), false);
-                printf( "engine::ViewCurrentBlock Block nicht vorhanden wo man es setzen möchte\n");
-            }
-            //break;
-        }
+    // find out witch face we looking
+    glm::vec3 l_postion_floor_prev;
+    l_postion_floor_prev.x = floorf( l_postion_prev.x);
+    l_postion_floor_prev.y = floorf( l_postion_prev.y);
+    l_postion_floor_prev.z = floorf( l_postion_prev.z);
 
-        // tile
-        if( tile) {
-            //drawBox( viewProjection, glm::vec3( mx, my, mz)*glm::vec3( CHUNK_SCALE));
-            break;
-        }
+    l_block_prev = l_block;
+
+    if( l_postion_floor_prev.x > l_block.x)
+        l_block_prev.x++;
+    else if( l_postion_floor_prev.x < l_block.x)
+        l_block_prev.x--;
+    else if( l_postion_floor_prev.y > l_block.y)
+        l_block_prev.y++;
+    else if( l_postion_floor_prev.y < l_block.y)
+        l_block_prev.y--;
+    else if( l_postion_floor_prev.z > l_block.z)
+        l_block_prev.z++;
+    else if( l_postion_floor_prev.z < l_block.z)
+        l_block_prev.z--;
+
+    // input handling
+    if( p_input.Map.Place && !p_input.MapOld.Place) {
+        Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block_prev);
+        if( l_chunk)
+            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "treewood")->getID());
+    }
+
+    if( p_input.Map.Destory && !p_input.MapOld.Destory) {
+        Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block);
+        if( l_chunk)
+            p_world_player->changeBlock( l_chunk, l_block, EMPTY_BLOCK_ID);
     }
 }
 
@@ -312,7 +261,9 @@ void engine::run() {
         p_graphic->getDisplay()->clear( false);
         p_graphic->renderDeferredShading();
 
-        viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter
+        raycastView( p_graphic->getCamera()->GetPos(), p_graphic->getCamera()->GetForward(), 20);
+
+        //viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter
 
         p_graphic->getDisplay()->swapBuffers();
 

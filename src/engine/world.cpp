@@ -98,44 +98,42 @@ world::~world() {
     }
 }
 
-int world::GetTile( int x, int y, int z) {
+int world::getTile( glm::ivec3 position) {
     Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->getPos().x*CHUNK_SIZE;
-        int p_chunk_y = y-node->getPos().y*CHUNK_SIZE;
-        int p_chunk_z = z-node->getPos().z*CHUNK_SIZE;
+        glm::ivec3 p_chunk_position = position - node->getPos()*glm::ivec3( CHUNK_SIZE);
 
         // X - Achse
-        if(p_chunk_x < 0 ) {
+        if( p_chunk_position.x < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_x >= CHUNK_SIZE ) {
+        if( p_chunk_position.x >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
         // Y - Achse
-        if(p_chunk_y < 0 ) {
+        if( p_chunk_position.y < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_y >= CHUNK_SIZE ) {
+        if( p_chunk_position.y >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
         // Z - Achse
-        if(p_chunk_z < 0 ) {
+        if( p_chunk_position.z < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_z >= CHUNK_SIZE) {
+        if( p_chunk_position.z >= CHUNK_SIZE) {
             node = node->next;
             continue;
         }
 
-        int l_tile = node->getTile( p_chunk_x, p_chunk_y, p_chunk_z );
+        int l_tile = node->getTile( p_chunk_position );
         if( l_tile == EMPTY_BLOCK_ID)
             break;
         return l_tile;
@@ -143,39 +141,38 @@ int world::GetTile( int x, int y, int z) {
     return NULL;
 }
 
-Chunk* world::getChunkWithPos( int x, int y, int z) {
+Chunk* world::getChunkWithPosition( glm::ivec3 position) {
+    glm::ivec3 l_chunk;
     Chunk *node = p_chunk_start;
     for( ;; ) {
         if( node == NULL)
             break;
-        int p_chunk_x = x-node->getPos().x*CHUNK_SIZE;
-        int p_chunk_y = y-node->getPos().y*CHUNK_SIZE;
-        int p_chunk_z = z-node->getPos().z*CHUNK_SIZE;
+        l_chunk = position - node->getPos() * glm::ivec3( CHUNK_SIZE);
 
         // X - Achse
-        if(p_chunk_x < 0 ) {
+        if( l_chunk.x < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_x >= CHUNK_SIZE ) {
+        if( l_chunk.x >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
         // Y - Achse
-        if(p_chunk_y < 0 ) {
+        if( l_chunk.y < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_y >= CHUNK_SIZE ) {
+        if( l_chunk.y >= CHUNK_SIZE ) {
             node = node->next;
             continue;
         }
         // Z - Achse
-        if(p_chunk_z < 0 ) {
+        if( l_chunk.z < 0 ) {
             node = node->next;
             continue;
         }
-        if(p_chunk_z >= CHUNK_SIZE) {
+        if( l_chunk.z >= CHUNK_SIZE) {
             node = node->next;
             continue;
         }

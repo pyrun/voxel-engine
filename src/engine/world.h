@@ -49,8 +49,8 @@ public:
     world( block_list* block_list);
     virtual ~world();
 
-    int GetTile( int x, int y, int z);
-    Chunk *getChunkWithPos( int x, int y, int z);
+    int getTile( glm::ivec3 position);
+    Chunk *getChunkWithPosition( glm::ivec3 position);
     void changeBlock( Chunk *chunk, glm::vec3 position, int id);
     void setTile( Chunk *chunk, glm::ivec3 position, int id);
 
