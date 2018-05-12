@@ -308,6 +308,11 @@ Chunk *Chunk::setTorchlight( glm::ivec3 position, int val) {
         l_side = getSide( CHUNK_SIDE_Z_POS);
         return l_side->setTorchlight( position - glm::ivec3( 0, 0, CHUNK_SIZE), val );
     }
+
+    if( position.x < 0 || position.x >= CHUNK_SIZE ||
+        position.y < 0 || position.y >= CHUNK_SIZE ||
+        position.z < 0 || position.z >= CHUNK_SIZE)
+        return this;
     p_lighting[ TILE_REGISTER( position.x, position.y, position.z)] = (p_lighting[ TILE_REGISTER( position.x, position.y, position.z)] & 0xF0) | val;
     return this;
 }

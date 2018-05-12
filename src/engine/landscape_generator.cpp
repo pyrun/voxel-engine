@@ -21,11 +21,25 @@ float distance( glm::vec3 pos1, glm::vec3 pos2)
     return sqrt( dx*dx + dz*dz );
 }
 
-void Landscape_Generator( Chunk* chunk, block_list* b_list) {
+void Landscape_Tree( Chunk* chunk, block_list* blocklist, glm::ivec3 position) {
+    int l_leaf = blocklist->getByName( "leaf")->getID();
+    int l_treewood = blocklist->getByName( "treewood")->getID();
 
-    int l_stone = b_list->getByName( "stone")->getID();
-    int l_grass = b_list->getByName( "grass")->getID();
-    int l_earth = b_list->getByName( "earth")->getID();
+    chunk->set( position + glm::ivec3( 0, +1, 0), l_treewood, false);
+    chunk->set( position + glm::ivec3( 0, +2, 0), l_treewood, false);
+    chunk->set( position + glm::ivec3( 0, +3, 0), l_treewood, false);
+    chunk->set( position + glm::ivec3( 0, +4, 0), l_treewood, false);
+    chunk->set( position + glm::ivec3( 0, +5, 0), l_leaf, false);
+}
+
+std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist) {
+
+    std::vector<glm::ivec3> l_light_position;
+
+    int l_stone = blocklist->getByName( "stone")->getID();
+    int l_grass = blocklist->getByName( "grass")->getID();
+    int l_glowcrystal = blocklist->getByName( "glowcrystal")->getID();
+    int l_earth = blocklist->getByName( "earth")->getID();
 
     glm::ivec3 l_block;
     glm::vec3 l_real_pos;
@@ -67,11 +81,18 @@ void Landscape_Generator( Chunk* chunk, block_list* b_list) {
                 else if( !(l_noise_top > l_real_pos.y+3) )
                     l_type = l_earth;
 
+                if( rand()%20 == 1 && l_type == l_grass)
+                    l_type = l_glowcrystal;
+                if( rand()%25 == 1 && l_type == l_grass)
+                    Landscape_Tree( chunk, blocklist, l_block);
+
                 l_last_type = l_type;
+
+                if( l_type == l_glowcrystal)
+                    l_light_position.push_back( l_block);
                 chunk->set( l_block, l_type, false);
-                //if( l_block.y != CHUNK_SIZE-1 && chunk->getTile( l_block - glm::ivec3( 0, -1, 0)) == EMPTY_BLOCK_ID)
-                //    chunk->setTorchlight( l_block - glm::ivec3( 0, -1, 0), LIGHTING_MAX);
             }
         }
     }
+    return l_light_position;
 }

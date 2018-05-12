@@ -7,6 +7,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 
-void Landscape_Generator( Chunk* c_chunk, block_list* b_list);
+std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* list);
 
 #endif // LANDSCAPE_GENERATOR_H

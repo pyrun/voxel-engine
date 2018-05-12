@@ -367,7 +367,7 @@ void network::receiveChunk( BitStream *bitstream) {
 
     Chunk *l_chunk = getWorld()->getChunk( l_chunk_position);
     if( !l_chunk) {
-        l_chunk = getWorld()->createChunk( l_chunk_position, false, false);
+        l_chunk = getWorld()->createChunk( l_chunk_position);
     }
     if( !l_chunk) {
         printf( "network::readChunk cant create chunk!\n");

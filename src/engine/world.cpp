@@ -240,15 +240,40 @@ void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
 }
 
 void world::process_thrend_handle() {
+    std::vector<glm::ivec3> l_lights;
+
     for( int i = 0; i < (int)p_creatingList.size(); i++)
     {
         Chunk *l_node = getChunk( p_creatingList[i].position);
         if( l_node == NULL) {
             SDL_LockMutex ( p_mutex_handle);
-            createChunk( p_creatingList[i].position, p_creatingList[i].landscape);
+            createChunk( p_creatingList[i].position);
+            p_landscape.push_back( p_creatingList[i] );
             SDL_UnlockMutex ( p_mutex_handle);
-            p_creatingList.erase( p_creatingList.begin()+ i);
-            break;
+            //p_creatingList.erase( p_creatingList.begin()+ i);
+        }
+    }
+
+    for( int i = 0; i < (int)p_landscape.size(); i++)
+    {
+        Chunk *l_node = getChunk( p_landscape[i].position);
+        if( l_node != NULL) {
+            SDL_LockMutex ( p_mutex_handle);
+            if( p_landscape[i].landscape) {
+                l_lights = Landscape_Generator( l_node, p_blocklist);
+            }
+            l_node->changed( true);
+            SDL_UnlockMutex ( p_mutex_handle);
+
+            for( glm::ivec3 l_light:l_lights) {
+                int l_block_id = l_node->getTile( l_light);
+                block *l_block = p_blocklist->get( l_block_id);
+                if( l_block)
+                    addTorchlight( l_node, l_light + l_node->getPos() * glm::ivec3( CHUNK_SIZE), l_block->getLighting());
+            }
+
+            p_landscape.erase( p_landscape.begin()+ i);
+            //break;
         }
     }
 
@@ -455,16 +480,13 @@ void world::deleteChunk( Chunk* node) {
     }
 }
 
-Chunk *world::createChunk( glm::ivec3 position, bool generateLandscape, bool update) {
+Chunk *world::createChunk( glm::ivec3 position) {
     Chunk *node;
     Chunk *l_side;
 
     // Chunk erstellen
     node = new Chunk( position, 102457);
     node->next = NULL;
-
-    if( generateLandscape)
-        Landscape_Generator( node, p_blocklist);
 
     p_chunk_amount++; // p_chunk_start mitzählen
 
@@ -513,10 +535,6 @@ Chunk *world::createChunk( glm::ivec3 position, bool generateLandscape, bool upd
         l_side->setSide( node, CHUNK_SIDE_Z_POS);
         node->setSide( l_side, CHUNK_SIDE_Z_NEG);
     }
-
-    // set flag "need update"
-    if( update)
-        node->changed( true);
 
     return node;
 }

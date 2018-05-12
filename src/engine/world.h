@@ -63,7 +63,7 @@ public:
 
     void deleteChunks( Chunk* chunk);
     void deleteChunk( Chunk* node);
-    Chunk *createChunk( glm::ivec3 position, bool generateLandscape = false, bool update = true);
+    Chunk *createChunk( glm::ivec3 position);
 
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
     Chunk* getChunk( glm::ivec3 position);
@@ -103,6 +103,7 @@ private:
 
     std::vector<world_data_list> p_creatingList;
     std::vector<world_data_list> p_deletingList;
+    std::vector<world_data_list> p_landscape;
     std::vector<world_change_block> p_change_blocks;
 
     std::queue <world_light_node> p_lightsAdd;
