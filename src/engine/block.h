@@ -68,6 +68,7 @@ class block {
         void setID( int id) { p_id = id; }
         void setName( std::string name) { n_name = name; }
         void setAlpha( bool flag) { p_alpha = flag; }
+        void setLighting( int value) { p_lighting = value; p_enable_lighting = true; }
 
         void addFile( std::string image, block_side side) {
             for( int i = 0; i < (int)p_image.size(); i++) {
@@ -90,6 +91,8 @@ class block {
         int getID() { return p_id; }
         std::string getName() { return n_name; }
         bool getAlpha() { return p_alpha; }
+        int getLighting() { return p_lighting; }
+        bool isLight() { return p_enable_lighting; }
         int getSideAmount() { return p_image.size(); }
         block_image* getSide( int i) { return &p_image[i]; }
     protected:
@@ -100,6 +103,8 @@ class block {
         bool p_alpha;
         std::vector<block_image> p_image;
         bool p_imageloaded;
+        bool p_enable_lighting;
+        int p_lighting;
 };
 
 class block_list {

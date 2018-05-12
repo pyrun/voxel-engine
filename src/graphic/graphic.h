@@ -3,7 +3,6 @@
 
 #define GLM_FORCE_ALIGNED
 
-
 #include "display.h"
 #include "shader.h"
 #include "texture.h"

@@ -30,7 +30,7 @@ engine::engine() {
 
     // set up start world
     world *l_world = new world( p_blocklist);
-    int l_size = 5;
+    int l_size = 2;
     int l_end = -1;
     for( int x = -l_size; x <= l_size; x++)
         for( int y = -l_size; y <= l_size; y++)
@@ -116,7 +116,7 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
         Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
             p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "glowcrystal")->getID());
-            p_world_player->addTorchlight( l_chunk, l_block_prev, 15);
+            //p_world_player->addTorchlight( l_chunk, l_block_prev, LIGHTING_MAX);
         }
     }
 

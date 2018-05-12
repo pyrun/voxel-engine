@@ -29,6 +29,7 @@ void block_image::setImageName( std::string name) {
 
 block::block() {
     p_imageloaded = false;
+    p_enable_lighting = false;
 }
 
 block::~block() {
@@ -179,7 +180,10 @@ bool block_list::fileExists(std::string filename) {
 void block_list::loadblock (std::string path, std::string name) {
     int l_id = -1;
     bool l_alpha = false;
+    int l_lighting = 0;
+    bool l_lighting_enable = false;
     tinyxml2::XMLDocument l_doc;
+    tinyxml2::XMLElement *l_xml_lighting;
     tinyxml2::XMLElement *l_xml_graphic;
     tinyxml2::XMLElement *l_xml_block;
     std::string l_file_definition = path + "definition.xml";
@@ -236,6 +240,13 @@ void block_list::loadblock (std::string path, std::string name) {
     // transparency block?
     l_alpha = atoi(l_xml_graphic->Attribute("alpha"));
 
+    //
+    l_xml_lighting = l_xml_block->FirstChildElement( "lighting");
+    if( l_xml_lighting) {
+        l_lighting_enable = true;
+        l_lighting = atoi(l_xml_lighting->GetText());
+    }
+
     // block images sides set
     block l_block;
     for( int i = 0; i < (int)l_image.size(); i++)
@@ -243,6 +254,8 @@ void block_list::loadblock (std::string path, std::string name) {
     l_block.setName( name);
     l_block.setAlpha( l_alpha);
     l_block.setID( l_id);
+    if( l_lighting_enable)
+        l_block.setLighting( l_lighting);
     p_blocks.push_back( l_block);
 
     printf( "block_list::loadblock #%d \"%s\" added\n", l_id, name.c_str());

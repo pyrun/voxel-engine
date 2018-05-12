@@ -4,7 +4,8 @@
 #include "block.h"
 #include "chunk.h"
 
-float scaled_raw_noise_2d( const float loBound, const float hiBound, const float x, const float y );
+#include <glm/glm.hpp>
+#include <glm/gtc/noise.hpp>
 
 void Landscape_Generator( Chunk* c_chunk, block_list* b_list);
 
