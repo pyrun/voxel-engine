@@ -292,7 +292,7 @@ Chunk *Chunk::setTorchlight( glm::ivec3 position, int val) {
     }
     // y
     if( position.y < 0 && getSide( CHUNK_SIDE_Y_NEG)) {
-        l_side = getSide( CHUNK_SIDE_Y_POS);
+        l_side = getSide( CHUNK_SIDE_Y_NEG);
         return l_side->setTorchlight( position + glm::ivec3( 0, CHUNK_SIZE, 0), val );
     }
     if( position.y >= CHUNK_SIZE && getSide( CHUNK_SIDE_Y_POS)) {

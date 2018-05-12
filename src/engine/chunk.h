@@ -19,6 +19,8 @@
 
 #define TILE_REGISTER( posX, posY, posZ)  posX + CHUNK_SIZE * (posY + CHUNK_SIZE * posZ) //Z*CHUNK_DEPTH*CHUNK_WIDTH + X*CHUNK_WIDTH + Y
 
+#define LIGHTING_MAX 15
+
 enum Chunk_side{
     CHUNK_SIDE_X_POS = 0,
     CHUNK_SIDE_X_NEG,
