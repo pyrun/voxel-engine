@@ -218,13 +218,13 @@ void world::setTile( Chunk *chunk, glm::ivec3 position, int id) {
 void world::addTorchlight( Chunk *chunk, glm::ivec3 position, int value) {
     // calculate the position by chunk
     glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
-    position = position - l_chunk_position;
+    glm::ivec3 l_position = position - l_chunk_position;
 
     //printf( "world::addTorchlight %d/%d/%d\n", position.x, position.y, position.z);
 
     // add too queue
-    chunk->setTorchlight( position, value);
-    p_lightsAdd.emplace( position, chunk);
+    chunk->setTorchlight( l_position, value);
+    p_lightsAdd.emplace( l_position, chunk);
 }
 
 void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
@@ -234,7 +234,7 @@ void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
     glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
     position = position - l_chunk_position;
 
-    printf( "world::delTorchlight %d/%d/%d\n", position.x, position.y, position.z);
+    //printf( "world::delTorchlight %d/%d/%d\n", position.x, position.y, position.z);
 
     // add too queue
     l_light = chunk->getTorchlight( position);
@@ -398,11 +398,26 @@ void world::process_thrend_handle() {
                 // Emplace new node to queue
                 p_lightsAdd.emplace( l_new_position, l_chunk);
             }
+
+            if( l_position.x + l_shift_matrix[i].x == 0 || l_position.y + l_shift_matrix[i].y == 0 || l_position.z + l_shift_matrix[i].z == 0 ||
+                l_position.x + l_shift_matrix[i].x == CHUNK_SIZE || l_position.y + l_shift_matrix[i].y == CHUNK_SIZE || l_position.z + l_shift_matrix[i].z == CHUNK_SIZE ) {
+
+                Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos() + l_shift_matrix[i]);
+
+                // check and add to the queue
+                bool l_found = false;
+                for( glm::ivec3 l_chunk_position:l_chunk_update_list)
+                    if( l_chunk_position == l_light_chunk->getPos())
+                        l_found = true;
+                if( !l_found)
+                    l_chunk_update_list.push_back( l_light_chunk->getPos());
+            }
         }
     }
 
-    for( glm::ivec3 l_position_chunk: l_chunk_update_list)
+    for( glm::ivec3 l_position_chunk: l_chunk_update_list) {
         p_update_changes.push( world_data_list( l_position_chunk, false) );
+    }
 
     SDL_UnlockMutex ( p_mutex_handle); // lingting ending
 }

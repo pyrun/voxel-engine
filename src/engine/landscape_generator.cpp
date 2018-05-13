@@ -31,11 +31,32 @@ void Landscape_Tree( Chunk* chunk, block_list* blocklist, glm::ivec3 position) {
     chunk->set( position + glm::ivec3( 0, +3, 0), l_treewood, false);
     chunk->set( position + glm::ivec3( 0, +4, 0), l_treewood, false);
 
-    chunk->set( position + glm::ivec3( 0, +5, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3(-1, +4, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3( 1, +4, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3( 0, +4, 1), l_leaf, false);
+    chunk->set( position + glm::ivec3( 0, +4,-1), l_leaf, false);
+
+    chunk->set( position + glm::ivec3(-1, +4, 1), l_leaf, false);
+    chunk->set( position + glm::ivec3( 1, +4, 1), l_leaf, false);
+    chunk->set( position + glm::ivec3(-1, +4,-1), l_leaf, false);
+    chunk->set( position + glm::ivec3( 1, +4,-1), l_leaf, false);
+
+    chunk->set( position + glm::ivec3( 0, +5, 0), l_treewood, false);
     chunk->set( position + glm::ivec3(-1, +5, 0), l_leaf, false);
     chunk->set( position + glm::ivec3( 1, +5, 0), l_leaf, false);
     chunk->set( position + glm::ivec3( 0, +5, 1), l_leaf, false);
     chunk->set( position + glm::ivec3( 0, +5,-1), l_leaf, false);
+
+    chunk->set( position + glm::ivec3( 0, +6, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3(-1, +5, 1), l_leaf, false);
+    chunk->set( position + glm::ivec3( 1, +5, 1), l_leaf, false);
+    chunk->set( position + glm::ivec3(-1, +5,-1), l_leaf, false);
+    chunk->set( position + glm::ivec3( 1, +5,-1), l_leaf, false);
+
+    chunk->set( position + glm::ivec3(-2, +4, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3( 2, +4, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3( 0, +4, 2), l_leaf, false);
+    chunk->set( position + glm::ivec3( 0, +4,-2), l_leaf, false);
 }
 
 std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist) {
@@ -88,9 +109,9 @@ std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist
                 else if( !(l_noise_top > l_real_pos.y+3) )
                     l_type = l_earth;
 
-                if( rand()%20 == 1 && l_type == l_grass)
+                if( rand()%40 == 1 && l_type == l_grass)
                     l_type = l_glowcrystal;
-                if( rand()%25 == 1 && l_type == l_grass)
+                if( rand()%33 == 1 && l_type == l_grass)
                     Landscape_Tree( chunk, blocklist, l_block);
 
                 l_last_type = l_type;

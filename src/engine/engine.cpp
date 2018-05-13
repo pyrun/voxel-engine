@@ -29,7 +29,7 @@ engine::engine() {
     p_blocklist->init( p_graphic, p_config);
 
     // set up start world
-    world *l_world = new world( p_blocklist, "127");
+    world *l_world = new world( p_blocklist, "1");
     int l_size = 2;
     int l_end = -2;
     for( int x = -l_size; x <= l_size; x++)
@@ -75,7 +75,7 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
 
     for(int i = 0; i < forward; i++) {
         l_postion_prev = l_postion_ray;
-        l_postion_ray += lookat * 0.1f;
+        l_postion_ray += lookat * 0.01f;
 
         l_block.x = floorf( l_postion_ray.x);
         l_block.y = floorf( l_postion_ray.y);
@@ -266,9 +266,7 @@ void engine::run() {
         p_graphic->getDisplay()->clear( false);
         p_graphic->renderDeferredShading();
 
-        raycastView( p_graphic->getCamera()->GetPos(), p_graphic->getCamera()->GetForward(), 20);
-
-        //viewCurrentBlock( l_projection * l_view_cam, 275); // 275 = 2,75Meter
+        raycastView( p_graphic->getCamera()->GetPos(), p_graphic->getCamera()->GetForward(), 300);
 
         p_graphic->getDisplay()->swapBuffers();
 

@@ -788,11 +788,10 @@ void Chunk::updateVbo() {
 }
 
 bool Chunk::draw( Shader* shader) {
-
     if( p_updateVbo)
         updateVbo();
 
-    if( p_vboVertex == -1)
+    if( p_vboVertex == -1 || p_elements == 0)
         return false;
 
     // calculation view
