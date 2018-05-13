@@ -24,16 +24,22 @@ float distance( glm::vec3 pos1, glm::vec3 pos2)
 void Landscape_Tree( Chunk* chunk, block_list* blocklist, glm::ivec3 position) {
     int l_leaf = blocklist->getByName( "leaf")->getID();
     int l_treewood = blocklist->getByName( "treewood")->getID();
+    int l_glowcrystal = blocklist->getByName( "glowcrystal")->getID();
 
     chunk->set( position + glm::ivec3( 0, +1, 0), l_treewood, false);
     chunk->set( position + glm::ivec3( 0, +2, 0), l_treewood, false);
     chunk->set( position + glm::ivec3( 0, +3, 0), l_treewood, false);
     chunk->set( position + glm::ivec3( 0, +4, 0), l_treewood, false);
+
     chunk->set( position + glm::ivec3( 0, +5, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3(-1, +5, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3( 1, +5, 0), l_leaf, false);
+    chunk->set( position + glm::ivec3( 0, +5, 1), l_leaf, false);
+    chunk->set( position + glm::ivec3( 0, +5,-1), l_leaf, false);
 }
 
 std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist) {
-
+    srand( chunk->getSeed());
     std::vector<glm::ivec3> l_light_position;
 
     int l_stone = blocklist->getByName( "stone")->getID();
@@ -47,6 +53,7 @@ std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist
     float l_size_inv = 30.f;
 
     glm::ivec3 l_position_chunk = chunk->getPos()*glm::ivec3(CHUNK_SIZE);
+    glm::vec2 l_random = glm::vec2( rand(), rand() );
 
     for( l_block.x = 0; l_block.x < CHUNK_SIZE; l_block.x++) {
 
@@ -59,8 +66,8 @@ std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist
 
                 l_real_pos = l_position_chunk + l_block;
 
-                float l_noise_top = (- ( glm::perlin( glm::vec2( l_real_pos.x, l_real_pos.z)/l_size_inv ) ))*10.f;
-                float l_noise_down = (glm::perlin( glm::vec2( l_real_pos.x, l_real_pos.z)/l_size_inv ))*40.f;
+                float l_noise_top = (- ( glm::perlin( (glm::vec2( l_real_pos.x, l_real_pos.z) + l_random) /l_size_inv ) ))*10.f;
+                float l_noise_down = (glm::perlin( (glm::vec2( l_real_pos.x, l_real_pos.z) + l_random ) /l_size_inv ))*40.f;
 
 
                 if(  l_dstance_island > 20.f) {

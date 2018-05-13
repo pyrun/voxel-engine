@@ -153,7 +153,7 @@ network::network( config *config, texture* image, block_list *block_list)
     p_maxamountplayer = atoi( config->get( "max_player", "network", "32").c_str() );
     p_isClient = false;
     p_isServer = false;
-    p_starchip = new world( block_list);
+    p_starchip = new world( block_list, "127");
     p_blocks = block_list;
 }
 

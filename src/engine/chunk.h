@@ -40,6 +40,7 @@ public:
 
     bool createPhysicBody( b3World *world, SDL_mutex *mutex);
     bool serialize( bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks);
+    int getSeed() { return p_seed; };
 
     inline glm::ivec3 getPos() { return p_pos; }
     void setSide( Chunk *chunk, Chunk_side side);
@@ -74,6 +75,7 @@ protected:
 private:
     glm::ivec3 p_pos;
     Transform p_form;
+    int p_seed;
 
     int p_elements;
 

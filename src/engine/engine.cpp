@@ -29,13 +29,16 @@ engine::engine() {
     p_blocklist->init( p_graphic, p_config);
 
     // set up start world
-    world *l_world = new world( p_blocklist);
+    world *l_world = new world( p_blocklist, "127");
     int l_size = 2;
     int l_end = -2;
     for( int x = -l_size; x <= l_size; x++)
         for( int z = -l_size; z <= l_size; z++)
             for( int y = 1; y > l_end; y--)
                 l_world->addChunk( glm::vec3( x, y, z), true);
+    Chunk *l_node = l_world->getChunk( glm::ivec3( 0, 0, 0) );
+    if( l_node)
+        printf( "FAST\n");
     p_worlds.push_back( l_world);
 
     p_world_player = p_worlds[0];

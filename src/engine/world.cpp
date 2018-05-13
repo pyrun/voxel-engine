@@ -50,7 +50,7 @@ static int world_thread_physic(void *data)
     return 0;
 }
 
-world::world( block_list* block_list) {
+world::world( block_list* block_list, std::string name) {
     p_buysvector = false;
     p_chunk_amount = 0;
     p_chunk_visible_amount = 0;
@@ -61,6 +61,7 @@ world::world( block_list* block_list) {
     p_destroy = false;
     p_physicScene = NULL;
     p_time = SDL_GetTicks();
+    p_name = name;
 
     // creating two mutex
     p_mutex_handle = SDL_CreateMutex();
@@ -186,7 +187,9 @@ void world::changeBlock( Chunk *chunk, glm::vec3 position, int id) {
     l_change.position = position;
     l_change.id = id;
     l_change.chunk = chunk;
-    p_change_blocks.push_back( l_change);
+
+    p_change_blocks.push( l_change);
+    //p_change_blocks.push_back( l_change);
 }
 
 void world::setTile( Chunk *chunk, glm::ivec3 position, int id) {
@@ -217,7 +220,7 @@ void world::addTorchlight( Chunk *chunk, glm::ivec3 position, int value) {
     glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
     position = position - l_chunk_position;
 
-    printf( "world::addTorchlight %d/%d/%d\n", position.x, position.y, position.z);
+    //printf( "world::addTorchlight %d/%d/%d\n", position.x, position.y, position.z);
 
     // add too queue
     chunk->setTorchlight( position, value);
@@ -242,27 +245,42 @@ void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
 void world::process_thrend_handle() {
     std::vector<glm::ivec3> l_lights;
 
-    for( int i = 0; i < (int)p_creatingList.size(); i++)
-    {
-        Chunk *l_node = getChunk( p_creatingList[i].position);
+    // creating chunks
+    while( p_creatingList.empty() == false) {
+        // Get a reference to the front node.
+        world_data_list &l_list_node = p_creatingList.front();
+
+        glm::ivec3 l_position = l_list_node.position;
+        Chunk *l_node = getChunk( l_position);
+        bool l_landscape = l_list_node.landscape;
+
+        p_creatingList.pop();
+
         if( l_node == NULL) {
             SDL_LockMutex ( p_mutex_handle);
-            createChunk( p_creatingList[i].position);
-            p_landscape.push_back( p_creatingList[i] );
+            Chunk *l_node = createChunk( l_position);
+            p_landscape.push( world_data_list(l_position, l_landscape) );
             SDL_UnlockMutex ( p_mutex_handle);
-            //p_creatingList.erase( p_creatingList.begin()+ i);
         }
     }
 
-    for( int i = 0; i < (int)p_landscape.size(); i++)
-    {
-        Chunk *l_node = getChunk( p_landscape[i].position);
+    // landscape generator
+    while( p_landscape.empty() == false) {
+        // Get a reference to the front node.
+        world_data_list &l_list_node = p_landscape.front();
+
+        glm::ivec3 l_position = l_list_node.position;
+        Chunk *l_node = getChunk( l_position);
+        bool l_landscape = l_list_node.landscape;
+
+        p_landscape.pop();
+
         if( l_node != NULL) {
             SDL_LockMutex ( p_mutex_handle);
-            if( p_landscape[i].landscape) {
+            if( l_landscape) {
                 l_lights = Landscape_Generator( l_node, p_blocklist);
+                l_node->changed( true);
             }
-            l_node->changed( true);
             SDL_UnlockMutex ( p_mutex_handle);
 
             for( glm::ivec3 l_light:l_lights) {
@@ -271,15 +289,21 @@ void world::process_thrend_handle() {
                 if( l_block)
                     addTorchlight( l_node, l_light + l_node->getPos() * glm::ivec3( CHUNK_SIZE), l_block->getLighting());
             }
-
-            p_landscape.erase( p_landscape.begin()+ i);
-            //break;
         }
+        break;
     }
 
-    for( auto l_pos:p_deletingList)
-    {
-        Chunk *l_node = getChunk( l_pos.position);
+    // deleting chunks
+    while( p_deletingList.empty() == false) {
+        // Get a reference to the front node.
+        world_data_list &l_list_node = p_deletingList.front();
+
+        glm::ivec3 l_position = l_list_node.position;
+        Chunk *l_node = getChunk( l_position);
+        bool l_landscape = l_list_node.landscape;
+
+        p_deletingList.pop();
+
         if( l_node != NULL) {
             SDL_LockMutex ( p_mutex_handle);
             SDL_LockMutex ( p_mutex_physic);
@@ -288,7 +312,6 @@ void world::process_thrend_handle() {
             SDL_UnlockMutex ( p_mutex_physic);
         }
     }
-    p_deletingList.clear();
 
     glm::ivec3 l_shift_matrix[6] = { { -1,  0,  0},
                                      { +1,  0,  0},
@@ -296,8 +319,10 @@ void world::process_thrend_handle() {
                                      {  0, +1,  0},
                                      {  0,  0, -1},
                                      {  0,  0, +1}};
+    std::vector<glm::ivec3> l_chunk_update_list;
 
-    std::vector<Chunk *> l_update;
+    // ligting
+    SDL_LockMutex ( p_mutex_handle);
 
     while( p_lightsDel.empty() == false) {
         // Get a reference to the front node.
@@ -307,16 +332,25 @@ void world::process_thrend_handle() {
         Chunk* l_chunk = l_light_node.chunk;
         int l_light_level = (int)l_light_node.strength;
 
-        l_update.push_back( l_light_node.chunk);
-
         // Pop the front node off the queue. We no longer need the node reference
         p_lightsDel.pop();
+
+        if( l_chunk == NULL)
+            continue;
 
         for( int i = 0; i < 6; i++) {
             int l_neighborLevel = l_chunk->getTorchlight( l_position + l_shift_matrix[i] );
             if (l_neighborLevel != 0 && l_neighborLevel < l_light_level) {
                 // Set its light level
-                l_update.push_back( l_chunk->setTorchlight( l_position + l_shift_matrix[i] , 0));
+                Chunk *l_light_chunk = l_chunk->setTorchlight( l_position + l_shift_matrix[i] , 0);
+
+                // check and add to the queue
+                bool l_found = false;
+                for( glm::ivec3 l_chunk_position:l_chunk_update_list)
+                    if( l_chunk_position == l_light_chunk->getPos())
+                        l_found = true;
+                if( !l_found)
+                    l_chunk_update_list.push_back( l_light_chunk->getPos());
 
                 // Emplace new node to queue. (could use push as well)
                 p_lightsDel.emplace( l_position + l_shift_matrix[i] , l_chunk, l_neighborLevel);
@@ -349,7 +383,16 @@ void world::process_thrend_handle() {
             if ( l_chunk->checkTile( l_position + l_shift_matrix[i] ) == false &&
                 l_chunk->getTorchlight( l_position + l_shift_matrix[i]) + 2 <= l_lightLevel) {
                 // Set its light level
-                l_update.push_back( l_chunk->setTorchlight( l_position + l_shift_matrix[i], l_lightLevel - 2));
+                Chunk *l_light_chunk = l_chunk->setTorchlight( l_position + l_shift_matrix[i], l_lightLevel - 1);
+
+                // check and add to the queue
+                bool l_found = false;
+                for( glm::ivec3 l_chunk_position:l_chunk_update_list)
+                    if( l_chunk_position == l_light_chunk->getPos())
+                        l_found = true;
+                if( !l_found)
+                    l_chunk_update_list.push_back( l_light_chunk->getPos());
+
                 // Construct index
                 glm::ivec3 l_new_position = l_position + l_shift_matrix[i];
                 // Emplace new node to queue
@@ -358,11 +401,10 @@ void world::process_thrend_handle() {
         }
     }
 
-    SDL_LockMutex ( p_mutex_handle);
-    for( int i = 0; i < (int)l_update.size(); i++ ) {
-        l_update[i]->changed( true);
-    }
-    SDL_UnlockMutex ( p_mutex_handle);
+    for( glm::ivec3 l_position_chunk: l_chunk_update_list)
+        p_update_changes.push( world_data_list( l_position_chunk, false) );
+
+    SDL_UnlockMutex ( p_mutex_handle); // lingting ending
 }
 
 void world::process_thrend_update() {
@@ -386,13 +428,44 @@ void world::process_thrend_update() {
         l_node = l_node->next;
     }
 
+    int l_status_mutex = SDL_TryLockMutex( p_mutex_handle);
+
+    if( l_status_mutex == 0) { // mutex lock for this tread
+        while( p_update_changes.empty() == false) {
+            // Get a reference to the front node.
+            world_data_list &l_list_node = p_update_changes.front();
+
+            glm::ivec3 l_position = l_list_node.position;
+            Chunk *l_node = getChunk( l_position);
+            bool l_landscape = l_list_node.landscape;
+
+            p_update_changes.pop();
+
+            SDL_LockMutex ( p_mutex_physic);
+            if( l_node != NULL) {
+                l_node->updateArray( l_list);
+                //l_node->changed( false, true);
+            }
+            SDL_UnlockMutex ( p_mutex_physic);
+        }
+        SDL_UnlockMutex ( p_mutex_handle);
+    }
+
     SDL_LockMutex ( p_mutex_handle);
-    for( int i = 0; i < (int)p_change_blocks.size(); i++) {
+    while( p_change_blocks.empty() == false) {
+        // Get a reference to the front node.
+        world_change_block &l_list_node = p_change_blocks.front();
+
+        glm::ivec3 l_position = l_list_node.position;
+        Chunk *l_node = l_list_node.chunk;
+        int l_block_id = l_list_node.id;
+
+        p_change_blocks.pop();
+
         SDL_LockMutex ( p_mutex_physic);
-        setTile( p_change_blocks[i].chunk, p_change_blocks[i].position, p_change_blocks[i].id);
+        setTile( l_node, l_position, l_block_id);
         SDL_UnlockMutex ( p_mutex_physic);
     }
-    p_change_blocks.clear();
     SDL_UnlockMutex ( p_mutex_handle);
 }
 
@@ -484,8 +557,10 @@ Chunk *world::createChunk( glm::ivec3 position) {
     Chunk *node;
     Chunk *l_side;
 
+    int l_seed = atoi( p_name.c_str());
+
     // Chunk erstellen
-    node = new Chunk( position, 102457);
+    node = new Chunk( position, l_seed);
     node->next = NULL;
 
     p_chunk_amount++; // p_chunk_start mitzählen
@@ -567,21 +642,14 @@ Chunk* world::getChunk( glm::ivec3 position) {
     return NULL;
 }
 
-void world::addChunk( glm::tvec3<int> pos, bool generateLandscape ) {
-    world_data_list l_obj;
+void world::addChunk( glm::ivec3 position, bool generateLandscape ) {
+    world_data_list l_obj( position, generateLandscape);
 
-    l_obj.position = pos;
-    l_obj.landscape = generateLandscape;
-
-    p_creatingList.push_back( l_obj);
+    p_creatingList.push( l_obj);
 }
-void world::addDeleteChunk( glm::tvec3<int> pos ) {
-    world_data_list l_obj;
-
-    l_obj.position = pos;
-    l_obj.landscape = false;
-
-    p_deletingList.push_back( l_obj);
+void world::addDeleteChunk( glm::ivec3 position ) {
+    world_data_list l_obj( position, false);
+    p_deletingList.push( l_obj);
 }
 
 void world::draw( graphic *graphic, Shader *shader) {

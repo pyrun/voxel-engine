@@ -20,6 +20,11 @@ Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
 class world_data_list {
     public:
+        world_data_list( glm::ivec3 position, bool landscape) {
+            this->position = position;
+            this->landscape = landscape;
+        }
+
         glm::ivec3 position;
         bool landscape;
 };
@@ -46,7 +51,7 @@ class world_light_node {
 
 class world {
 public:
-    world( block_list* block_list);
+    world( block_list* block_list, std::string name);
     virtual ~world();
 
     int getTile( glm::ivec3 position);
@@ -68,8 +73,8 @@ public:
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
     Chunk* getChunk( glm::ivec3 position);
 
-    void addChunk( glm::tvec3<int> pos, bool generateLandscape);
-    void addDeleteChunk( glm::tvec3<int> pos );
+    void addChunk( glm::ivec3 position, bool generateLandscape);
+    void addDeleteChunk( glm::ivec3 position );
 
     void draw( graphic *graphic, Shader *shader);
     void drawNode( Shader* shader);
@@ -101,10 +106,11 @@ private:
     SDL_Thread *p_thread_handle;
     SDL_Thread *p_thread_physic;
 
-    std::vector<world_data_list> p_creatingList;
-    std::vector<world_data_list> p_deletingList;
-    std::vector<world_data_list> p_landscape;
-    std::vector<world_change_block> p_change_blocks;
+    std::queue<world_data_list> p_creatingList;
+    std::queue<world_data_list> p_deletingList;
+    std::queue<world_data_list> p_landscape;
+    std::queue<world_change_block> p_change_blocks;
+    std::queue<world_data_list> p_update_changes;
 
     std::queue <world_light_node> p_lightsAdd;
     std::queue <world_light_node> p_lightsDel;

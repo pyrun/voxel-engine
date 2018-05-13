@@ -16,8 +16,9 @@ Chunk::Chunk( glm::ivec3 position, int seed) {
     next = NULL;
 
     p_body = NULL;
+    p_seed = seed;
 
-    p_vboVertex = 0;
+    p_vboVertex = -1;
     p_elements = 0;
 
     p_changed = false;
@@ -177,6 +178,41 @@ Chunk *Chunk::getSide( Chunk_side side) {
 }
 
 void Chunk::set( glm::ivec3 position, int ID, bool change) {
+    Chunk *l_side;
+
+    // x
+    l_side = getSide( CHUNK_SIDE_X_NEG);
+    if( position.x < 0 && l_side ) {
+        return l_side->set( position + glm::ivec3( CHUNK_SIZE, 0, 0), ID, change);
+    }
+    l_side = getSide( CHUNK_SIDE_X_POS);
+    if( position.x >= CHUNK_SIZE && l_side ) {
+        return l_side->set( position - glm::ivec3( CHUNK_SIZE, 0, 0), ID, change);
+    }
+    // y
+    l_side = getSide( CHUNK_SIDE_Y_NEG);
+    if( position.y < 0 && l_side ) {
+        return l_side->set( position + glm::ivec3( 0, CHUNK_SIZE, 0), ID, change);
+    }
+    l_side = getSide( CHUNK_SIDE_Y_POS);
+    if( position.y >= CHUNK_SIZE && l_side ) {
+        return l_side->set( position - glm::ivec3( 0, CHUNK_SIZE, 0), ID, change);
+    }
+    // z
+    l_side = getSide( CHUNK_SIDE_Z_NEG);
+    if( position.z < 0 && l_side ) {
+        return l_side->set( position + glm::ivec3( 0, 0, CHUNK_SIZE), ID, change);
+    }
+    l_side = getSide( CHUNK_SIDE_Z_POS);
+    if( position.z >= CHUNK_SIZE && l_side ) {
+        return l_side->set( position - glm::ivec3( 0, 0, CHUNK_SIZE), ID, change);
+    }
+
+    if( position.x < 0 || position.x >= CHUNK_SIZE ||
+        position.y < 0 || position.y >= CHUNK_SIZE ||
+        position.z < 0 || position.z >= CHUNK_SIZE)
+        return;
+
     // tile nehmen
     p_tile[ TILE_REGISTER( position.x, position.y, position.z)] = ID;
 
@@ -417,8 +453,8 @@ void Chunk::updateArray( block_list *List) {
     Timer timer;
 
     // thread safe
-    if( p_at_update)
-        return;
+    while( p_at_update)
+        SDL_Delay( 1);
     p_at_update = true;
 
     if( !List )
@@ -660,6 +696,7 @@ void Chunk::updateArray( block_list *List) {
     p_elements = p_indices_length;
 
     p_changed = false;
+    p_at_update = false;
 
     if( p_elements == 0) {// Kein Speicher resavieren weil leer
         return;
@@ -667,7 +704,6 @@ void Chunk::updateArray( block_list *List) {
 
     p_updateVbo = true;
     p_updateRigidBody = true;
-    p_at_update = false;
 
     //printf( "Chunk::updateArray %dms %d %d %d\n", timer.GetTicks(), p_elements, getAmount());
 }
@@ -686,7 +722,7 @@ void Chunk::updateVbo() {
     if( p_elements == 0)
         return;
 
-    if( getVbo() == 0) {
+    if( getVbo() == -1) {
         // create vao
         glGenVertexArrays(1, &p_vboVao);
         // create index buffer
@@ -752,10 +788,12 @@ void Chunk::updateVbo() {
 }
 
 bool Chunk::draw( Shader* shader) {
-    if( p_vboVertex == 0 && !p_updateVbo)
-        return false;
+
     if( p_updateVbo)
         updateVbo();
+
+    if( p_vboVertex == -1)
+        return false;
 
     // calculation view
     float l_diameter = sqrtf( CHUNK_SIZE*CHUNK_SIZE*3);
