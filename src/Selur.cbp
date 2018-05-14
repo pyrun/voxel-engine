@@ -24,7 +24,7 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bounce/include" />
-					<Add directory="graphic/" />
+					<Add directory="../../lua/include" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../qu3e/src" />
@@ -38,6 +38,7 @@
 					<Add option="-DMINIUPNP_STATICLIB" />
 					<Add option="-lminiupnpc" />
 					<Add option="-lbounce" />
+					<Add option="-llua53" />
 					<Add library="ws2_32" />
 					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
@@ -46,6 +47,7 @@
 					<Add directory="../../RakNet/Lib" />
 					<Add directory="../../Miniupnpc/lib" />
 					<Add directory="../../bounce/lib" />
+					<Add directory="../../lua/lib" />
 				</Linker>
 			</Target>
 			<Target title="linux">
