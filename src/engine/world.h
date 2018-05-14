@@ -84,9 +84,13 @@ public:
     inline int getAmountChunksVisible() const { return p_chunk_visible_amount; }
     Chunk *getNode() { return p_chunk_start; }
     b3World *getPhysicWorld() { return p_physicScene; }
+
+    void setGenerator( landscape *generator) { p_landscape_generator = generator; }
 protected:
 private:
     std::string p_name;
+
+    landscape *p_landscape_generator;
 
     bool p_buysvector;
     bool p_world_tree_empty;

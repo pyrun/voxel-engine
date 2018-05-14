@@ -1,6 +1,84 @@
 #include "landscape_generator.h"
 
-float simplex_noise(int octaves, glm::vec3 pos){
+landscape_script::landscape_script( int id, lua_State *state)
+{
+    p_id = id;
+    p_luastate = state;
+}
+
+landscape_script::~landscape_script()
+{
+    if( p_luastate) lua_close( p_luastate);
+}
+
+void landscape_script::setState( lua_State *state)
+{
+    p_luastate = state;
+}
+
+landscape::landscape( config *configuration)
+{
+    std::string l_script_folder;
+    p_id = 0;
+
+    // load scripts
+    l_script_folder = configuration->get( "script_folder", "world", "world_generator/");
+    loadScripts( l_script_folder);
+}
+
+landscape::~landscape()
+{
+    for( landscape_script *l_generator:p_generator)
+        delete l_generator;
+}
+
+bool landscape::fileExists(std::string filename) {
+    std::ifstream l_file;
+    // file open and close
+    l_file.open ( filename.c_str());
+    if (l_file.is_open()) {
+        l_file.close();
+        return true;
+    }
+    l_file.close();
+    return false;
+}
+
+bool landscape::loadScripts( std::string path)
+{
+    DIR* l_handle;
+    struct dirent* l_dirEntry;
+    std::string l_name;
+    std::string l_filepath;
+
+    // open folder
+    l_handle = opendir( path.c_str());
+    if ( l_handle != NULL ) {
+        while ( 0 != ( l_dirEntry = readdir( l_handle ) ))  {
+            l_name = l_dirEntry->d_name;
+            l_filepath =  path + l_name;
+            if( fileExists( l_filepath ))
+                loadScript( l_filepath);
+        }
+    } else {
+        printf( "landscape::loadScripts can't open the \"%s\" folder\n", path.c_str());
+    }
+    closedir( l_handle );
+}
+
+bool landscape::loadScript( std::string file)
+{
+    lua_State* l_state = luaL_newstate();
+
+    // load file and and to vector
+    luaL_loadfile( l_state, file.c_str());
+    if( l_state)
+        printf( "landscape::loadScript \"%s\" added with id #%d\n", file.c_str(), p_id);
+    p_generator.push_back( new landscape_script( p_id, l_state) );
+    p_id++;
+}
+
+/*float simplex_noise(int octaves, glm::vec3 pos){
     float value = 0.0;
     int i;
     for(i=0; i<octaves; i++){
@@ -123,4 +201,4 @@ std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist
         }
     }
     return l_light_position;
-}
+}*/

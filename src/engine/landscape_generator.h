@@ -3,9 +3,40 @@
 
 #include "block.h"
 #include "chunk.h"
+#include "config.h"
+
+#include <lua.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
+
+class landscape_script{
+    public:
+        landscape_script( int id, lua_State *state);
+        ~landscape_script();
+
+        void setState( lua_State *state);
+
+    private:
+        int p_id;
+        lua_State* p_luastate;
+};
+
+class landscape{
+    public:
+        landscape( config *configuration);
+        ~landscape();
+
+    private:
+        bool fileExists(std::string filename);
+
+        bool loadScripts( std::string path);
+        bool loadScript( std::string file);
+
+    private:
+        int p_id;
+        std::vector<landscape_script*> p_generator;
+};
 
 std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* list);
 

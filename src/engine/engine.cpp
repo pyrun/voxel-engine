@@ -23,6 +23,7 @@ engine::engine() {
 
     p_config = new config();
     p_graphic = new graphic( p_config);
+    p_landscape_generator = new landscape( p_config);
 
     // set block list up
     p_blocklist = new block_list( p_config);
@@ -30,6 +31,7 @@ engine::engine() {
 
     // set up start world
     world *l_world = new world( p_blocklist, "1");
+    l_world->setGenerator( p_landscape_generator);
     int l_size = 2;
     int l_end = -2;
     for( int x = -l_size; x <= l_size; x++)
@@ -54,7 +56,7 @@ engine::~engine() {
         delete p_openvr;
     delete p_blocklist;
     delete p_graphic;
-    //delete p_network;
+    delete p_landscape_generator;
     delete p_config;
 }
 

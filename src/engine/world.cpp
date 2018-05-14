@@ -278,7 +278,7 @@ void world::process_thrend_handle() {
         if( l_node != NULL) {
             SDL_LockMutex ( p_mutex_handle);
             if( l_landscape) {
-                l_lights = Landscape_Generator( l_node, p_blocklist);
+                //l_lights = Landscape_Generator( l_node, p_blocklist);
                 l_node->changed( true);
             }
             SDL_UnlockMutex ( p_mutex_handle);
@@ -322,6 +322,8 @@ void world::process_thrend_handle() {
     std::vector<glm::ivec3> l_chunk_update_list;
 
     // ligting
+    if( p_landscape.empty() == false)
+        return;
     SDL_LockMutex ( p_mutex_handle);
 
     while( p_lightsDel.empty() == false) {

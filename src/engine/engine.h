@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <sstream>
 
+#include "landscape_generator.h"
 #include "../graphic/graphic.h"
 #include "../graphic/debug_draw.h"
 #include "block.h"
@@ -53,6 +54,7 @@ private:
     graphic* p_graphic;
     config *p_config;
     openvr *p_openvr;
+    landscape *p_landscape_generator;
 
     // world
     std::vector<world *> p_worlds;
