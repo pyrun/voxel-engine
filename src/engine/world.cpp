@@ -278,7 +278,8 @@ void world::process_thrend_handle() {
         if( l_node != NULL) {
             SDL_LockMutex ( p_mutex_handle);
             if( l_landscape) {
-                //l_lights = Landscape_Generator( l_node, p_blocklist);
+
+                l_lights = p_landscape_generator->getGenerator( l_node)->generator( l_node, p_blocklist);
                 l_node->changed( true);
             }
             SDL_UnlockMutex ( p_mutex_handle);
@@ -406,13 +407,15 @@ void world::process_thrend_handle() {
 
                 Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos() + l_shift_matrix[i]);
 
-                // check and add to the queue
-                bool l_found = false;
-                for( glm::ivec3 l_chunk_position:l_chunk_update_list)
-                    if( l_chunk_position == l_light_chunk->getPos())
-                        l_found = true;
-                if( !l_found)
-                    l_chunk_update_list.push_back( l_light_chunk->getPos());
+                if( l_light_chunk) {
+                    // check and add to the queue
+                    bool l_found = false;
+                    for( glm::ivec3 l_chunk_position:l_chunk_update_list)
+                        if( l_chunk_position == l_light_chunk->getPos())
+                            l_found = true;
+                    if( !l_found)
+                        l_chunk_update_list.push_back( l_light_chunk->getPos());
+                }
             }
         }
     }

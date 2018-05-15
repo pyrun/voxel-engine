@@ -1,9 +1,68 @@
 #include "landscape_generator.h"
 
+block_list* public_blocklist;
+
+static int lua_getByName (lua_State *state) {
+    std::string l_name= lua_tostring( state, 1);
+    block *l_block = public_blocklist->getByName( l_name);
+    if( !l_block) {
+        printf( "lua_getByName don't found the type \"%s\"\n", l_name.c_str());
+        return 0;
+    }
+    int l_type = l_block->getID();
+    lua_pushnumber( state, l_type);
+    return 1;
+}
+
+static int lua_distanceVec2 (lua_State *state) {
+    glm::vec2 l_pos1;
+    glm::vec2 l_pos2;
+    l_pos1.x = lua_tonumber( state, 1);
+    l_pos1.y = lua_tonumber( state, 2);
+    l_pos2.x = lua_tonumber( state, 3);
+    l_pos2.y = lua_tonumber( state, 4);
+
+    float dx = abs( l_pos2.x - l_pos1.x);
+    float dz = abs( l_pos2.y - l_pos1.y);
+
+    lua_pushnumber( state, sqrt( dx*dx + dz*dz ));
+    return 1;
+}
+
+static int lua_perlinVec2 (lua_State *state) {
+    glm::vec2 l_position;
+    l_position.x = lua_tonumber( state, 1);
+    l_position.y = lua_tonumber( state, 2);
+
+    lua_pushnumber( state, (float)glm::perlin( l_position) );
+    return 1;
+}
+
+static int lua_rand (lua_State *state) {
+    int l_max = lua_tonumber( state, 1);
+
+    lua_pushnumber( state, rand()%l_max );
+    return 1;
+}
+
+
 landscape_script::landscape_script( int id, lua_State *state)
 {
     p_id = id;
     p_luastate = state;
+
+    // add lua function
+    lua_pushcfunction( state, lua_getByName);
+    lua_setglobal( state, "getByName");
+
+    lua_pushcfunction( state, lua_distanceVec2);
+    lua_setglobal( state, "distanceVec2");
+
+    lua_pushcfunction( state, lua_perlinVec2);
+    lua_setglobal( state, "perlinVec2");
+
+    lua_pushcfunction( state, lua_rand);
+    lua_setglobal( state, "rand");
 }
 
 landscape_script::~landscape_script()
@@ -14,6 +73,94 @@ landscape_script::~landscape_script()
 void landscape_script::setState( lua_State *state)
 {
     p_luastate = state;
+}
+
+std::vector<glm::ivec3> landscape_script::generator( Chunk* chunk, block_list* blocklist)
+{
+    int l_type = 0;
+    bool l_light = false;
+    srand( chunk->getSeed());
+    std::vector<glm::ivec3> l_lights;
+    public_blocklist = blocklist;
+
+    glm::ivec3 l_position_chunk = chunk->getPos()*glm::ivec3(CHUNK_SIZE);
+    glm::ivec3 l_random = glm::ivec3( rand(), rand(), rand());
+
+    glm::ivec3 l_block;
+    glm::vec3 l_real_pos;
+
+    if( p_luastate) {
+        lua_pcall( p_luastate, 0, 0, 0);
+
+        for( l_block.x = 0; l_block.x < CHUNK_SIZE; l_block.x++) {
+
+            l_real_pos = l_position_chunk + l_block;
+
+            lua_getglobal( p_luastate, "rowX");
+            // block position
+            lua_pushnumber( p_luastate, l_real_pos.x );
+            lua_pushnumber( p_luastate, l_real_pos.y );
+            lua_pushnumber( p_luastate, l_real_pos.z );
+            // random
+            lua_pushnumber( p_luastate, l_random.x );
+            lua_pushnumber( p_luastate, l_random.y );
+            lua_pushnumber( p_luastate, l_random.z );
+            lua_pcall( p_luastate, 6, 0, 0);
+
+            for( l_block.z = 0; l_block.z < CHUNK_SIZE; l_block.z++) {
+
+                l_real_pos = l_position_chunk + l_block;
+
+                lua_getglobal( p_luastate, "rowZ");
+                // block position
+                lua_pushnumber( p_luastate, l_real_pos.x );
+                lua_pushnumber( p_luastate, l_real_pos.y );
+                lua_pushnumber( p_luastate, l_real_pos.z );
+                // random
+                lua_pushnumber( p_luastate, l_random.x );
+                lua_pushnumber( p_luastate, l_random.y );
+                lua_pushnumber( p_luastate, l_random.z );
+                lua_pcall( p_luastate, 6, 0, 0);
+
+                for( l_block.y = 0; l_block.y < CHUNK_SIZE; l_block.y++) {
+
+                    l_real_pos = l_position_chunk + l_block;
+
+                    lua_getglobal( p_luastate, "block");
+
+                    // chunk position
+                    lua_pushnumber( p_luastate, l_position_chunk.x );
+                    lua_pushnumber( p_luastate, l_position_chunk.y );
+                    lua_pushnumber( p_luastate, l_position_chunk.z );
+
+                    // block position
+                    lua_pushnumber( p_luastate, l_real_pos.x );
+                    lua_pushnumber( p_luastate, l_real_pos.y );
+                    lua_pushnumber( p_luastate, l_real_pos.z );
+
+                    // random
+                    lua_pushnumber( p_luastate, l_random.x );
+                    lua_pushnumber( p_luastate, l_random.y );
+                    lua_pushnumber( p_luastate, l_random.z );
+
+                    lua_pcall( p_luastate, 9, 2, 0);
+                    l_type = lua_tonumber( p_luastate, -1);
+                    lua_pop( p_luastate, 1);
+                    l_light = lua_toboolean( p_luastate, -1);
+                    lua_pop( p_luastate, 1);
+
+                    if( l_light)
+                        l_lights.push_back( l_block);
+
+                    chunk->set( l_block, l_type, false);
+                }
+            }
+        }
+    }
+
+
+
+    return l_lights;
 }
 
 landscape::landscape( config *configuration)
@@ -30,6 +177,12 @@ landscape::~landscape()
 {
     for( landscape_script *l_generator:p_generator)
         delete l_generator;
+}
+
+landscape_script *landscape::getGenerator( Chunk *chunk)
+{
+    int l_seed = chunk->getSeed();
+    return p_generator[ l_seed%p_generator.size()];
 }
 
 bool landscape::fileExists(std::string filename) {
@@ -69,6 +222,7 @@ bool landscape::loadScripts( std::string path)
 bool landscape::loadScript( std::string file)
 {
     lua_State* l_state = luaL_newstate();
+    luaL_openlibs( l_state);
 
     // load file and and to vector
     luaL_loadfile( l_state, file.c_str());
@@ -77,128 +231,3 @@ bool landscape::loadScript( std::string file)
     p_generator.push_back( new landscape_script( p_id, l_state) );
     p_id++;
 }
-
-/*float simplex_noise(int octaves, glm::vec3 pos){
-    float value = 0.0;
-    int i;
-    for(i=0; i<octaves; i++){
-        value += glm::perlin( glm::vec3(
-            pos.x*pow(2, i),
-            pos.y*pow(2, i),
-            pos.z*pow(2, i))
-        );
-    }
-    return value;
-}
-
-float distance( glm::vec3 pos1, glm::vec3 pos2)
-{
-    float dx = abs( pos2.x - pos1.x);
-    float dz = abs( pos2.z - pos1.z);
-
-    return sqrt( dx*dx + dz*dz );
-}
-
-void Landscape_Tree( Chunk* chunk, block_list* blocklist, glm::ivec3 position) {
-    int l_leaf = blocklist->getByName( "leaf")->getID();
-    int l_treewood = blocklist->getByName( "treewood")->getID();
-    int l_glowcrystal = blocklist->getByName( "glowcrystal")->getID();
-
-    chunk->set( position + glm::ivec3( 0, +1, 0), l_treewood, false);
-    chunk->set( position + glm::ivec3( 0, +2, 0), l_treewood, false);
-    chunk->set( position + glm::ivec3( 0, +3, 0), l_treewood, false);
-    chunk->set( position + glm::ivec3( 0, +4, 0), l_treewood, false);
-
-    chunk->set( position + glm::ivec3(-1, +4, 0), l_leaf, false);
-    chunk->set( position + glm::ivec3( 1, +4, 0), l_leaf, false);
-    chunk->set( position + glm::ivec3( 0, +4, 1), l_leaf, false);
-    chunk->set( position + glm::ivec3( 0, +4,-1), l_leaf, false);
-
-    chunk->set( position + glm::ivec3(-1, +4, 1), l_leaf, false);
-    chunk->set( position + glm::ivec3( 1, +4, 1), l_leaf, false);
-    chunk->set( position + glm::ivec3(-1, +4,-1), l_leaf, false);
-    chunk->set( position + glm::ivec3( 1, +4,-1), l_leaf, false);
-
-    chunk->set( position + glm::ivec3( 0, +5, 0), l_treewood, false);
-    chunk->set( position + glm::ivec3(-1, +5, 0), l_leaf, false);
-    chunk->set( position + glm::ivec3( 1, +5, 0), l_leaf, false);
-    chunk->set( position + glm::ivec3( 0, +5, 1), l_leaf, false);
-    chunk->set( position + glm::ivec3( 0, +5,-1), l_leaf, false);
-
-    chunk->set( position + glm::ivec3( 0, +6, 0), l_leaf, false);
-    chunk->set( position + glm::ivec3(-1, +5, 1), l_leaf, false);
-    chunk->set( position + glm::ivec3( 1, +5, 1), l_leaf, false);
-    chunk->set( position + glm::ivec3(-1, +5,-1), l_leaf, false);
-    chunk->set( position + glm::ivec3( 1, +5,-1), l_leaf, false);
-
-    chunk->set( position + glm::ivec3(-2, +4, 0), l_leaf, false);
-    chunk->set( position + glm::ivec3( 2, +4, 0), l_leaf, false);
-    chunk->set( position + glm::ivec3( 0, +4, 2), l_leaf, false);
-    chunk->set( position + glm::ivec3( 0, +4,-2), l_leaf, false);
-}
-
-std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* blocklist) {
-    srand( chunk->getSeed());
-    std::vector<glm::ivec3> l_light_position;
-
-    int l_stone = blocklist->getByName( "stone")->getID();
-    int l_grass = blocklist->getByName( "grass")->getID();
-    int l_glowcrystal = blocklist->getByName( "glowcrystal")->getID();
-    int l_earth = blocklist->getByName( "earth")->getID();
-
-    glm::ivec3 l_block;
-    glm::vec3 l_real_pos;
-
-    float l_size_inv = 30.f;
-
-    glm::ivec3 l_position_chunk = chunk->getPos()*glm::ivec3(CHUNK_SIZE);
-    glm::vec2 l_random = glm::vec2( rand(), rand() );
-
-    for( l_block.x = 0; l_block.x < CHUNK_SIZE; l_block.x++) {
-
-        for( l_block.z = 0; l_block.z < CHUNK_SIZE; l_block.z++) {
-
-            float l_dstance_island = distance( glm::vec3(), l_position_chunk + l_block);
-
-            int l_last_type;
-            for( l_block.y = 0; l_block.y < CHUNK_SIZE; l_block.y++) {
-
-                l_real_pos = l_position_chunk + l_block;
-
-                float l_noise_top = (- ( glm::perlin( (glm::vec2( l_real_pos.x, l_real_pos.z) + l_random) /l_size_inv ) ))*10.f;
-                float l_noise_down = (glm::perlin( (glm::vec2( l_real_pos.x, l_real_pos.z) + l_random ) /l_size_inv ))*40.f;
-
-
-                if(  l_dstance_island > 20.f) {
-                    l_noise_top-= (l_dstance_island-20.f)/3.f;
-                    l_noise_down+= (l_dstance_island-20.f)/3.f;
-                }
-
-                if( l_noise_top < l_real_pos.y)
-                    continue;
-
-                if( l_noise_down > l_real_pos.y)
-                    continue;
-
-                int l_type = l_stone;
-
-                if( !(l_noise_top > l_real_pos.y+1) )
-                    l_type = l_grass;
-                else if( !(l_noise_top > l_real_pos.y+3) )
-                    l_type = l_earth;
-
-                if( rand()%40 == 1 && l_type == l_grass)
-                    l_type = l_glowcrystal;
-                if( rand()%33 == 1 && l_type == l_grass)
-                    Landscape_Tree( chunk, blocklist, l_block);
-
-                l_last_type = l_type;
-
-                if( l_type == l_glowcrystal)
-                    l_light_position.push_back( l_block);
-                chunk->set( l_block, l_type, false);
-            }
-        }
-    }
-    return l_light_position;
-}*/

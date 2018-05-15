@@ -17,6 +17,7 @@ class landscape_script{
 
         void setState( lua_State *state);
 
+        std::vector<glm::ivec3> generator( Chunk* chunk, block_list* blocklist);
     private:
         int p_id;
         lua_State* p_luastate;
@@ -26,6 +27,8 @@ class landscape{
     public:
         landscape( config *configuration);
         ~landscape();
+
+        landscape_script *getGenerator( Chunk *chunk);
 
     private:
         bool fileExists(std::string filename);

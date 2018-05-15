@@ -38,9 +38,7 @@ engine::engine() {
         for( int z = -l_size; z <= l_size; z++)
             for( int y = 1; y > l_end; y--)
                 l_world->addChunk( glm::vec3( x, y, z), true);
-    Chunk *l_node = l_world->getChunk( glm::ivec3( 0, 0, 0) );
-    if( l_node)
-        printf( "FAST\n");
+
     p_worlds.push_back( l_world);
 
     p_world_player = p_worlds[0];
