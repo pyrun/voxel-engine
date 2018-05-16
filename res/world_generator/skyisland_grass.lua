@@ -1,6 +1,10 @@
 local l_grass = getByName( "grass")
 local l_earth = getByName( "earth")
 local l_stone = getByName( "stone")
+
+local l_treewood = getByName( "treewood")
+local l_leaf = getByName( "leaf")
+
 local l_glowcrystal = getByName( "glowcrystal")
 local l_type = 0;
 
@@ -28,7 +32,38 @@ function rowZ( real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
 	end
 end
 
-function block( position_chunk_x, position_chunk_y, position_chunk_z, real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
+function createTree( chunk_id, position_x, position_y, position_z)
+	setBlock( chunk_id, l_treewood, position_x, position_y, position_z)
+	setBlock( chunk_id, l_treewood, position_x, position_y+1, position_z)
+	setBlock( chunk_id, l_treewood, position_x, position_y+2, position_z)
+	setBlock( chunk_id, l_treewood, position_x, position_y+3, position_z)
+
+	setBlock( chunk_id, l_leaf, position_x+1, position_y+3, position_z)
+	setBlock( chunk_id, l_leaf, position_x, position_y+3, position_z+1)
+	setBlock( chunk_id, l_leaf, position_x-1, position_y+3, position_z)
+	setBlock( chunk_id, l_leaf, position_x, position_y+3, position_z-1)
+	setBlock( chunk_id, l_leaf, position_x+1, position_y+3, position_z+1)
+	setBlock( chunk_id, l_leaf, position_x-1, position_y+3, position_z-1)
+
+	setBlock( chunk_id, l_leaf, position_x+1, position_y+3, position_z-1)
+	setBlock( chunk_id, l_leaf, position_x-1, position_y+3, position_z+1)
+
+	setBlock( chunk_id, l_leaf, position_x+1, position_y+4, position_z)
+	setBlock( chunk_id, l_leaf, position_x, position_y+4, position_z+1)
+	setBlock( chunk_id, l_leaf, position_x-1, position_y+4, position_z)
+	setBlock( chunk_id, l_leaf, position_x, position_y+4, position_z-1)
+	setBlock( chunk_id, l_leaf, position_x+1, position_y+4, position_z+1)
+	setBlock( chunk_id, l_leaf, position_x-1, position_y+4, position_z-1)
+
+	setBlock( chunk_id, l_leaf, position_x+1, position_y+4, position_z-1)
+	setBlock( chunk_id, l_leaf, position_x-1, position_y+4, position_z+1)
+
+	setBlock( chunk_id, l_leaf, position_x, position_y+4, position_z)
+	setBlock( chunk_id, l_leaf, position_x, position_y+5, position_z)
+	setBlock( chunk_id, l_leaf, position_x, position_y+6, position_z)
+end
+
+function block( chunk_id, position_chunk_x, position_chunk_y, position_chunk_z, real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
 	local l_light = false
 
 	l_type = l_stone
@@ -46,7 +81,11 @@ function block( position_chunk_x, position_chunk_y, position_chunk_z, real_pos_x
 		return false, 0;
 	end
 
-	if rand( 40) == 1 then
+	if rand( 40) == 1 and l_type == l_grass then
+		createTree( chunk_id, real_pos_x-position_chunk_x, real_pos_y-position_chunk_y+1, real_pos_z-position_chunk_z)
+	end
+
+	if rand( 22) == 1 and l_type == l_grass then
 		l_type = l_glowcrystal
 		l_light = true
 	end

@@ -10,6 +10,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 
+#define MAX_CHUNKS_GENERATE 64
+
 class landscape_script{
     public:
         landscape_script( int id, lua_State *state);
