@@ -30,10 +30,10 @@ engine::engine() {
     p_blocklist->init( p_graphic, p_config);
 
     // set up start world
-    world *l_world = new world( p_blocklist, "1");
+    world *l_world = new world( p_blocklist, "0");
     l_world->setGenerator( p_landscape_generator);
-    int l_size = 2;
-    int l_end = -2;
+    int l_size = 3;
+    int l_end = -3;
     for( int x = -l_size; x <= l_size; x++)
         for( int z = -l_size; z <= l_size; z++)
             for( int y = 1; y > l_end; y--)

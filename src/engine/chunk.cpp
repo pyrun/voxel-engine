@@ -4,6 +4,16 @@
 
 //#define printf if
 
+namespace patch
+{
+    template < typename T > std::string to_string( const T& n )
+    {
+        std::ostringstream stm ;
+        stm << n ;
+        return stm.str() ;
+    }
+}
+
 Chunk::Chunk( glm::ivec3 position, int seed) {
     // node reset
     p_x_pos = NULL;
@@ -31,13 +41,13 @@ Chunk::Chunk( glm::ivec3 position, int seed) {
 
     int t = SDL_GetTicks();
 
-    p_tile = new unsigned short[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]; //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
-    p_lighting = new unsigned char[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+    p_tile = new unsigned short[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE](); //new (std::nothrow) tile*[ CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]
+    p_lighting = new unsigned char[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE]();
 
-    for (int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
+    /*for (int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
         p_tile[ i ] = EMPTY_BLOCK_ID;
         p_lighting[ i ] = 0;
-    }
+    }*/
 
     updateForm();
 
@@ -818,4 +828,19 @@ bool Chunk::draw( Shader* shader) {
     glBindVertexArray( 0);
 
     return true;
+}
+
+void Chunk::save( std::string path) {
+    std::string l_folder = "worldsave_"+ path;
+    std::string l_name = l_folder + patch::to_string(getPos().x) + "_"+ patch::to_string(getPos().y) + "_" + patch::to_string(getPos().z) + ".chunk";
+    std::ofstream l_file( l_name);
+
+    mkdir( l_folder.c_str());
+
+    l_file.write ((char*)&p_pos.x, sizeof ( int));
+    l_file.write ((char*)&p_pos.y, sizeof ( int));
+    l_file.write ((char*)&p_pos.z, sizeof ( int));
+
+    for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+        l_file.write ((char*)&p_tile[i], sizeof ( unsigned short));
 }

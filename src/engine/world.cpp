@@ -68,7 +68,8 @@ world::world( block_list* block_list, std::string name) {
     p_mutex_physic = SDL_CreateMutex();
 
     // creating the threads
-    p_thread_handle = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
+    for( int i = 0; i < WORLD_HANDLE_THRENDS; i++)
+        p_thread_handle[i] = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
     p_thread_physic = SDL_CreateThread( world_thread_physic, "world_thread_physic", (void *)this);
@@ -81,11 +82,15 @@ world::world( block_list* block_list, std::string name) {
 world::~world() {
     int l_return; // didnt use
 
+    // save all
+    save();
+
     // wait for thread end
     p_destroy = true;
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         SDL_WaitThread( p_thread_update[i], &l_return);
-    SDL_WaitThread( p_thread_handle, &l_return);
+    for( int i = 0; i < WORLD_HANDLE_THRENDS; i++)
+        SDL_WaitThread( p_thread_handle[i], &l_return);
     SDL_WaitThread( p_thread_physic, &l_return);
 
     // destroy the mutex
@@ -245,6 +250,8 @@ void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
 void world::process_thrend_handle() {
     std::vector<glm::ivec3> l_lights;
 
+    SDL_LockMutex ( p_mutex_handle);
+
     // creating chunks
     while( p_creatingList.empty() == false) {
         // Get a reference to the front node.
@@ -257,32 +264,33 @@ void world::process_thrend_handle() {
         p_creatingList.pop();
 
         if( l_node == NULL) {
-            SDL_LockMutex ( p_mutex_handle);
             Chunk *l_node = createChunk( l_position);
             p_landscape.push( world_data_list(l_position, l_landscape) );
-            SDL_UnlockMutex ( p_mutex_handle);
         }
     }
+    SDL_UnlockMutex ( p_mutex_handle);
 
     // landscape generator
     while( p_landscape.empty() == false) {
+        //SDL_LockMutex ( p_mutex_handle);
         // Get a reference to the front node.
-        world_data_list &l_list_node = p_landscape.front();
+        world_data_list l_list_node = p_landscape.front();
 
         glm::ivec3 l_position = l_list_node.position;
         Chunk *l_node = getChunk( l_position);
         bool l_landscape = l_list_node.landscape;
 
         p_landscape.pop();
+        //SDL_UnlockMutex ( p_mutex_handle);
 
         if( l_node != NULL) {
-            SDL_LockMutex ( p_mutex_handle);
-            if( l_landscape) {
 
+            if( l_landscape) {
+                //SDL_LockMutex ( p_mutex_handle);
                 l_lights = p_landscape_generator->getGenerator( l_node)->generator( l_node, p_blocklist);
                 l_node->changed( true);
+                //SDL_UnlockMutex ( p_mutex_handle);
             }
-            SDL_UnlockMutex ( p_mutex_handle);
 
             for( glm::ivec3 l_light:l_lights) {
                 int l_block_id = l_node->getTile( l_light);
@@ -325,7 +333,11 @@ void world::process_thrend_handle() {
     // ligting
     if( p_landscape.empty() == false)
         return;
-    SDL_LockMutex ( p_mutex_handle);
+
+    int l_status_mutex = SDL_TryLockMutex( p_mutex_handle);
+
+    if( l_status_mutex != 0) // mutex lock for this tread
+        return;
 
     while( p_lightsDel.empty() == false) {
         // Get a reference to the front node.
@@ -694,4 +706,22 @@ void world::drawNode( Shader* shader) {
         // next
         l_node = l_node->next;
     }
+}
+
+void world::save() {
+    Timer l_time;
+    l_time.Start();
+
+    Chunk *l_node = p_chunk_start;
+    for( ;; ) {
+        if( l_node == NULL)
+            break;
+
+        l_node->save( p_name + "/");
+
+        // next
+        l_node = l_node->next;
+    }
+
+    printf( "world::save %dms\n", l_time.GetTicks());
 }

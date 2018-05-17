@@ -16,6 +16,8 @@ archiv/
 #game test
 game/
 
+res/worldsave/
+
 # Folder config file
 Desktop.ini
 

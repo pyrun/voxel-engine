@@ -2,8 +2,9 @@
 #define CHUNK_H 1
 
 #include <bounce/bounce.h>
-#include <string.h>
+#include <string>
 #include <vector>
+#include <fstream>
 
 #include "RakPeerInterface.h"
 #include "BitStream.h"
@@ -62,6 +63,8 @@ public:
     void updateVbo();
 
     bool draw( Shader* shader);
+
+    void save( std::string path);
 
     int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }

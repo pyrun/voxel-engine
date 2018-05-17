@@ -7,12 +7,14 @@ Chunk *public_chunk_list[ MAX_CHUNKS_GENERATE];
 
 static int lua_getByName (lua_State *state) {
     std::string l_name= lua_tostring( state, 1);
+
     block *l_block = public_blocklist->getByName( l_name);
     if( !l_block) {
         printf( "lua_getByName don't found the type \"%s\"\n", l_name.c_str());
         return 0;
     }
     int l_type = l_block->getID();
+
     lua_pushnumber( state, l_type);
     return 1;
 }
@@ -20,6 +22,7 @@ static int lua_getByName (lua_State *state) {
 static int lua_distanceVec2 (lua_State *state) {
     glm::vec2 l_pos1;
     glm::vec2 l_pos2;
+
     l_pos1.x = lua_tonumber( state, 1);
     l_pos1.y = lua_tonumber( state, 2);
     l_pos2.x = lua_tonumber( state, 3);
@@ -34,6 +37,7 @@ static int lua_distanceVec2 (lua_State *state) {
 
 static int lua_perlinVec2 (lua_State *state) {
     glm::vec2 l_position;
+
     l_position.x = lua_tonumber( state, 1);
     l_position.y = lua_tonumber( state, 2);
 
@@ -61,7 +65,6 @@ static int lua_setBlock (lua_State *state) {
         public_chunk_list[ l_chunk_id]->set( l_position, l_block, false);
     else
         printf( "lua_setBlock chunk didnt found!\n");
-
     return 0;
 }
 
@@ -89,7 +92,8 @@ landscape_script::landscape_script( int id, lua_State *state)
 
 landscape_script::~landscape_script()
 {
-    if( p_luastate) lua_close( p_luastate);
+    if( p_luastate)
+        lua_close( p_luastate);
 }
 
 void landscape_script::setState( lua_State *state)
@@ -123,21 +127,7 @@ std::vector<glm::ivec3> landscape_script::generator( Chunk* chunk, block_list* b
             l_real_pos = l_position_chunk + l_block;
 
             lua_getglobal( p_luastate, "rowX");
-            // block position
-            lua_pushnumber( p_luastate, l_real_pos.x );
-            lua_pushnumber( p_luastate, l_real_pos.y );
-            lua_pushnumber( p_luastate, l_real_pos.z );
-            // random
-            lua_pushnumber( p_luastate, l_random.x );
-            lua_pushnumber( p_luastate, l_random.y );
-            lua_pushnumber( p_luastate, l_random.z );
-            lua_pcall( p_luastate, 6, 0, 0);
-
-            for( l_block.z = 0; l_block.z < CHUNK_SIZE; l_block.z++) {
-
-                l_real_pos = l_position_chunk + l_block;
-
-                lua_getglobal( p_luastate, "rowZ");
+            if( lua_isfunction( p_luastate, -1)) {
                 // block position
                 lua_pushnumber( p_luastate, l_real_pos.x );
                 lua_pushnumber( p_luastate, l_real_pos.y );
@@ -147,6 +137,24 @@ std::vector<glm::ivec3> landscape_script::generator( Chunk* chunk, block_list* b
                 lua_pushnumber( p_luastate, l_random.y );
                 lua_pushnumber( p_luastate, l_random.z );
                 lua_pcall( p_luastate, 6, 0, 0);
+            }
+
+            for( l_block.z = 0; l_block.z < CHUNK_SIZE; l_block.z++) {
+
+                l_real_pos = l_position_chunk + l_block;
+
+                lua_getglobal( p_luastate, "rowZ");
+                if( lua_isfunction( p_luastate, -1)) {
+                    // block position
+                    lua_pushnumber( p_luastate, l_real_pos.x );
+                    lua_pushnumber( p_luastate, l_real_pos.y );
+                    lua_pushnumber( p_luastate, l_real_pos.z );
+                    // random
+                    lua_pushnumber( p_luastate, l_random.x );
+                    lua_pushnumber( p_luastate, l_random.y );
+                    lua_pushnumber( p_luastate, l_random.z );
+                    lua_pcall( p_luastate, 6, 0, 0);
+                }
 
                 for( l_block.y = 0; l_block.y < CHUNK_SIZE; l_block.y++) {
 

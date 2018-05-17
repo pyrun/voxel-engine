@@ -12,6 +12,7 @@
 #include "../system/timer.h"
 #include "../graphic/debug_draw.h"
 
+#define WORLD_HANDLE_THRENDS 1
 #define WORLD_UPDATE_THRENDS 3
 
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0 / 60.0 )
@@ -79,6 +80,8 @@ public:
     void draw( graphic *graphic, Shader *shader);
     void drawNode( Shader* shader);
 
+    void save();
+
     bool getDestory() { return p_destroy; }
     inline int getAmountChunks() const { return p_chunk_amount; }
     inline int getAmountChunksVisible() const { return p_chunk_visible_amount; }
@@ -107,7 +110,7 @@ private:
     SDL_mutex *p_mutex_handle;
     SDL_mutex *p_mutex_physic;
     SDL_Thread *p_thread_update[WORLD_UPDATE_THRENDS];
-    SDL_Thread *p_thread_handle;
+    SDL_Thread *p_thread_handle[WORLD_HANDLE_THRENDS];
     SDL_Thread *p_thread_physic;
 
     std::queue<world_data_list> p_creatingList;

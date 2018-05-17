@@ -13,9 +13,9 @@ local l_noise_top = 0
 local l_noise_down = 0
 local l_size_inv = 30
 
-function rowX( real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
+--function rowX( real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
 
-end
+--end
 
 function rowZ( real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
 	l_dstance_island = distanceVec2( 0, 0, real_pos_x, real_pos_z)
