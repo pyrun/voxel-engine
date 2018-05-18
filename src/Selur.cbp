@@ -84,6 +84,7 @@
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bounce/include" />
+					<Add directory="../../lua/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -94,6 +95,7 @@
 					<Add option="-DMINIUPNP_STATICLIB" />
 					<Add option="-lminiupnpc" />
 					<Add option="-lbounce" />
+					<Add option="-llua53" />
 					<Add library="ws2_32" />
 					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
@@ -102,6 +104,52 @@
 					<Add directory="../../RakNet/Lib" />
 					<Add directory="../../Miniupnpc/lib" />
 					<Add directory="../../bounce/lib" />
+					<Add directory="../../lua/lib" />
+				</Linker>
+			</Target>
+			<Target title="win_release_32">
+				<Option platforms="Windows;" />
+				<Option output="../bin/win/release32/Selur" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../res" />
+				<Option object_output="../obj/winrelease32/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Option parameters="-server" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-DWIN32" />
+					<Add directory="../../SDL2/include" />
+					<Add directory="../../OpenGL" />
+					<Add directory="../../glm/" />
+					<Add directory="../../openvr-mingw/headers" />
+					<Add directory="../../RakNet/Source" />
+					<Add directory="../../Miniupnpc/source/" />
+					<Add directory="../../bounce/include" />
+					<Add directory="../../lua/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../qu3e/src" />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
+					<Add option="-lopengl32" />
+					<Add option="-lglew32" />
+					<Add option="-lopenvr_dll" />
+					<Add option="-lRakNet" />
+					<Add option="-DMINIUPNP_STATICLIB" />
+					<Add option="-lminiupnpc" />
+					<Add option="-lbounce" />
+					<Add option="-llua53" />
+					<Add library="ws2_32" />
+					<Add library="IPHlpApi" />
+					<Add directory="../../SDL2/lib" />
+					<Add directory="../../OpenGL/lib" />
+					<Add directory="../../openvr-mingw/lib" />
+					<Add directory="../../RakNet/Lib" />
+					<Add directory="../../Miniupnpc/lib" />
+					<Add directory="../../bounce/lib" />
+					<Add directory="../../lua/lib" />
 				</Linker>
 			</Target>
 		</Build>

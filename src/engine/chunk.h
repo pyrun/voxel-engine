@@ -64,7 +64,8 @@ public:
 
     bool draw( Shader* shader);
 
-    void save( std::string path);
+    void save( std::ofstream *stream);
+    void load( std::ifstream *stream);
 
     int getArray( int i) { return p_tile[i]; }
     int getSizeofArray() { return CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; }

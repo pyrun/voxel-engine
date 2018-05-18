@@ -830,17 +830,24 @@ bool Chunk::draw( Shader* shader) {
     return true;
 }
 
-void Chunk::save( std::string path) {
-    std::string l_folder = "worldsave_"+ path;
-    std::string l_name = l_folder + patch::to_string(getPos().x) + "_"+ patch::to_string(getPos().y) + "_" + patch::to_string(getPos().z) + ".chunk";
-    std::ofstream l_file( l_name);
-
-    mkdir( l_folder.c_str());
-
-    l_file.write ((char*)&p_pos.x, sizeof ( int));
-    l_file.write ((char*)&p_pos.y, sizeof ( int));
-    l_file.write ((char*)&p_pos.z, sizeof ( int));
+void Chunk::save( std::ofstream *stream) {
+    stream->write ((char*)&p_pos.x, sizeof ( glm::int_t));
+    stream->write ((char*)&p_pos.y, sizeof ( glm::int_t));
+    stream->write ((char*)&p_pos.z, sizeof ( glm::int_t));
 
     for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
-        l_file.write ((char*)&p_tile[i], sizeof ( unsigned short));
+        stream->write ((char*)&p_tile[i], sizeof ( unsigned short));
+    for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+        stream->write ((char*)&p_lighting[i], sizeof ( unsigned char));
+}
+
+void Chunk::load( std::ifstream *stream) {
+    /*stream->write ((char*)&p_pos.x, sizeof ( int));
+    stream->write ((char*)&p_pos.y, sizeof ( int));
+    stream->write ((char*)&p_pos.z, sizeof ( int));*/
+
+    for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+        stream->read((char*)&p_tile[i], sizeof ( unsigned short));
+    for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
+        stream->read ((char*)&p_lighting[i], sizeof ( unsigned char));
 }

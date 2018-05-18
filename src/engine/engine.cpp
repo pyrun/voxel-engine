@@ -32,13 +32,15 @@ engine::engine() {
     // set up start world
     world *l_world = new world( p_blocklist, "0");
     l_world->setGenerator( p_landscape_generator);
-    int l_size = 3;
-    int l_end = -3;
-    for( int x = -l_size; x <= l_size; x++)
-        for( int z = -l_size; z <= l_size; z++)
-            for( int y = 1; y > l_end; y--)
-                l_world->addChunk( glm::vec3( x, y, z), true);
 
+    if( !l_world->load()) {
+        int l_size = 3;
+        int l_end = -3;
+        for( int x = -l_size; x <= l_size; x++)
+            for( int z = -l_size; z <= l_size; z++)
+                for( int y = 1; y > l_end; y--)
+                    l_world->addChunk( glm::vec3( x, y, z), true);
+    }
     p_worlds.push_back( l_world);
 
     p_world_player = p_worlds[0];
@@ -128,6 +130,9 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
         if( l_chunk)
             p_world_player->changeBlock( l_chunk, l_block, EMPTY_BLOCK_ID);
     }
+
+    if( p_input.Map.Inventory && !p_input.MapOld.Inventory)
+        p_world_player->load();
 }
 
 void engine::render( glm::mat4 view, glm::mat4 projection) {

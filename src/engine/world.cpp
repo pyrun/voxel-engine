@@ -373,6 +373,22 @@ void world::process_thrend_handle() {
             } else if (l_neighborLevel >= l_light_level) {
                 p_lightsAdd.emplace( l_position + l_shift_matrix[i] , l_chunk);
             }
+
+            if( l_position.x + l_shift_matrix[i].x < 1 || l_position.y + l_shift_matrix[i].y < 1 || l_position.z + l_shift_matrix[i].z < 1 ||
+                l_position.x + l_shift_matrix[i].x > CHUNK_SIZE-1 || l_position.y + l_shift_matrix[i].y > CHUNK_SIZE-1 || l_position.z + l_shift_matrix[i].z > CHUNK_SIZE-1 ) {
+
+                Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos() + l_shift_matrix[i]);
+
+                if( l_light_chunk) {
+                    // check and add to the queue
+                    bool l_found = false;
+                    for( glm::ivec3 l_chunk_position:l_chunk_update_list)
+                        if( l_chunk_position == l_light_chunk->getPos())
+                            l_found = true;
+                    if( !l_found)
+                        l_chunk_update_list.push_back( l_light_chunk->getPos());
+                }
+            }
         }
     }
 
@@ -414,8 +430,8 @@ void world::process_thrend_handle() {
                 p_lightsAdd.emplace( l_new_position, l_chunk);
             }
 
-            if( l_position.x + l_shift_matrix[i].x == 0 || l_position.y + l_shift_matrix[i].y == 0 || l_position.z + l_shift_matrix[i].z == 0 ||
-                l_position.x + l_shift_matrix[i].x == CHUNK_SIZE || l_position.y + l_shift_matrix[i].y == CHUNK_SIZE || l_position.z + l_shift_matrix[i].z == CHUNK_SIZE ) {
+            if( l_position.x + l_shift_matrix[i].x < 1 || l_position.y + l_shift_matrix[i].y < 1 || l_position.z + l_shift_matrix[i].z < 1 ||
+                l_position.x + l_shift_matrix[i].x > CHUNK_SIZE-1 || l_position.y + l_shift_matrix[i].y > CHUNK_SIZE-1 || l_position.z + l_shift_matrix[i].z > CHUNK_SIZE-1 ) {
 
                 Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos() + l_shift_matrix[i]);
 
@@ -708,20 +724,106 @@ void world::drawNode( Shader* shader) {
     }
 }
 
+namespace patch
+{
+    template < typename T > std::string to_string( const T& n )
+    {
+        std::ostringstream stm ;
+        stm << n ;
+        return stm.str() ;
+    }
+}
+
+bool world::fileExists(std::string filename) {
+    std::ifstream l_file;
+    // file open and close
+    l_file.open ( filename.c_str());
+    if (l_file.is_open()) {
+        l_file.close();
+        return true;
+    }
+    l_file.close();
+    return false;
+}
+
 void world::save() {
     Timer l_time;
     l_time.Start();
+    int l_amount = 0;
+    std::string l_folder = "worldsave/" + p_name;
+    mkdir( l_folder.c_str());
+
 
     Chunk *l_node = p_chunk_start;
     for( ;; ) {
         if( l_node == NULL)
             break;
+        l_amount++;
+        std::ofstream l_file( l_folder + "/" + patch::to_string( l_node->getPos().x) + "_" + patch::to_string( l_node->getPos().y)+ "_" + patch::to_string( l_node->getPos().z)+ "_" + ".schunk", std::ios::binary);
 
-        l_node->save( p_name + "/");
+        l_node->save( &l_file);
 
         // next
         l_node = l_node->next;
     }
 
     printf( "world::save %dms\n", l_time.GetTicks());
+}
+
+bool world::load() {
+    Timer l_time;
+    l_time.Start();
+
+    DIR* l_handle;
+    struct dirent* l_dirEntry;
+    bool l_found_once = false;
+    std::string l_name;
+    std::string l_filepath;
+    std::string l_path = "worldsave/" + p_name + "/";
+
+    // open folder
+    l_handle = opendir( l_path.c_str());
+    if ( l_handle != NULL ) {
+        while ( 0 != ( l_dirEntry = readdir( l_handle ) ))  {
+            l_name = l_dirEntry->d_name;
+            l_filepath =  l_path + l_name;
+            if( fileExists( l_filepath )) {
+                load_chunk( l_filepath);
+                l_found_once = true;
+            }
+        }
+    } else {
+        printf( "world::load can't open the \"%s\" folder\n", l_path.c_str());
+    }
+    closedir( l_handle );
+
+    Chunk *l_node = p_chunk_start;
+    for( ;; ) {
+        if( l_node == NULL)
+            break;
+        l_node->changed( true);
+        l_node = l_node->next;
+    }
+
+    printf( "world::load %dms \"%s\" folder\n", l_time.GetTicks(), l_path.c_str());
+
+    if( l_found_once)
+        return true;
+    return false;
+}
+
+
+void world::load_chunk( std::string path_file) {
+    std::ifstream l_file( path_file, std::ios::binary);
+    glm::ivec3 l_position;
+
+    l_file.read ((char*)&l_position.x, sizeof ( glm::int_t));
+    l_file.read ((char*)&l_position.y, sizeof ( glm::int_t));
+    l_file.read ((char*)&l_position.z, sizeof ( glm::int_t));
+
+    Chunk *l_node = getChunk( l_position);
+    if( l_node == NULL)
+        l_node = createChunk( l_position);
+
+    l_node->load( &l_file);
 }

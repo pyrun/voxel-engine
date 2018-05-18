@@ -80,7 +80,10 @@ public:
     void draw( graphic *graphic, Shader *shader);
     void drawNode( Shader* shader);
 
+    bool fileExists(std::string filename);
     void save();
+    bool load();
+    void load_chunk( std::string path_file);
 
     bool getDestory() { return p_destroy; }
     inline int getAmountChunks() const { return p_chunk_amount; }
