@@ -24,6 +24,7 @@ engine::engine() {
     p_config = new config();
     p_graphic = new graphic( p_config);
     p_landscape_generator = new landscape( p_config);
+    p_network = new network( p_config);
 
     // set block list up
     p_blocklist = new block_list( p_config);
@@ -32,20 +33,8 @@ engine::engine() {
     // set up start world
     world *l_world = new world( p_blocklist, "0");
     l_world->setGenerator( p_landscape_generator);
-
-    if( !l_world->load()) {
-        int l_size = 3;
-        int l_end = -3;
-        for( int x = -l_size; x <= l_size; x++)
-            for( int z = -l_size; z <= l_size; z++)
-                for( int y = 1; y > l_end; y--)
-                    l_world->addChunk( glm::vec3( x, y, z), true);
-    }
     p_worlds.push_back( l_world);
-
     p_world_player = p_worlds[0];
-
-    //p_network = new network( p_config, p_tilemap, p_blocklist);
 }
 
 engine::~engine() {
@@ -63,6 +52,14 @@ engine::~engine() {
 void engine::startVR() {
     p_openvr = new openvr();
     p_framecap = false;
+}
+
+void engine::startServer() {
+    p_network->start_sever();
+}
+
+void engine::startClient( std::string address) {
+    p_network->start_client( address);
 }
 
 void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
@@ -122,7 +119,7 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
     if( p_input.Map.Place && !p_input.MapOld.Place) {
         Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
-            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "steel")->getID());
+            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "steel_plate")->getID());
             //p_world_player->addTorchlight( l_chunk, l_block_prev, LIGHTING_MAX);
         }
     }
@@ -198,6 +195,17 @@ void engine::run() {
         p_network->addObject( l_hand);
         l_hand->p_name = "box";
     }*/
+
+    if( !p_network->isClient()) {
+        if( !p_world_player->load()) {
+            int l_size = 3;
+            int l_end = -3;
+            for( int x = -l_size; x <= l_size; x++)
+                for( int z = -l_size; z <= l_size; z++)
+                    for( int y = 1; y > l_end; y--)
+                        p_world_player->addChunk( glm::vec3( x, y, z), true);
+        }
+    }
 
     //l_hand->p_type = p_network->getObjectList()->get( l_hand->p_name.C_String());
 

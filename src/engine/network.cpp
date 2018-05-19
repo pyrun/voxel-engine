@@ -1,160 +1,19 @@
 #include "network.h"
 
-void network_object::WriteAllocationID(RakNet::Connection_RM3 *destinationConnection, RakNet::BitStream *allocationIdBitstream) const {
-    allocationIdBitstream->Write(GetName());
-}
-
-void network_object::PrintStringInBitstream(RakNet::BitStream *bs)
-{
-    if (bs->GetNumberOfBitsUsed()==0)
-        return;
-    RakNet::RakString rakString;
-    bs->Read(rakString);
-}
-
-void network_object::SerializeConstruction(RakNet::BitStream *constructionBitstream, RakNet::Connection_RM3 *destinationConnection)	{
-
-    // p_variableDeltaSerializer is a helper class that tracks what variables were sent to what remote system
-    // This call adds another remote system to track
-    p_variableDeltaSerializer.AddRemoteSystemVariableHistory(destinationConnection->GetRakNetGUID());
-
-    constructionBitstream->Write(GetName() + RakNet::RakString(" SerializeConstruction"));
-}
-
-bool network_object::DeserializeConstruction(RakNet::BitStream *constructionBitstream, RakNet::Connection_RM3 *sourceConnection) {
-    PrintStringInBitstream(constructionBitstream);
-    return true;
-}
-
-void network_object::SerializeDestruction(RakNet::BitStream *destructionBitstream, RakNet::Connection_RM3 *destinationConnection)	{
-
-    // p_variableDeltaSerializer is a helper class that tracks what variables were sent to what remote system
-    // This call removes a remote system
-    p_variableDeltaSerializer.RemoveRemoteSystemVariableHistory(destinationConnection->GetRakNetGUID());
-
-    destructionBitstream->Write(GetName() + RakNet::RakString(" SerializeDestruction"));
-}
-
-bool network_object::DeserializeDestruction(RakNet::BitStream *destructionBitstream, RakNet::Connection_RM3 *sourceConnection) {
-    PrintStringInBitstream(destructionBitstream);
-    return true;
-}
-
-void network_object::DeallocReplica(RakNet::Connection_RM3 *sourceConnection) {
-    delete this;
-}
-
-void network_object::OnUserReplicaPreSerializeTick(void)
-{
-    /// Required by VariableDeltaSerializer::BeginIdenticalSerialize()
-    p_variableDeltaSerializer.OnPreSerializeTick();
-}
-
-RM3SerializationResult network_object::Serialize(SerializeParameters *serializeParameters)	{
-    VariableDeltaSerializer::SerializationContext serializationContext;
-    serializeParameters->pro[0].reliability=UNRELIABLE_WITH_ACK_RECEIPT;
-    serializeParameters->pro[0].sendReceipt=replicaManager->GetRakPeerInterface()->IncrementNextSendReceipt();
-    serializeParameters->messageTimestamp=RakNet::GetTime();
-
-    // Begin writing all variables to be sent UNRELIABLE_WITH_ACK_RECEIPT
-    p_variableDeltaSerializer.BeginUnreliableAckedSerialize(
-        &serializationContext,
-        serializeParameters->destinationConnection->GetRakNetGUID(),
-        &serializeParameters->outputBitstream[0],
-        serializeParameters->pro[0].sendReceipt
-        );
-
-    // Write each variable
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_pos.x);
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_pos.y);
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_pos.z);
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_rot.x);
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_rot.y);
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_rot.z);
-    p_variableDeltaSerializer.EndSerialize(&serializationContext);
-
-    serializeParameters->pro[1].reliability=RELIABLE_ORDERED;
-    p_variableDeltaSerializer.BeginIdenticalSerialize(
-        &serializationContext,
-        serializeParameters->whenLastSerialized==0,
-        &serializeParameters->outputBitstream[1]
-        );
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_scale.x);
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_scale.y);
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, (float)p_scale.z);
-    p_variableDeltaSerializer.EndSerialize(&serializationContext);
-
-    serializeParameters->pro[2].reliability=RELIABLE_ORDERED;
-    p_variableDeltaSerializer.BeginIdenticalSerialize(
-        &serializationContext,
-        serializeParameters->whenLastSerialized==0,
-        &serializeParameters->outputBitstream[2]
-        );
-    p_variableDeltaSerializer.SerializeVariable(&serializationContext, p_name);
-    p_variableDeltaSerializer.EndSerialize(&serializationContext);
-
-    return RM3SR_SERIALIZED_ALWAYS;
-}
-void network_object::Deserialize(RakNet::DeserializeParameters *deserializeParameters) {
-
-    VariableDeltaSerializer::DeserializationContext deserializationContext;
-
-    p_variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[0]);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_pos.x),
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_pos.y);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_pos.z);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_rot.x),
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_rot.y);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_rot.z);
-    p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
-
-    p_variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[1]);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_scale.x);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_scale.y);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_scale.z);
-    p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
-
-    p_variableDeltaSerializer.BeginDeserialize(&deserializationContext, &deserializeParameters->serializationBitstream[2]);
-    p_variableDeltaSerializer.DeserializeVariable(&deserializationContext, p_name);
-    p_variableDeltaSerializer.EndDeserialize(&deserializationContext);
-
-    p_model_change = true;
-
-    setTransform( p_pos, p_rot, true);
-}
-
-void network_object::SerializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection)	{
-    serializationBitstream->Write(GetName() + RakNet::RakString(" SerializeConstructionRequestAccepted"));
-}
-
-void network_object::DeserializeConstructionRequestAccepted(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *acceptingConnection) {
-    PrintStringInBitstream(serializationBitstream);
-}
-void network_object::SerializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *requestingConnection)	{
-    serializationBitstream->Write(GetName() + RakNet::RakString(" SerializeConstructionRequestRejected"));
-}
-void network_object::DeserializeConstructionRequestRejected(RakNet::BitStream *serializationBitstream, RakNet::Connection_RM3 *rejectingConnection) {
-    PrintStringInBitstream(serializationBitstream);
-}
-
 /** \brief network main class
  *
  *
  */
-network::network( config *config, texture* image, block_list *block_list)
+network::network( config *config)
 {
     p_rakPeerInterface = NULL;
 
-    p_types = new object_handle();
-    p_types->load( config);
     // broadcast on 255.255.255.255 at IPv4
     p_socketdescriptor.socketFamily=AF_INET;
     p_port = atoi( config->get( "port", "network", "27558").c_str() );
     p_maxamountplayer = atoi( config->get( "max_player", "network", "32").c_str() );
     p_isClient = false;
     p_isServer = false;
-    p_starchip = new world( block_list, "127");
-    p_blocks = block_list;
 }
 
 network::~network()
@@ -163,71 +22,6 @@ network::~network()
         p_rakPeerInterface->Shutdown( 100, 0);
         RakNet::RakPeerInterface::DestroyInstance( p_rakPeerInterface);
     }
-
-    delete p_types;
-}
-
-bool network::init_upnp()
-{
-    bool l_successful = true;
-    struct UPNPDev * devlist = 0;
-    devlist = upnpDiscover( 2000, 0, 0, 0, 0, 0);
-    if (devlist)
-    {
-        printf("List of UPNP devices found on the network :\n");
-        struct UPNPDev * device;
-        for( device = devlist; device; device = device->pNext)
-        {
-            printf(" desc: %s\n st: %s\n\n",
-                device->descURL, device->st);
-        }
-
-        char lanaddr[64];	/* my ip address on the LAN */
-        struct UPNPUrls urls;
-        struct IGDdatas data;
-        if ( UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr))==1)
-        {
-            // Use same external and internal ports
-            DataStructures::List<RakNetSocket2* > sockets;
-
-            p_rakPeerInterface->GetSockets(sockets);
-
-            std::string l_iport;
-            l_iport = std::to_string( sockets[0]->GetBoundAddress().GetPort());
-
-            // Version miniupnpc-1.6.20120410
-            int r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-                                        l_iport.c_str(), l_iport.c_str(), lanaddr, 0, "UDP", 0, "0");
-
-            if(r!=UPNPCOMMAND_SUCCESS)
-                printf("AddPortMapping(%s, %s, %s) failed with code %d (%s)\n",
-                l_iport.c_str(), l_iport.c_str(), lanaddr, r, strupnperror(r));
-
-            char intPort[6];
-            char intClient[16];
-
-            // Version miniupnpc-1.6.20120410
-            char desc[128];
-            char enabled[128];
-            char leaseDuration[128];
-            r = UPNP_GetSpecificPortMappingEntry(urls.controlURL,
-                data.first.servicetype,
-                l_iport.c_str(), "UDP",
-                intClient, intPort,
-                desc, enabled, leaseDuration);
-
-            if(r!=UPNPCOMMAND_SUCCESS)
-            {
-                printf("GetSpecificPortMappingEntry() failed with code %d (%s)\n",
-                r, strupnperror(r));
-            }
-        } else {
-            l_successful = false;
-        }
-    } else {
-        l_successful = false;
-    }
-    return l_successful;
 }
 
 void network::start()
@@ -235,8 +29,6 @@ void network::start()
     // Start RakNet
     p_rakPeerInterface = RakNet::RakPeerInterface::GetInstance();
 	p_rakPeerInterface->Startup( p_maxamountplayer, &p_socketdescriptor, 1);
-	p_rakPeerInterface->AttachPlugin( &p_replicaManager);
-	p_replicaManager.SetNetworkIDManager( &p_networkIdManager);
 	p_rakPeerInterface->SetMaximumIncomingConnections( p_maxamountplayer);
 
 	printf("network::start: GUID is %s\n", p_rakPeerInterface->GetMyGUID().ToString());
@@ -245,26 +37,7 @@ void network::start()
 	if( network_topology == CLIENT)
 	{
 	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
-        if( !init_upnp())
-           printf ( "network::start upnp didnt work\n");
 		printf("network::start Connecting...\n");
-	}
-
-	if( isServer()) {
-        p_starchip->addChunk( glm::vec3( 0, -1, 0), true);
-        int l_size = 5;
-        int l_end = -1;
-        for( int x = -l_size; x <= l_size; x++)
-            for( int y = -l_size; y <= l_size; y++)
-                for( int z = l_end; z <= 0; z++)
-                    p_starchip->addChunk( glm::vec3( x, z, y), true);
-
-        ServerCreated_ServerSerialized* l_obj = new ServerCreated_ServerSerialized();
-        l_obj->p_name = "box";
-        l_obj->setPosition( glm::vec3( 0, 40, 5) );
-
-        // add the obj
-        addObject( l_obj);
 	}
 }
 
@@ -283,10 +56,6 @@ void network::start_client( std::string ip)
     p_ip = ip;
     p_isClient = true;
     start();
-}
-
-void network::addObject( ServerCreated_ServerSerialized *l_obj) {
-    p_replicaManager.Reference( l_obj);
 }
 
 void network::sendBlockChange( Chunk *chunk, glm::vec3 pos, int id) {
@@ -326,7 +95,7 @@ void network::receiveBlockChange( BitStream *bitstream) {
     bitstream->Read( l_pos.z);
     bitstream->Read( l_id);
 
-    l_chunk = getWorld()->getChunk( l_pos_chunk);
+/*    l_chunk = getWorld()->getChunk( l_pos_chunk);
     if( !l_chunk)
         l_chunk = getWorld()->createChunk( l_pos_chunk);
     if( !l_chunk) {
@@ -352,7 +121,7 @@ void network::receiveBlockChange( BitStream *bitstream) {
         l_bitstream.Write( (float)l_pos.z);
         l_bitstream.Write( l_id);
         p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, l_address, l_broadcast);
-    }
+    }*/
 }
 
 void network::receiveChunk( BitStream *bitstream) {
@@ -365,7 +134,7 @@ void network::receiveChunk( BitStream *bitstream) {
     bitstream->Read( l_start);
     bitstream->Read( l_end);
 
-    Chunk *l_chunk = getWorld()->getChunk( l_chunk_position);
+/*    Chunk *l_chunk = getWorld()->getChunk( l_chunk_position);
     if( !l_chunk) {
         l_chunk = getWorld()->createChunk( l_chunk_position);
     }
@@ -379,7 +148,7 @@ void network::receiveChunk( BitStream *bitstream) {
         sendGetChunkData( RakNet::UNASSIGNED_SYSTEM_ADDRESS, l_chunk, l_start, l_end);
 
     if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
-        l_chunk->changed( true);
+        l_chunk->changed( true);*/
 }
 
 void network::sendChunkData( Chunk *chunk, RakNet::AddressOrGUID address, int l_start, int l_end) {
@@ -391,7 +160,7 @@ void network::sendChunkData( Chunk *chunk, RakNet::AddressOrGUID address, int l_
     l_bitstream.Write( (int)chunk->getPos().z);
     l_bitstream.Write( l_start);
     l_bitstream.Write( l_end);
-    chunk->serialize( true, &l_bitstream, l_start, l_end, p_blocks);
+//    chunk->serialize( true, &l_bitstream, l_start, l_end, p_blocks);
     p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED , 0, address, false);
 }
 
@@ -426,13 +195,13 @@ void network::receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID a
     bitstream->Read( l_start);
     bitstream->Read( l_end);
 
-    if( l_start > 0 && l_start < l_end && l_end < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE + 1) {
+/*    if( l_start > 0 && l_start < l_end && l_end < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE + 1) {
         l_chunk = getWorld()->getChunk( l_pos_chunk);
         if( l_chunk != NULL) {
             sendChunkData( l_chunk, address, l_start, l_end);
             l_send = true;
         }
-    }
+    }*/
     printf( "network::receiveGetChunkData chunk(x%dy%dz%d) data(%d to %d) send = %d\n", (int)l_pos_chunk.x, (int)l_pos_chunk.y, (int)l_pos_chunk.z, l_start, l_end, l_send);
 }
 
@@ -448,9 +217,8 @@ void network::sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int
     p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, true);
 }
 
-bool network::process( int delta)
+bool network::process( std::vector<world *> *world)
 {
-
     bool l_quit = false;
 
     if( p_rakPeerInterface == NULL )
@@ -474,7 +242,7 @@ bool network::process( int delta)
         case ID_NEW_INCOMING_CONNECTION:
             printf("ID_NEW_INCOMING_CONNECTION from %s\n", p_packet->systemAddress.ToString());
             // send all chunks data
-            sendAllChunks( getWorld(), p_packet->guid);
+            //sendAllChunks( getWorld(), p_packet->guid);
             break;
         case ID_DISCONNECTION_NOTIFICATION:
             printf("ID_DISCONNECTION_NOTIFICATION\n");
@@ -495,16 +263,7 @@ bool network::process( int delta)
         case ID_SND_RECEIPT_LOSS:
         case ID_SND_RECEIPT_ACKED:
             {
-                uint32_t msgNumber;
-                memcpy(&msgNumber, p_packet->data+1, 4);
 
-                DataStructures::List<Replica3*> replicaListOut;
-                p_replicaManager.GetReplicasCreatedByMe(replicaListOut);
-                unsigned int idx;
-                for (idx=0; idx < replicaListOut.Size(); idx++)
-                {
-                    ((network_object*)replicaListOut[idx])->NotifyReplicaOfMessageDeliveryStatus( p_packet->guid,msgNumber, p_packet->data[0]==ID_SND_RECEIPT_ACKED);
-                }
             }
             break;
             case ID_SET_CHUNK_DATA:
@@ -532,41 +291,4 @@ bool network::process( int delta)
     }
 
     return l_quit;
-}
-
-void network::drawEntitys( Shader *shader)
-{
-    unsigned int l_id;
-    for (l_id=0; l_id < p_replicaManager.GetReplicaCount(); l_id++) {
-        network_object *l_obj = ((network_object*)(p_replicaManager.GetReplicaAtIndex( l_id)));
-
-        // create type if dont exit
-        if( l_obj->getType() == NULL) {
-            object_type *l_type = p_types->get( l_obj->p_name.C_String());
-            if( l_type) // found -> set
-                l_obj->setType( l_type);
-        } else {
-            // if no physic body -> crate one
-            if( l_obj->getBody() == NULL) {
-                b3BodyDef bdef;
-                // set up def.
-                bdef.type = b3BodyType::e_dynamicBody;
-                b3Body* body = getWorld()->getPhysicWorld()->CreateBody(bdef);
-
-                /// todo
-                if( isServer())
-                    l_obj->setBody( body);
-            }
-        }
-
-        // set physic transform to model transform
-        l_obj->process();
-
-        // draw
-        l_obj->draw( shader);
-    }
-}
-
-void network::create_object() {
-
 }

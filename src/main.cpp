@@ -10,18 +10,18 @@ int main(int argc, char *argv[]) {
             continue;
         }
         if( l_argv == "-server") {
-            //p_engine->getNetwork()->start_sever();
+            p_engine->startServer();
             continue;
         }
         if( l_argv == "-client") {
             if( i+1 < (int)argc)
             {
-                //p_engine->getNetwork()->start_client( argv[ i+1]);
+                p_engine->startClient( argv[ i+1]);
                 i++;
             }
                 else
             {
-                //p_engine->getNetwork()->start_client();
+                p_engine->startClient();
             }
             continue;
         }

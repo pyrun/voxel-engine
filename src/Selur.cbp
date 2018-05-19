@@ -22,7 +22,6 @@
 					<Add directory="../../glm/" />
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
-					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bounce/include" />
 					<Add directory="../../lua/include" />
 				</Compiler>
@@ -35,17 +34,12 @@
 					<Add option="-lglew32" />
 					<Add option="-lopenvr_dll" />
 					<Add option="-lRakNet" />
-					<Add option="-DMINIUPNP_STATICLIB" />
-					<Add option="-lminiupnpc" />
 					<Add option="-lbounce" />
 					<Add option="-llua53" />
-					<Add library="ws2_32" />
-					<Add library="IPHlpApi" />
 					<Add directory="../../SDL2/lib" />
 					<Add directory="../../OpenGL/lib" />
 					<Add directory="../../openvr-mingw/lib" />
 					<Add directory="../../RakNet/Lib" />
-					<Add directory="../../Miniupnpc/lib" />
 					<Add directory="../../bounce/lib" />
 					<Add directory="../../lua/lib" />
 				</Linker>
@@ -183,6 +177,8 @@
 		<Unit filename="engine/openvr_models.h" />
 		<Unit filename="engine/openvr_rendermodel.cpp" />
 		<Unit filename="engine/openvr_rendermodel.h" />
+		<Unit filename="engine/player.cpp" />
+		<Unit filename="engine/player.h" />
 		<Unit filename="engine/world.cpp" />
 		<Unit filename="engine/world.h" />
 		<Unit filename="graphic/camera.cpp" />

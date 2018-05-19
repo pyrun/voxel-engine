@@ -36,6 +36,9 @@ public:
     virtual ~engine();
 
     void startVR();
+    void startServer();
+    void startClient( std::string address = "127.0.0.1");
+
     void raycastView( glm::vec3 position, glm::vec3 lookat, int forward);
 
     void render( glm::mat4 view, glm::mat4 projection);
@@ -55,6 +58,7 @@ private:
     config *p_config;
     openvr *p_openvr;
     landscape *p_landscape_generator;
+    network *p_network;
 
     // world
     std::vector<world *> p_worlds;

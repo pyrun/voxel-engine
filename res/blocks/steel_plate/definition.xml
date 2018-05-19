@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<block id="7">
+	<graphic>
+		<top>steel_plate.png</top>
+		<bottom>steel_plate.png</bottom>
+		<front>steel_plate.png</front>
+		<back>steel_plate.png</back>
+		<left>steel_plate.png</left>
+		<right>steel_plate.png</right>
+	</graphic>
+</block>
