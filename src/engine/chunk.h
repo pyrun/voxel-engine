@@ -12,7 +12,7 @@
 #include "../graphic/graphic.h"
 #include "block.h"
 
-#define CHUNK_SIZE 32
+#define CHUNK_SIZE 16
 
 #define EMPTY_BLOCK_ID 0
 

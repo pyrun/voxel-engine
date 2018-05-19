@@ -377,7 +377,7 @@ void world::process_thrend_handle() {
             if( l_position.x + l_shift_matrix[i].x < 1 || l_position.y + l_shift_matrix[i].y < 1 || l_position.z + l_shift_matrix[i].z < 1 ||
                 l_position.x + l_shift_matrix[i].x > CHUNK_SIZE-1 || l_position.y + l_shift_matrix[i].y > CHUNK_SIZE-1 || l_position.z + l_shift_matrix[i].z > CHUNK_SIZE-1 ) {
 
-                Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos() + l_shift_matrix[i]);
+                Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos()*CHUNK_SIZE + l_position + l_shift_matrix[i]);
 
                 if( l_light_chunk) {
                     // check and add to the queue
@@ -433,7 +433,7 @@ void world::process_thrend_handle() {
             if( l_position.x + l_shift_matrix[i].x < 1 || l_position.y + l_shift_matrix[i].y < 1 || l_position.z + l_shift_matrix[i].z < 1 ||
                 l_position.x + l_shift_matrix[i].x > CHUNK_SIZE-1 || l_position.y + l_shift_matrix[i].y > CHUNK_SIZE-1 || l_position.z + l_shift_matrix[i].z > CHUNK_SIZE-1 ) {
 
-                Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos() + l_shift_matrix[i]);
+                Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos()*CHUNK_SIZE + l_position + l_shift_matrix[i]);
 
                 if( l_light_chunk) {
                     // check and add to the queue

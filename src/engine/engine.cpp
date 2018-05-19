@@ -90,6 +90,8 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
                 l_found = true;
                 break;
             }
+        } else {
+            p_world_player->addChunk( l_block / glm::vec3(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE), false );
         }
     }
     if( !l_found)
@@ -120,7 +122,7 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
     if( p_input.Map.Place && !p_input.MapOld.Place) {
         Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
-            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "glowcrystal")->getID());
+            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "steel")->getID());
             //p_world_player->addTorchlight( l_chunk, l_block_prev, LIGHTING_MAX);
         }
     }
