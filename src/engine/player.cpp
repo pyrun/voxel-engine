@@ -2,7 +2,7 @@
 
 player::player( world *world)
 {
-    p_object_id = world->createObject( "player", glm::vec3( 0, 5, 0));
+    p_object_id = world->createObject( "player", glm::vec3( 0, 20, 0));
 
     p_target_world = world;
 }

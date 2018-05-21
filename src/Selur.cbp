@@ -55,6 +55,7 @@
 					<Add option="-g" />
 					<Add directory="engine/" />
 					<Add directory="graphic/" />
+					<Add directory="engine" />
 				</Compiler>
 				<Linker>
 					<Add option="-lSDL2  -lSDL2_image" />
@@ -177,6 +178,8 @@
 		<Unit filename="engine/openvr_models.h" />
 		<Unit filename="engine/openvr_rendermodel.cpp" />
 		<Unit filename="engine/openvr_rendermodel.h" />
+		<Unit filename="engine/physic.cpp" />
+		<Unit filename="engine/physic.h" />
 		<Unit filename="engine/player.cpp" />
 		<Unit filename="engine/player.h" />
 		<Unit filename="engine/world.cpp" />

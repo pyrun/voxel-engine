@@ -130,7 +130,7 @@ int world::createObject( std::string name, glm::vec3 position) {
     // set up def.
     l_bdef.type = b3BodyType::e_dynamicBody;
     l_bdef.fixedRotationX = true;
-    l_bdef.fixedRotationY = true;
+    l_bdef.fixedRotationY = false;
     l_bdef.fixedRotationZ = true;
     b3Body* l_body = getPhysicWorld()->CreateBody(l_bdef);
     l_object->setBody( l_body);
@@ -576,13 +576,21 @@ void world::process_thrend_physic() {
     while( (float)SDL_GetTicks() - p_time > WORLD_PHYSIC_FIXED_TIMESTEP*1000.f) {
         // p_time calculate
         p_time += ((float)WORLD_PHYSIC_FIXED_TIMESTEP*1000.f);
-        const u32 velocityIterations = 8; // Number of iterations for the velocity constraint solver.
+        const u32 velocityIterations = 5; // Number of iterations for the velocity constraint solver.
         const u32 positionIterations = 2; // Number of iterations for the position constraint solver.
         // fixed step
         SDL_LockMutex ( p_mutex_physic);
         if( p_physicScene)
             p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
         SDL_UnlockMutex ( p_mutex_physic);
+
+        /*for( object *l_object: p_objects) {
+            l_object->addVelocity( glm::vec3( 0.0, -0.001f, 0.0) );
+            physic::checkCollisionVoxel( getChunkWithPosition( glm::vec3() ), l_object );
+            //l_
+            //l_object->addPosition( l_object->getVerlocity());
+            l_object->setUpdate();
+        }*/
     }
 }
 

@@ -20,7 +20,7 @@ class debug_draw : public b3Draw {
             vec->z = vecValue.z;
         }
 
-        void drawSphere(double r, int lats, int longs, b3Vec3 point);
+        void drawSphere(float radius, unsigned int rings, unsigned int sectors);
 
         void drawCapsuleSphere(const b3CapsuleShape* s, const b3Color& c, const b3Transform& xf);
         void drawHull(const b3HullShape* s, const b3Color& c, const b3Transform& xf);

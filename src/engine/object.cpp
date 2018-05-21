@@ -270,8 +270,8 @@ void object_type::setPhysic( b3Body *body)
         body->AddBox( *l_obj);
     }*/
     b3ShapeDef l_shapeDef;
-    l_shapeDef.density = 40.0f;
-    l_shapeDef.friction = 0.6f;
+    l_shapeDef.density = 2.0f;
+    l_shapeDef.friction = 0.8f;
 
 
     b3CapsuleShape cs;
@@ -279,7 +279,7 @@ void object_type::setPhysic( b3Body *body)
     cs.m_centers[1].Set(0.0f, -0.15f, 0.0f);
     cs.m_radius = 0.5f;
 
-    l_shapeDef.shape = &cs;
+    l_shapeDef.shape = &p_hullDef; //p_hullDef
 
     body->CreateShape(l_shapeDef);
 
@@ -359,6 +359,7 @@ void object::setPosition( glm::vec3 pos, bool body)
         p_body->SetTransform( b3Vec3( pos.x, pos.y, pos.z), b3Vec3( p_rot.x, p_rot.y, p_rot.z), 0 );
         //p_body->SetLinearVelocity( q3Vec3( 0, 0, 0) );
     }
+
     p_pos = pos;
     p_model_change = true;
 }

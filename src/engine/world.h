@@ -8,6 +8,7 @@
 #include "chunk.h"
 #include "block.h"
 #include "object.h"
+#include "physic.h"
 #include "landscape_generator.h"
 #include "../engine/config.h"
 #include "../system/timer.h"
@@ -16,12 +17,11 @@
 #define WORLD_HANDLE_THRENDS 1
 #define WORLD_UPDATE_THRENDS 3
 
-#define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0f / 120.0f )
+#define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0f / 60.0f )
 
 Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
-class world_physic: public b3World
-{
+class world_physic: public b3World {
     public:
         void setDebugDraw( b3Draw *draw )  {
             this->m_debugDraw = draw;

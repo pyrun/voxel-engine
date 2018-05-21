@@ -78,6 +78,15 @@ class object {
         glm::vec3 rotationMatrixToEulerAngles(b3Mat33 &R);
         void setId( int id) { p_id = id; }
         int getId() { return p_id; }
+
+        void addVelocity( glm::vec3 velocity) { p_velocity += velocity; }
+        void setVelocity( glm::vec3 velocity) { p_velocity = velocity; }
+        glm::vec3 getVerlocity() { return p_velocity; }
+
+        void addPosition( glm::vec3 position) { p_pos += position; }
+        glm::vec3 getPosition() { return p_pos; }
+
+        void setUpdate( bool change = true) { p_model_change = change; }
     protected:
     public:
         int p_id;
@@ -90,6 +99,9 @@ class object {
         object_type *p_type;
 
         b3Body* p_body;
+
+        //glm::vec3 p_position;
+        glm::vec3 p_velocity;
 };
 
 class object_handle

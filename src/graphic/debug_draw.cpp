@@ -24,46 +24,40 @@ debug_draw::~debug_draw() {
     }
 }
 
-/*void debug_draw::drawCube(){
-    GLfloat cube_vertices[] = {
-        // front
-        -1.0, -1.0,  1.0,
-         1.0, -1.0,  1.0,
-         1.0,  1.0,  1.0,
-        -1.0,  1.0,  1.0,
-        // back
-        -1.0, -1.0, -1.0,
-         1.0, -1.0, -1.0,
-         1.0,  1.0, -1.0,
-        -1.0,  1.0, -1.0,
-      };
-    GLushort cube_elements[] = {
-		// front
-		0, 1, 2,
-		2, 3, 0,
-		// right
-		1, 5, 6,
-		6, 2, 1,
-		// back
-		7, 6, 5,
-		5, 4, 7,
-		// left
-		4, 0, 3,
-		3, 7, 4,
-		// bottom
-		4, 5, 1,
-		1, 0, 4,
-		// top
-		3, 2, 6,
-		6, 7, 3,
-	};
-}*/
+void debug_draw::drawSphere(float radius, unsigned int rings, unsigned int sectors)
+{
+    float const R = 1./(float)(rings-1);
+    float const S = 1./(float)(sectors-1);
+    int r, s;
+    glm::vec3 color = glm::vec3( 1, 0, 0);
+
+    for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
+            float const y = sin( -(M_PI*M_PI) + M_PI * r * R );
+            float const x = cos(2*M_PI * s * S) * sin( M_PI * r * R );
+            float const z = sin(2*M_PI * s * S) * sin( M_PI * r * R );
+
+            setVec3( &p_vertex[p_vector_size+0], b3Vec3( x * radius, y * radius, z * radius));
+            setVec3( &p_normal[p_vector_size+0], b3Vec3( x, y, z) );
+            setVec3( &p_color[p_vector_size+0], b3Vec3( color.r,  color.g, color.b) );
+
+            p_vector_size += 1;
+    }
+
+    /*indices.resize(rings * sectors * 4);
+    std::vector<GLushort>::iterator i = indices.begin();
+    for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
+            *i++ = r * sectors + s;
+            *i++ = r * sectors + (s+1);
+            *i++ = (r+1) * sectors + (s+1);
+            *i++ = (r+1) * sectors + s;
+    }*/
+}
 
 void debug_draw::drawCapsuleSphere(const b3CapsuleShape* s, const b3Color& c, const b3Transform& xf) {
     b3Vec3 p1 = xf * s->m_centers[0];
     b3Vec3 p2 = xf * s->m_centers[1];
 
-    //drawSphere( 10, 20, 20, p1);
+    drawSphere( 10, 20, 20);
     //drawSphere( 1, 20, 25, p2);
 }
 
