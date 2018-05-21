@@ -26,15 +26,24 @@ engine::engine() {
     p_landscape_generator = new landscape( p_config);
     p_network = new network( p_config);
 
+    // load all objects
+    p_object_handle = new object_handle();
+    p_object_handle->load( p_config);
+
     // set block list up
     p_blocklist = new block_list( p_config);
     p_blocklist->init( p_graphic, p_config);
 
     // set up start world
-    world *l_world = new world( p_blocklist, "0");
+    world *l_world = new world( p_blocklist, "0", p_object_handle);
     l_world->setGenerator( p_landscape_generator);
     p_worlds.push_back( l_world);
     p_world_player = p_worlds[0];
+
+    // player
+    p_players.push_back( new player(p_world_player) );
+
+    p_player = p_players[0];
 }
 
 engine::~engine() {
@@ -146,15 +155,22 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
-    p_world_player->draw( p_graphic, l_shader);
+    p_world_player->drawVoxel( p_graphic, l_shader);
 
     // render object
-    /*l_shader = p_graphic->getObjectShader();
+    l_shader = p_graphic->getObjectShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
-    p_graphic->addShadowMatrix( l_shader);
-    p_network->drawEntitys( l_shader);*/
+    p_world_player->drawObjects( p_graphic, l_shader);
+
+    // draw debug lines
+    l_shader = p_graphic->getDebugShader();
+    l_shader->Bind();
+    l_shader->update( MAT_PROJECTION, projection);
+    l_shader->update( MAT_VIEW, view);
+    l_shader->update( MAT_MODEL, glm::mat4( 1));
+    p_world_player->DebugDraw( l_shader);
 
     // we are done
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -177,24 +193,69 @@ void engine::fly( int l_delta) {
         cam->MoveUp( -Speed*l_delta);
 }
 
+void engine::walk( int l_delta) {
+    glm::vec3 l_up(0.0f, 1.0f, 0.0f);
+    float Speed = 50.5f;
+    Camera *l_cam = p_graphic->getCamera();
+    b3Body *l_player_body = p_player->getBody();
+    b3Vec3 l_force_object = l_player_body->GetLinearVelocity();
+
+    if( p_input.Map.Up ) {
+        glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( l_cam->getUp(), l_cam->getForward())), l_up) * (float)l_delta * Speed;
+
+
+        if( abs( l_force_object.x) + abs( l_force_object.z) < 4.f) {
+
+            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
+
+            l_player_body->ApplyForceToCenter( l_b3force, true );
+        }
+
+        //l_player_body->SetTransform( l_player_body->GetPosition() + b3Vec3( 0, 1, 0) );
+    }
+
+    if( p_input.Map.Down ) {
+        glm::vec3 l_force = -glm::cross( glm::normalize(glm::cross( l_cam->getUp(), l_cam->getForward())), l_up) * (float)l_delta * Speed;
+
+        if( abs( l_force_object.x) + abs( l_force_object.z) < 4.f) {
+            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
+            l_player_body->ApplyForceToCenter( l_b3force, true);
+        }
+
+        //l_player_body->SetTransform( l_player_body->GetPosition() + b3Vec3( 0, 1, 0) );
+    }
+    if( p_input.Map.Right ) {
+        glm::vec3 l_force = -glm::cross( l_cam->getUp(), l_cam->getForward()) * (float)l_delta * Speed;
+
+        if( abs( l_force_object.x) + abs( l_force_object.z) < 4.f) {
+            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
+            l_player_body->ApplyForceToCenter( l_b3force, true );
+        }
+    }
+    if( p_input.Map.Left ) {
+        glm::vec3 l_force = glm::cross( l_cam->getUp(), l_cam->getForward()) * (float)l_delta * Speed;
+
+        if( abs( l_force_object.x) + abs( l_force_object.z) < 4.f) {
+            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
+
+            l_player_body->ApplyForceToCenter( l_b3force, true );
+        }
+    }
+    if( p_input.Map.Jump && !p_input.MapOld.Jump)
+        l_player_body->ApplyForceToCenter( b3Vec3( 0, 20000, 0), true );
+    if( p_input.Map.Shift );
+}
+
+
 void engine::run() {
     // set variables
     Timer l_timer;
     std::string l_title;
     struct clock l_clock;
     glm::mat4 l_mvp;
-
     int l_delta = 0;
 
-    Timer l_timer_test;
-    /*ServerCreated_ServerSerialized* l_hand = NULL;
-
-    if( p_network->isServer()) {
-        l_hand = new ServerCreated_ServerSerialized();
-        l_hand->setPosition( glm::vec3( 0, 15, 5) );
-        p_network->addObject( l_hand);
-        l_hand->p_name = "box";
-    }*/
+    //p_world_player->createObject( "player", glm::vec3( 0, 5, 0) );
 
     if( !p_network->isClient()) {
         if( !p_world_player->load()) {
@@ -207,15 +268,13 @@ void engine::run() {
         }
     }
 
-    //l_hand->p_type = p_network->getObjectList()->get( l_hand->p_name.C_String());
-
-    if( p_openvr) { // dirty hack
+    if( p_openvr) { // dirty hack -> force openVR resolution
         glm::vec2 l_oldSize = p_graphic->getDisplay()->getSize();
         p_graphic->getDisplay()->setSize( p_openvr->getScreenSize());
         p_graphic->resizeDeferredShading();
     }
 
-    p_graphic->getCamera()->GetPos().y = 20;
+    p_graphic->getCamera()->addPos( glm::vec3( 0, 5, 0));
 
     // set up clock
     l_clock.tick();
@@ -233,20 +292,22 @@ void engine::run() {
         if( p_config->get( "fly", "engine", "false") == "true")
             fly( l_delta);
 
+        if( p_player) {
+            cam->setPos( p_player->getPositonHead());
+            walk( l_delta);
+        }
+
         if( p_input.getResize()) {
             p_graphic->resizeWindow( p_input.getResizeW(), p_input.getResizeH());
             p_config->set( "width", std::to_string( p_input.getResizeW()), "graphic");
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
 
-        //if( p_network->process( l_delta))
-        //    p_isRunnig = false;
+        for( world *l_world:p_worlds)
+            l_world->process_object_handling();
 
         if( p_input.Map.Inventory && !p_input.MapOld.Inventory ) {
-            //if( l_hand)
-            //    l_hand->setPosition( cam->GetPos() + glm::vec3( 0, 2, 0) );
-            //l_hand->getBody()->SetLinearVelocity( q3Vec3( 0, 0, 0));
-            //l_hand->getBody()->ApplyForceAtWorldPoint( q3Vec3( 0, -100, 100),  q3Vec3( 0, 0, 0));
+
         }
 
         /// render #1 openVR
@@ -265,23 +326,20 @@ void engine::run() {
             p_graphic->renderDeferredShading();
             p_openvr->renderEndRightEye();
 
-            //l_timer.Start();
             p_openvr->renderFrame();
         }
 
 
         /// render #2 window
 
-
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
         glm::mat4 l_projection = p_graphic->getCamera()->getProjection();
 
-        l_timer_test.Start();
         render( l_view_cam, l_projection);
         p_graphic->getDisplay()->clear( false);
         p_graphic->renderDeferredShading();
 
-        raycastView( p_graphic->getCamera()->GetPos(), p_graphic->getCamera()->GetForward(), 300);
+        raycastView( p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
 
         p_graphic->getDisplay()->swapBuffers();
 
@@ -304,7 +362,7 @@ void engine::run() {
         double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
-        l_title = l_title + " X_" + NumberToString( cam->GetPos().x) + " Y_" + NumberToString( cam->GetPos().y) + " Z_" + NumberToString( cam->GetPos().z );
+        l_title = l_title + " X_" + NumberToString( cam->getPos().x) + " Y_" + NumberToString( cam->getPos().y) + " Z_" + NumberToString( cam->getPos().z );
         l_title = l_title + " Chunks_" + NumberToString( (double) p_world_player->getAmountChunks()) + "/" + NumberToString( (double)p_world_player->getAmountChunksVisible() );
         p_graphic->getDisplay()->setTitle( l_title);
 

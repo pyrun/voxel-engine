@@ -1,5 +1,0 @@
-<object name="hand" script="script.lua" timer="200" gravity="0">
-	<file size="0.3">DiscoBall.obj</file>
-	<texture2>bricks.jpg</texture2>
-</object>
-

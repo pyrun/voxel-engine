@@ -11,8 +11,10 @@ graphic::graphic( config *config) {
     // loading the shader
     p_gbuffer = new Shader( "shader/g_buffer");
     p_deferred_shading = new Shader( "shader/deferred_shading");
+
     p_voxel = new Shader( "shader/voxels");
     p_object = new Shader( "shader/object");
+    p_debug = new Shader( "shader/debug");
 
     // set up camera
     p_camera = new Camera( glm::vec3( -0.5f, 0.0f, -0.5f), graphic_fov, (float)p_display->getWidth()/(float)p_display->getHeight(), graphic_znear, graphic_zfar);
@@ -23,7 +25,7 @@ graphic::graphic( config *config) {
     /*createLight( glm::vec3( 6, 15, 0), glm::vec3( 0, 1.0, 1.0));
     createLight( glm::vec3( 0, 15, 6), glm::vec3( 1, 1.0, 1.0));
     createLight( glm::vec3( 6, 15, 6), glm::vec3( 1, 0.5, 0.5));*/
-    createLight( glm::vec3( 0, 15, 0), glm::vec3( 1, 1, 1));
+    createLight( glm::vec3( 0, -5, 0), glm::vec3( 1, 1, 1));
     createLight( glm::vec3( 0, 5, 0), glm::vec3( 1, 1, 1));
 }
 
@@ -32,6 +34,7 @@ graphic::~graphic() {
     delete p_deferred_shading;
     delete p_camera;
     delete p_voxel;
+    delete p_debug;
     delete p_display;
 }
 

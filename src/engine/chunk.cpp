@@ -136,6 +136,8 @@ bool Chunk::createPhysicBody( b3World *world, SDL_mutex *mutex) {
 
 
     p_shape = new b3ShapeDef();
+    p_shape->friction = 1.5f;
+    p_shape->restitution = 0.1f;
     p_shape->shape = &l_meshShape;
 
     p_body->CreateShape( *p_shape);

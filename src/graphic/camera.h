@@ -26,9 +26,12 @@ public:
     glm::mat4 getProjection() const{ return p_projection; }
 	glm::mat4 getProjectionOrtho() const{ return p_projection_ortho; }
 
-	inline glm::vec3& GetPos() { return p_position; }
-	inline glm::vec3& GetForward() { return p_direction; }
-	inline glm::vec3& GetUp() { return p_up; }
+	inline glm::vec3 getPos() { return p_position; }
+	inline glm::vec3 getForward() { return p_direction; }
+	inline glm::vec3 getUp() { return p_up; }
+
+	void setPos( glm::vec3 position) { p_position = position; }
+	void addPos( glm::vec3 position) { p_position += position; }
 
 	inline glm::mat4 getViewWithoutUp() { return glm::lookAt(p_position, p_position + glm::vec3( p_direction.x, 0.f, p_direction.z ), glm::vec3( 0, 1.0f, 0)); }
 

@@ -1,6 +1,6 @@
 <object name="box" script="script.lua" timer="200" gravity="40">
-	<file size="0.8">box.obj</file>
+	<file size="0.2">box.obj</file>
 	<texture>bricks.jpg</texture>
-	<hitbox x="0" y="0" z="0" width="0.8" height="0.8" depth="0.8"></hitbox>
+	<hitbox x="0" y="0" z="0" width="0.2" height="0.2" depth="0.2"></hitbox>
 </object>
 

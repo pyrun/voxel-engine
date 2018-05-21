@@ -20,12 +20,15 @@ class debug_draw : public b3Draw {
             vec->z = vecValue.z;
         }
 
+        void drawSphere(double r, int lats, int longs, b3Vec3 point);
+
+        void drawCapsuleSphere(const b3CapsuleShape* s, const b3Color& c, const b3Transform& xf);
         void drawHull(const b3HullShape* s, const b3Color& c, const b3Transform& xf);
         void drawMesh(const b3MeshShape* s, const b3Color& c, const b3Transform& xf);
 
         void drawShape(const b3Shape* s, const b3Color& c, const b3Transform& xf);
 
-        void draw( const b3World& world, glm::mat4 viewmatrix, Shader *shader);
+        void draw( const b3World& world, Shader *shader);
 
         void DrawPoint(const b3Vec3& p, float32 size, const b3Color& color) {}
 
@@ -43,6 +46,10 @@ class debug_draw : public b3Draw {
             setVec3( &p_normal[p_vector_size+0], normal);
             setVec3( &p_normal[p_vector_size+1], normal);
             setVec3( &p_normal[p_vector_size+2], normal);
+
+            setVec3( &p_color[p_vector_size+0], b3Vec3( color.r,  color.g, color.b) );
+            setVec3( &p_color[p_vector_size+1], b3Vec3( color.r,  color.g, color.b) );
+            setVec3( &p_color[p_vector_size+2], b3Vec3( color.r,  color.g, color.b) );
 
             p_vector_size += 3;
             p_change = true;
@@ -84,18 +91,16 @@ class debug_draw : public b3Draw {
         //int p_vector_length;
         int p_vector_size;
 
-        glm::vec3 p_color_pen;
         glm::vec3 p_scale;
-        glm::vec3 p_normal_pen;
 
         std::vector<glm::vec3> p_vertex;
         std::vector<glm::vec3> p_normal;
+        std::vector<glm::vec3> p_color;
 
         GLuint p_vbo_vertex;
         GLuint p_vbo_normal;
+        GLuint p_vbo_color;
         GLuint p_vao;
-
-        GLuint p_mvp;
 };
 
 #endif // DEBUG_DRAW_H

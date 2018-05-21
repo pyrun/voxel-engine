@@ -101,10 +101,11 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
 
         b3Transform l_hitbox_transform;
 		l_hitbox_transform.rotation = b3Diagonal( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z);
-		l_hitbox_transform.position.SetZero();
+		l_hitbox_transform.position = b3Vec3( l_hitbox_pos.x, l_hitbox_pos.y, l_hitbox_pos.z);
 
         // set up box
         p_boxHull.SetTransform( l_hitbox_transform);
+
         p_hullDef.m_hull = &p_boxHull;
 
         /*b3BoxDef l_box;
@@ -155,7 +156,7 @@ bool object_type::load_file( std::string file) {
           tinyobj::real_t l_vertex_y = l_attrib.vertices[3*idx.vertex_index+1];
           tinyobj::real_t l_vertex_z = l_attrib.vertices[3*idx.vertex_index+2];
 
-          if( l_attrib.texcoords[ 0]) {
+          if( !l_attrib.texcoords.empty() ) {
             tinyobj::real_t tx = l_attrib.texcoords[2*idx.texcoord_index+0];
             tinyobj::real_t ty = 1.0f - l_attrib.texcoords[2*idx.texcoord_index+1];
             p_texcoords.push_back( glm::vec2( tx, ty));
@@ -269,9 +270,16 @@ void object_type::setPhysic( b3Body *body)
         body->AddBox( *l_obj);
     }*/
     b3ShapeDef l_shapeDef;
-    l_shapeDef.density = 0.1f;
-    l_shapeDef.friction = 0.3f;
-    l_shapeDef.shape = &p_hullDef;
+    l_shapeDef.density = 40.0f;
+    l_shapeDef.friction = 0.6f;
+
+
+    b3CapsuleShape cs;
+    cs.m_centers[0].Set(0.0f, 0.15f, 0.0f);
+    cs.m_centers[1].Set(0.0f, -0.15f, 0.0f);
+    cs.m_radius = 0.5f;
+
+    l_shapeDef.shape = &cs;
 
     body->CreateShape(l_shapeDef);
 

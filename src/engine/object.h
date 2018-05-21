@@ -76,8 +76,11 @@ class object {
         b3Body* getBody() { return p_body; }
         void setBody( b3Body *body);
         glm::vec3 rotationMatrixToEulerAngles(b3Mat33 &R);
+        void setId( int id) { p_id = id; }
+        int getId() { return p_id; }
     protected:
     public:
+        int p_id;
         bool p_model_change;
         glm::mat4 p_model;
         glm::vec3 p_pos;

@@ -3,12 +3,14 @@
 debug_draw::debug_draw() {
     p_vbo_vertex = 0;
     p_vbo_normal = 0;
+    p_vbo_color = 0;
     p_vao = 0;
 
     p_vector_size = 0;
 
     p_vertex.resize( 1024*512);
     p_normal.resize( 1024*512);
+    p_color.resize( 1024*512);
 
     p_change = true;
 }
@@ -18,7 +20,51 @@ debug_draw::~debug_draw() {
         glDeleteVertexArrays(1, &p_vao );
         glDeleteBuffers(1, &p_vbo_vertex);
         glDeleteBuffers(1, &p_vbo_normal);
+        glDeleteBuffers(1, &p_vbo_color);
     }
+}
+
+/*void debug_draw::drawCube(){
+    GLfloat cube_vertices[] = {
+        // front
+        -1.0, -1.0,  1.0,
+         1.0, -1.0,  1.0,
+         1.0,  1.0,  1.0,
+        -1.0,  1.0,  1.0,
+        // back
+        -1.0, -1.0, -1.0,
+         1.0, -1.0, -1.0,
+         1.0,  1.0, -1.0,
+        -1.0,  1.0, -1.0,
+      };
+    GLushort cube_elements[] = {
+		// front
+		0, 1, 2,
+		2, 3, 0,
+		// right
+		1, 5, 6,
+		6, 2, 1,
+		// back
+		7, 6, 5,
+		5, 4, 7,
+		// left
+		4, 0, 3,
+		3, 7, 4,
+		// bottom
+		4, 5, 1,
+		1, 0, 4,
+		// top
+		3, 2, 6,
+		6, 7, 3,
+	};
+}*/
+
+void debug_draw::drawCapsuleSphere(const b3CapsuleShape* s, const b3Color& c, const b3Transform& xf) {
+    b3Vec3 p1 = xf * s->m_centers[0];
+    b3Vec3 p2 = xf * s->m_centers[1];
+
+    //drawSphere( 10, 20, 20, p1);
+    //drawSphere( 1, 20, 25, p2);
 }
 
 void debug_draw::drawHull(const b3HullShape* s, const b3Color& c, const b3Transform& xf)
@@ -79,12 +125,12 @@ void debug_draw::drawShape(const b3Shape* s, const b3Color& c, const b3Transform
 	{
 	case e_sphereShape:
 	{
-		//DrawSphere((b3SphereShape*)s, c, xf);
+		//drawSphere((b3SphereShape*)s, c, xf);
 		break;
 	}
 	case e_capsuleShape:
 	{
-		//DrawCapsule((b3CapsuleShape*)s, c, xf);
+		drawCapsuleSphere((b3CapsuleShape*)s, c, xf);
 		break;
 	}
 	case e_hullShape:
@@ -104,7 +150,7 @@ void debug_draw::drawShape(const b3Shape* s, const b3Color& c, const b3Transform
 	}
 }
 
-void debug_draw::draw(const b3World& world, glm::mat4 viewmatrix, Shader *shader) {
+void debug_draw::draw(const b3World& world, Shader *shader) {
     for (b3Body* b = world.GetBodyList().m_head; b; b = b->GetNext())
 	{
 		b3Color c;
@@ -139,6 +185,7 @@ void debug_draw::draw(const b3World& world, glm::mat4 viewmatrix, Shader *shader
         printf( "p_vbo_vertex test\n");
         glGenBuffers( 1, &p_vbo_vertex);
         glGenBuffers( 1, &p_vbo_normal);
+        glGenBuffers( 1, &p_vbo_color);
     }
     if( !p_vao) {
         printf( "glGenVertexArrays test\n");
@@ -154,12 +201,14 @@ void debug_draw::draw(const b3World& world, glm::mat4 viewmatrix, Shader *shader
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_normal);
         glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
 
-        glBindVertexArray(0);
+        glEnableVertexAttribArray(2);
+        glBindBuffer( GL_ARRAY_BUFFER, p_vbo_color);
+        glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
 
-        p_mvp = glGetUniformLocation( shader->GetProgram(), "g_mvp");
+        glBindVertexArray(0);
     }
 
-    glUniformMatrix4fv( p_mvp, 1, GL_FALSE, glm::value_ptr( viewmatrix));
+    //glUniformMatrix4fv( p_mvp, 1, GL_FALSE, glm::value_ptr( viewmatrix));
     glBindVertexArray( p_vao);
 
     if( p_change ) {
@@ -169,6 +218,9 @@ void debug_draw::draw(const b3World& world, glm::mat4 viewmatrix, Shader *shader
 
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_normal);
         glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( glm::vec3 ), &p_normal[0], GL_STATIC_DRAW);
+
+        glBindBuffer( GL_ARRAY_BUFFER, p_vbo_color);
+        glBufferData( GL_ARRAY_BUFFER, p_vector_size * sizeof( glm::vec3 ), &p_color[0], GL_STATIC_DRAW);
     }
 
     //glDrawElements( GL_TRIANGLES, p_vector_size, GL_UNSIGNED_INT, 0);

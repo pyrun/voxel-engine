@@ -1,0 +1,6 @@
+<object name="player" script="script.lua" timer="200" gravity="0">
+	<file size="1.0">untitled.obj</file>
+	<texture2>bricks.jpg</texture2>
+	<hitbox x="-0.5" y="0.35" z="0.5" width="0.5" height="0.9" depth="0.5"></hitbox>
+</object>
+

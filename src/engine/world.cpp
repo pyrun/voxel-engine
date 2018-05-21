@@ -50,7 +50,7 @@ static int world_thread_physic(void *data)
     return 0;
 }
 
-world::world( block_list* block_list, std::string name) {
+world::world( block_list* block_list, std::string name, object_handle *objectHandle) {
     p_buysvector = false;
     p_chunk_amount = 0;
     p_chunk_visible_amount = 0;
@@ -62,6 +62,8 @@ world::world( block_list* block_list, std::string name) {
     p_physicScene = NULL;
     p_time = SDL_GetTicks();
     p_name = name;
+    p_pointer_object_handle = objectHandle;
+    p_object_id = 0;
 
     // creating two mutex
     p_mutex_handle = SDL_CreateMutex();
@@ -75,8 +77,9 @@ world::world( block_list* block_list, std::string name) {
     p_thread_physic = SDL_CreateThread( world_thread_physic, "world_thread_physic", (void *)this);
 
     // creating physic handle
-    p_physicScene = new b3World();
+    p_physicScene = new world_physic();
     p_physicScene->SetGravity( b3Vec3(0.0f, -9.8f, 0.0f));
+    p_physicScene->setDebugDraw( &p_renderer);
 }
 
 world::~world() {
@@ -97,11 +100,51 @@ world::~world() {
     SDL_DestroyMutex( p_mutex_handle);
     SDL_DestroyMutex( p_mutex_physic);
 
+    // free objects
+    for( object* l_object:p_objects)
+        delete l_object;
+
     // free ram
     deleteChunks( p_chunk_start);
     while( p_chunk_amount != 0) {
         SDL_Delay(1);
     }
+}
+
+int world::createObject( std::string name, glm::vec3 position) {
+    object *l_object;
+
+    object_type *l_type = p_pointer_object_handle->get( name);
+
+    if( !l_type) {
+        printf( "Type \"%s\"not found\n", name.c_str());
+        return -1;
+    }
+    l_object = new object();
+    l_object->setPosition( position);
+    l_object->setType( l_type);
+    l_object->setId( ++p_object_id);
+
+    // creating the physic body
+    b3BodyDef l_bdef;
+    // set up def.
+    l_bdef.type = b3BodyType::e_dynamicBody;
+    l_bdef.fixedRotationX = true;
+    l_bdef.fixedRotationY = true;
+    l_bdef.fixedRotationZ = true;
+    b3Body* l_body = getPhysicWorld()->CreateBody(l_bdef);
+    l_object->setBody( l_body);
+
+    p_objects.push_back( l_object);
+
+    return 1;
+}
+
+object *world::getObject( int id) {
+    for( object *l_object:p_objects)
+        if( l_object->getId() == id)
+            return l_object;
+    return NULL;
 }
 
 int world::getTile( glm::ivec3 position) {
@@ -374,7 +417,7 @@ void world::process_thrend_handle() {
                 p_lightsAdd.emplace( l_position + l_shift_matrix[i] , l_chunk);
             }
 
-            if( l_position.x + l_shift_matrix[i].x < 1 || l_position.y + l_shift_matrix[i].y < 1 || l_position.z + l_shift_matrix[i].z < 1 ||
+            if( l_position.x + l_shift_matrix[i].x < 0 || l_position.y + l_shift_matrix[i].y < 0 || l_position.z + l_shift_matrix[i].z < 0 ||
                 l_position.x + l_shift_matrix[i].x > CHUNK_SIZE-1 || l_position.y + l_shift_matrix[i].y > CHUNK_SIZE-1 || l_position.z + l_shift_matrix[i].z > CHUNK_SIZE-1 ) {
 
                 Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos()*CHUNK_SIZE + l_position + l_shift_matrix[i]);
@@ -430,20 +473,16 @@ void world::process_thrend_handle() {
                 p_lightsAdd.emplace( l_new_position, l_chunk);
             }
 
-            if( l_position.x + l_shift_matrix[i].x < 1 || l_position.y + l_shift_matrix[i].y < 1 || l_position.z + l_shift_matrix[i].z < 1 ||
-                l_position.x + l_shift_matrix[i].x > CHUNK_SIZE-1 || l_position.y + l_shift_matrix[i].y > CHUNK_SIZE-1 || l_position.z + l_shift_matrix[i].z > CHUNK_SIZE-1 ) {
+            Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos()*CHUNK_SIZE + l_position + l_shift_matrix[i]);
 
-                Chunk *l_light_chunk = getChunkWithPosition( l_chunk->getPos()*CHUNK_SIZE + l_position + l_shift_matrix[i]);
-
-                if( l_light_chunk) {
-                    // check and add to the queue
-                    bool l_found = false;
-                    for( glm::ivec3 l_chunk_position:l_chunk_update_list)
-                        if( l_chunk_position == l_light_chunk->getPos())
-                            l_found = true;
-                    if( !l_found)
-                        l_chunk_update_list.push_back( l_light_chunk->getPos());
-                }
+            if( l_light_chunk) {
+                // check and add to the queue
+                bool l_found = false;
+                for( glm::ivec3 l_chunk_position:l_chunk_update_list)
+                    if( l_chunk_position == l_light_chunk->getPos())
+                        l_found = true;
+                if( !l_found)
+                    l_chunk_update_list.push_back( l_light_chunk->getPos());
             }
         }
     }
@@ -544,6 +583,12 @@ void world::process_thrend_physic() {
         if( p_physicScene)
             p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
         SDL_UnlockMutex ( p_mutex_physic);
+    }
+}
+
+void world::process_object_handling() {
+    for( object *l_object: p_objects) {
+        l_object->process( );
     }
 }
 
@@ -700,7 +745,13 @@ void world::addDeleteChunk( glm::ivec3 position ) {
     p_deletingList.push( l_obj);
 }
 
-void world::draw( graphic *graphic, Shader *shader) {
+void world::drawObjects( graphic *graphic, Shader *shader) {
+    for( object *l_object: p_objects) {
+        l_object->draw( shader);
+    }
+}
+
+void world::drawVoxel( graphic *graphic, Shader *shader) {
 
     shader->setSize( (graphic->getDisplay()->getTilesetWidth()/16), ( graphic->getDisplay()->getTilesetHeight()/16) );
 

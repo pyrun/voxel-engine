@@ -41,6 +41,7 @@ public:
 
     Shader *getVoxelShader() { return p_voxel; }
     Shader *getObjectShader() { return p_object; }
+    Shader *getDebugShader() { return p_debug; }
     Shader *getGbuffer() { return p_gbuffer; }
 
     inline Camera *getCamera() { if(p_camera == NULL) printf( "graphic::getCamera dont exist\n"); return p_camera; }
@@ -53,6 +54,7 @@ private:
     Shader *p_deferred_shading;
     Shader* p_voxel;
     Shader *p_object;
+    Shader *p_debug;
 
     // render one texture as rec to the screen
     unsigned int p_vao_quad;

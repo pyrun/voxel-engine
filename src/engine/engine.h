@@ -13,6 +13,7 @@
 #include "block.h"
 #include "input.h"
 #include "world.h"
+#include "player.h"
 #include "../engine/config.h"
 #include "../engine/openvr.h"
 #include "../engine/network.h"
@@ -44,9 +45,9 @@ public:
     void render( glm::mat4 view, glm::mat4 projection);
 
     void fly( int l_delta);
-    void run();
+    void walk( int l_delta);
 
-    //network *getNetwork() { return p_network; }
+    void run();
 protected:
 
     void drawBox( glm::mat4 viewProjection, glm::vec3 pos);
@@ -60,9 +61,17 @@ private:
     landscape *p_landscape_generator;
     network *p_network;
 
+    // objects
+    object_handle *p_object_handle;
+    std::vector<player *> p_players;
+
     // world
     std::vector<world *> p_worlds;
+
+    // player
     world *p_world_player;
+    player *p_player;
+
 
     // frame rate
     bool p_framecap;
