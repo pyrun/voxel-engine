@@ -53,6 +53,7 @@
 					<Add directory="engine/" />
 					<Add directory="graphic/" />
 					<Add directory="engine" />
+					<Add directory="cpu/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lSDL2  -lSDL2_image" />
@@ -77,6 +78,7 @@
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bounce/include" />
 					<Add directory="../../lua/include" />
+					<Add directory="cpu/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -119,6 +121,7 @@
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bounce/include" />
 					<Add directory="../../lua/include" />
+					<Add directory="cpu/" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../qu3e/src" />
@@ -149,6 +152,8 @@
 			<Add option="-Wall" />
 			<Add option="-std=c++1y" />
 		</Compiler>
+		<Unit filename="cpu/ocpu.cpp" />
+		<Unit filename="cpu/ocpu.h" />
 		<Unit filename="engine/block.cpp" />
 		<Unit filename="engine/block.h" />
 		<Unit filename="engine/chunk.cpp" />
