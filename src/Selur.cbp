@@ -22,7 +22,6 @@
 					<Add directory="../../glm/" />
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
-					<Add directory="../../bounce/include" />
 					<Add directory="../../lua/include" />
 				</Compiler>
 				<ResourceCompiler>
@@ -34,13 +33,11 @@
 					<Add option="-lglew32" />
 					<Add option="-lopenvr_dll" />
 					<Add option="-lRakNet" />
-					<Add option="-lbounce" />
 					<Add option="-llua53" />
 					<Add directory="../../SDL2/lib" />
 					<Add directory="../../OpenGL/lib" />
 					<Add directory="../../openvr-mingw/lib" />
 					<Add directory="../../RakNet/Lib" />
-					<Add directory="../../bounce/lib" />
 					<Add directory="../../lua/lib" />
 				</Linker>
 			</Target>
@@ -208,8 +205,6 @@
 		<Unit filename="graphic/transform.cpp" />
 		<Unit filename="graphic/transform.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="physic/collision.cpp" />
-		<Unit filename="physic/collision.h" />
 		<Unit filename="system/timer.cpp" />
 		<Unit filename="system/timer.h" />
 		<Unit filename="xml/tinyxml2.cpp" />

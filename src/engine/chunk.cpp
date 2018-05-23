@@ -25,7 +25,7 @@ Chunk::Chunk( glm::ivec3 position, int seed) {
 
     next = NULL;
 
-    p_body = NULL;
+//    p_body = NULL;
     p_seed = seed;
 
     p_vboVertex = -1;
@@ -84,7 +84,7 @@ Chunk::~Chunk() {
     //printf( "~Chunk(): remove data in %dms x%dy%dz%d\n", timer.GetTicks(), p_pos.x, p_pos.y, p_pos.z);
 }
 
-bool Chunk::createPhysicBody( b3World *world, SDL_mutex *mutex) {
+/*bool Chunk::createPhysicBody( b3World *world, SDL_mutex *mutex) {
     if( !p_updateRigidBody || !world || p_changed == true)
         return false;
 
@@ -145,7 +145,7 @@ bool Chunk::createPhysicBody( b3World *world, SDL_mutex *mutex) {
     p_updateRigidBody = false;
 
     return true;
-}
+}*/
 
 bool Chunk::serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks)
 {

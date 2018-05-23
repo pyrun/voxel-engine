@@ -35,7 +35,7 @@ void object_type::init( Transform *transform) {
     transform->setScale( p_size);
 }
 
-bool object_type::load_type( config *config, std::string l_path, std::string l_name) {
+char *object_type::load_type( config *config, std::string l_path, std::string l_name) {
     XMLDocument l_file;
     bool l_idle = false;
 
@@ -43,36 +43,34 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
 
     std::string l_pathfile = l_path + (char*)DEFINITION_FILE;
 
-    // if file dont exist - dont load
-    if( file_exist( l_pathfile) == false) {
-        return false;
-    }
+    // if file don't exist - don't load
+    if( file_exist( l_pathfile) == false)
+        return "file don't found\n";
 
     // load the file
     XMLError l_result = l_file.LoadFile( l_pathfile.c_str());
+    if ( l_result != XML_SUCCESS) {
+        return "xml file was corrupt\n";
+    }
 
-    // check the file
-    XMLCheckResult(l_result);
-
-    //
+    // get the object child element
     XMLElement* l_object = l_file.FirstChildElement( "object" );
     if( l_object == nullptr)
-        return false;
-
+        return "no object child found\n";
     if( l_object->Attribute( "name"))
         p_name = l_object->Attribute( "name");
     else
-        return false;
+        return "object name didn't found\n";
 
     // load file
     XMLElement* l_xml_file = l_object->FirstChildElement( "file" );
     if( !l_xml_file)
-        return false;
+        return "object model file don't found\n";
 
     // get file name
     p_file = l_xml_file->GetText();
     if( !load_file( l_path + p_file))
-        return false;
+        return "object model cant load\n";
 
     // size object
     double l_size = std::strtod( l_xml_file->Attribute( "size"), 0);
@@ -88,35 +86,15 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
     // size of hit box
     XMLElement* l_xml_hitbox = l_object->FirstChildElement( "hitbox" );
     if( l_xml_hitbox) {
-        glm::vec3 l_hitbox_pos;
-        glm::vec3 l_hitbox_size;
+        p_hitbox_offset.x = atof( l_xml_hitbox->Attribute( "x"));
+        p_hitbox_offset.y = atof( l_xml_hitbox->Attribute( "y"));
+        p_hitbox_offset.z = atof( l_xml_hitbox->Attribute( "z"));
 
-        l_hitbox_pos.x = atof( l_xml_hitbox->Attribute( "x"));
-        l_hitbox_pos.y = atof( l_xml_hitbox->Attribute( "y"));
-        l_hitbox_pos.z = atof( l_xml_hitbox->Attribute( "z"));
-
-        l_hitbox_size.x = atof( l_xml_hitbox->Attribute( "width"));
-        l_hitbox_size.y = atof( l_xml_hitbox->Attribute( "height"));
-        l_hitbox_size.z = atof( l_xml_hitbox->Attribute( "depth"));
-
-        b3Transform l_hitbox_transform;
-		l_hitbox_transform.rotation = b3Diagonal( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z);
-		l_hitbox_transform.position = b3Vec3( l_hitbox_pos.x, l_hitbox_pos.y, l_hitbox_pos.z);
-
-        // set up box
-        p_boxHull.SetTransform( l_hitbox_transform);
-
-        p_hullDef.m_hull = &p_boxHull;
-
-        /*b3BoxDef l_box;
-        q3Transform l_localSpace;
-        q3Identity( l_localSpace);
-
-        // set pos and box
-        l_localSpace.position.Set( l_hitbox_pos.x, l_hitbox_pos.y, l_hitbox_pos.z);
-        l_box.Set( l_localSpace, q3Vec3( l_hitbox_size.x, l_hitbox_size.y, l_hitbox_size.z) );*/
+        p_hitbox_size.x = atof( l_xml_hitbox->Attribute( "width"));
+        p_hitbox_size.y = atof( l_xml_hitbox->Attribute( "height"));
+        p_hitbox_size.z = atof( l_xml_hitbox->Attribute( "depth"));
     }
-    printf( "l_object_name %s\n", p_name.c_str());
+    return "";
 }
 
 bool object_type::load_file( std::string file) {
@@ -262,13 +240,8 @@ void object_type::draw( glm::mat4 model, Shader* shader)
     glBindVertexArray(0);
 }
 
-void object_type::setPhysic( b3Body *body)
+/*void object_type::setPhysic( b3Body *body)
 {
-    // add boxes
-    /*for( int i = 0; i < (int)p_boxDef.size(); i++) {
-        q3BoxDef *l_obj = &p_boxDef[i];
-        body->AddBox( *l_obj);
-    }*/
     b3ShapeDef l_shapeDef;
     l_shapeDef.density = 2.0f;
     l_shapeDef.friction = 0.8f;
@@ -285,12 +258,12 @@ void object_type::setPhysic( b3Body *body)
 
     //bdef.orientation.Set(b3Vec3(0.0f, 1.0f, 0.0f), 0.5f * B3_PI);
 
-}
+}*/
 
 object::object()
 {
     p_type = NULL;
-    p_body = NULL;
+//    p_body = NULL;
     p_model_change = false;
 }
 
@@ -305,18 +278,18 @@ void object::init()
 
 void object::process()
 {
-    if( p_body) {
-        b3Transform l_transform = p_body->GetTransform();
-        glm::vec3 l_pos = glm::vec3( l_transform.position.x, l_transform.position.y, l_transform.position.z);
-        b3Vec3 l_rot_b;
-        glm::vec3 l_rot; //
-        float l_angle;
+    // to do script
+}
 
-        l_rot = rotationMatrixToEulerAngles( l_transform.rotation);
+void object::process_phyisc() {
+    glm::vec3 l_old_position;
 
-        setPosition( l_pos, false);
-        setRotation( l_rot, false);
-    }
+    l_old_position = p_position;
+    // add velocity
+    p_position += p_velocity;
+
+    //if( abs( p_position.y)-abs(l_old_position.y) > 0.01f );
+    setUpdate();
 }
 
 void object::draw( Shader* shader) {
@@ -334,43 +307,13 @@ void object::update_model() {
 
     p_model_change = false;
 
-    glm::mat4 l_posMat = glm::translate( p_pos);
+    glm::mat4 l_posMat = glm::translate( p_position);
     glm::mat4 l_scaleMat = glm::scale( p_scale);
-    glm::mat4 l_rotX = glm::rotate( p_rot.x, glm::vec3(1.0, 0.0, 0.0));
-    glm::mat4 l_rotY = glm::rotate( p_rot.y, glm::vec3(0.0, 1.0, 0.0));
-    glm::mat4 l_rotZ = glm::rotate( p_rot.z, glm::vec3(0.0, 0.0, 1.0));
+    glm::mat4 l_rotX = glm::rotate( p_rotation.x, glm::vec3(1.0, 0.0, 0.0));
+    glm::mat4 l_rotY = glm::rotate( p_rotation.y, glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 l_rotZ = glm::rotate( p_rotation.z, glm::vec3(0.0, 0.0, 1.0));
     glm::mat4 l_rotMat = l_rotX * l_rotY * l_rotZ;
     p_model = l_posMat * l_rotMat * l_scaleMat;
-}
-
-void object::setTransform( glm::vec3 pos, glm::vec3 rot, bool body)
-{
-    if( p_body && body) {
-        p_body->SetTransform( b3Vec3( pos.x, pos.y, pos.z), b3Vec3( rot.x, rot.y, rot.z), 0 );
-    }
-    p_pos = pos;
-    p_rot = rot;
-    p_model_change = true;
-}
-
-void object::setPosition( glm::vec3 pos, bool body)
-{
-    if( p_body && body) {
-        p_body->SetTransform( b3Vec3( pos.x, pos.y, pos.z), b3Vec3( p_rot.x, p_rot.y, p_rot.z), 0 );
-        //p_body->SetLinearVelocity( q3Vec3( 0, 0, 0) );
-    }
-
-    p_pos = pos;
-    p_model_change = true;
-}
-
-void object::setRotation( glm::vec3 rot, bool body)
-{
-    if( p_body && body) {
-        //p_body->SetTransform( q3Vec3( p_rot.x, p_rot.y, p_rot.z), q3Vec3( rot.x, rot.y, rot.z) );
-    }
-    p_rot = rot;
-    p_model_change = true;
 }
 
 void object::setType( object_type *type)
@@ -379,35 +322,16 @@ void object::setType( object_type *type)
     init();
 }
 
-void object::setBody( b3Body *body)
+void object::setPosition( glm::vec3 position)
 {
-    p_body = body;
-
-    p_type->setPhysic( p_body);
-
-    setTransform( p_pos, p_rot);
+    p_position = position;
+    p_model_change = true;
 }
 
-glm::vec3 object::rotationMatrixToEulerAngles(b3Mat33 &R)
+void object::setRotation( glm::vec3 rotation)
 {
-    float sy = sqrt(R[0][0] * R[0][0] +  R[1][0] * R[1][0] );
-
-    bool singular = sy < 1e-6; // If magic
-
-    float x, y, z;
-    if (!singular)
-    {
-        x = atan2(R[2][1] , R[2][2]);
-        y = atan2(-R[2][0], sy);
-        z = atan2(R[1][0], R[0][0]);
-    }
-    else
-    {
-        x = atan2(-R[1][2], R[1][1]);
-        y = atan2(-R[2][0], sy);
-        z = 0;
-    }
-    return glm::vec3(-x, -y, -z);
+    p_rotation = rotation;
+    p_model_change = true;
 }
 
 /// object_handle
@@ -455,13 +379,15 @@ bool object_handle::load_folder( std::string folder, config *config) {
         object_type *l_type = new object_type();
 
         // load type
-        if( l_type->load_type( config, folder, l_entry->d_name) == false) {
+        if( strlen( l_type->load_type( config, folder, l_entry->d_name)) > 0 ) {
             delete l_type;
             l_type = NULL;
             load_folder( l_file, config);
         }
-        if( l_type)
+        if( l_type) {
+            printf( "object_handle::load_folder \"%s\" loaded\n", l_type->getName().c_str());
             p_types.push_back( l_type);
+        }
     }
     closedir(l_dir);
 

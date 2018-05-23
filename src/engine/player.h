@@ -12,8 +12,6 @@ class player
 
         void setPosition( glm::vec3 position);
         glm::vec3 getPositonHead();
-
-        b3Body *getBody();
     protected:
 
     private:

@@ -1,14 +1,12 @@
 #ifndef DEBUG_DRAW_H
 #define DEBUG_DRAW_H
 
-#include <bounce/bounce.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "shader.h"
 #include "graphic.h"
-
+/*
 class debug_draw : public b3Draw {
     public:
         debug_draw();
@@ -101,6 +99,6 @@ class debug_draw : public b3Draw {
         GLuint p_vbo_normal;
         GLuint p_vbo_color;
         GLuint p_vao;
-};
+};*/
 
 #endif // DEBUG_DRAW_H

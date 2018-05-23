@@ -59,11 +59,11 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
     p_world_tree_empty = true;
     p_blocklist = block_list;
     p_destroy = false;
-    p_physicScene = NULL;
     p_time = SDL_GetTicks();
     p_name = name;
     p_pointer_object_handle = objectHandle;
     p_object_id = 0;
+    p_gravity = glm::vec3( 0, -100.0/1000., 0);
 
     // creating two mutex
     p_mutex_handle = SDL_CreateMutex();
@@ -75,11 +75,6 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
     p_thread_physic = SDL_CreateThread( world_thread_physic, "world_thread_physic", (void *)this);
-
-    // creating physic handle
-    p_physicScene = new world_physic();
-    p_physicScene->SetGravity( b3Vec3(0.0f, -9.8f, 0.0f));
-    p_physicScene->setDebugDraw( &p_renderer);
 }
 
 world::~world() {
@@ -117,7 +112,7 @@ int world::createObject( std::string name, glm::vec3 position) {
     object_type *l_type = p_pointer_object_handle->get( name);
 
     if( !l_type) {
-        printf( "Type \"%s\"not found\n", name.c_str());
+        printf( "world::createObject type \"%s\"not found\n", name.c_str());
         return -1;
     }
     l_object = new object();
@@ -126,14 +121,14 @@ int world::createObject( std::string name, glm::vec3 position) {
     l_object->setId( ++p_object_id);
 
     // creating the physic body
-    b3BodyDef l_bdef;
+    /*b3BodyDef l_bdef;
     // set up def.
     l_bdef.type = b3BodyType::e_dynamicBody;
     l_bdef.fixedRotationX = true;
     l_bdef.fixedRotationY = false;
     l_bdef.fixedRotationZ = true;
     b3Body* l_body = getPhysicWorld()->CreateBody(l_bdef);
-    l_object->setBody( l_body);
+    l_object->setBody( l_body);*/
 
     p_objects.push_back( l_object);
 
@@ -557,6 +552,8 @@ void world::process_thrend_update() {
 }
 
 void world::process_thrend_physic() {
+
+    /*
     // Reset Idle time -> bis der Chunk sich selbst löscht
     Chunk *node = p_chunk_start;
     for( ;; ) {
@@ -570,27 +567,29 @@ void world::process_thrend_physic() {
 
         // next
         node = node->next;
-    }
+    }*/
 
     // check if time pass
     while( (float)SDL_GetTicks() - p_time > WORLD_PHYSIC_FIXED_TIMESTEP*1000.f) {
         // p_time calculate
         p_time += ((float)WORLD_PHYSIC_FIXED_TIMESTEP*1000.f);
-        const u32 velocityIterations = 5; // Number of iterations for the velocity constraint solver.
-        const u32 positionIterations = 2; // Number of iterations for the position constraint solver.
-        // fixed step
-        SDL_LockMutex ( p_mutex_physic);
-        if( p_physicScene)
-            p_physicScene->Step( WORLD_PHYSIC_FIXED_TIMESTEP, velocityIterations, positionIterations);
-        SDL_UnlockMutex ( p_mutex_physic);
 
-        /*for( object *l_object: p_objects) {
-            l_object->addVelocity( glm::vec3( 0.0, -0.001f, 0.0) );
-            physic::checkCollisionVoxel( getChunkWithPosition( glm::vec3() ), l_object );
-            //l_
-            //l_object->addPosition( l_object->getVerlocity());
-            l_object->setUpdate();
-        }*/
+        for( object *l_object: p_objects) {
+            l_object->addVelocity( p_gravity*WORLD_PHYSIC_FIXED_TIMESTEP);
+
+            glm::vec3 l_collision_position = l_object->getPosition() + l_object->getVerlocity();
+            for( int i = 0; i < 10; i++) {
+                glm::ivec3 l_check_tile = glm::ivec3( l_collision_position.x, l_collision_position.y + i, l_collision_position.z);
+                if( this->getTile( l_check_tile) != EMPTY_BLOCK_ID ) {
+                    if( physic::testAABB( l_collision_position, l_object->getType()->getHitbox(), l_check_tile, glm::vec3( 1)))
+                        l_object->setVelocity( glm::vec3(0));
+                    break;
+                }
+            }
+
+
+            l_object->process_phyisc();
+        }
     }
 }
 

@@ -44,7 +44,7 @@ engine::engine() {
     // player
     p_players.push_back( new player(p_world_player) );
 
-    p_player = p_players[0];
+    //p_player = p_players[0];
 }
 
 engine::~engine() {
@@ -144,6 +144,7 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
         p_world_player->load();
 }
 
+
 void engine::render( glm::mat4 view, glm::mat4 projection) {
     Shader *l_shader = NULL;
 
@@ -166,12 +167,12 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     p_world_player->drawObjects( p_graphic, l_shader);
 
     // draw debug lines
-    l_shader = p_graphic->getDebugShader();
+    /*l_shader = p_graphic->getDebugShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
     l_shader->update( MAT_MODEL, glm::mat4( 1));
-    p_world_player->DebugDraw( l_shader);
+    p_world_player->DebugDraw( l_shader);*/
 
     // we are done
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -196,55 +197,9 @@ void engine::fly( int l_delta) {
 
 void engine::walk( int l_delta) {
     glm::vec3 l_up(0.0f, 1.0f, 0.0f);
-    float l_speed_inc = 20.5f;
-    float l_max_speed = 5.f;
+    float l_speed_inc = 1.5f;
+    float l_max_speed = 10.f;
     Camera *l_cam = p_graphic->getCamera();
-    b3Body *l_player_body = p_player->getBody();
-    b3Vec3 l_force_object = l_player_body->GetLinearVelocity();
-
-    if( p_input.Map.Up ) {
-        glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( l_cam->getUp(), l_cam->getForward())), l_up) * (float)l_delta * l_speed_inc;
-
-        if( abs( l_force_object.x) + abs( l_force_object.z) < l_max_speed) {
-
-            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
-
-            l_player_body->ApplyForceToCenter( l_b3force, true);
-        }
-
-        //l_player_body->SetTransform( l_player_body->GetPosition() + b3Vec3( 0, 1, 0) );
-    }
-
-    if( p_input.Map.Down ) {
-        glm::vec3 l_force = -glm::cross( glm::normalize(glm::cross( l_cam->getUp(), l_cam->getForward())), l_up) * (float)l_delta * l_speed_inc;
-
-        if( abs( l_force_object.x) + abs( l_force_object.z) < l_max_speed) {
-            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
-            l_player_body->ApplyForceToCenter( l_b3force, true);
-        }
-
-        //l_player_body->SetTransform( l_player_body->GetPosition() + b3Vec3( 0, 1, 0) );
-    }
-    if( p_input.Map.Right ) {
-        glm::vec3 l_force = -glm::cross( l_cam->getUp(), l_cam->getForward()) * (float)l_delta * l_speed_inc;
-
-        if( abs( l_force_object.x) + abs( l_force_object.z) < l_max_speed) {
-            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
-            l_player_body->ApplyForceToCenter( l_b3force, true );
-        }
-    }
-    if( p_input.Map.Left ) {
-        glm::vec3 l_force = glm::cross( l_cam->getUp(), l_cam->getForward()) * (float)l_delta * l_speed_inc;
-
-        if( abs( l_force_object.x) + abs( l_force_object.z) < l_max_speed) {
-            b3Vec3 l_b3force = b3Vec3( l_force.x, 0.0, l_force.z);
-
-            l_player_body->ApplyForceToCenter( l_b3force, true );
-        }
-    }
-    if( p_input.Map.Jump && !p_input.MapOld.Jump)
-        l_player_body->ApplyForceToCenter( b3Vec3( 0, 1000, 0), true );
-    if( p_input.Map.Shift );
 }
 
 

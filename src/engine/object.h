@@ -4,8 +4,6 @@
 #include <dirent.h>
 #include <algorithm>
 
-#include <bounce/bounce.h>
-
 #include "../xml/tinyxml2.h"
 
 #include "../graphic/graphic.h"
@@ -18,9 +16,9 @@ class object_type {
         object_type();
         ~object_type();
 
-        void init(  Transform *transform);
+        void init( Transform *transform);
 
-        bool load_type( config *config, std::string l_path, std::string l_name);
+        char *load_type( config *config, std::string l_path, std::string l_name);
         bool load_file( std::string file);
 
         void updateVbo();
@@ -30,7 +28,8 @@ class object_type {
 
         std::string getName() { return p_name; }
         glm::vec3 getScale() { return p_size; }
-        void setPhysic( b3Body *body);
+
+        glm::vec3 getHitbox() { return p_hitbox_size; }
     private:
         std::string p_name;
         std::string p_file;
@@ -51,9 +50,8 @@ class object_type {
         GLuint p_vbo_index;
         GLuint p_vbo_texture;
 
-        // physic
-        b3BoxHull p_boxHull;
-        b3HullShape p_hullDef;
+        glm::vec3 p_hitbox_offset;
+        glm::vec3 p_hitbox_size;
 };
 
 class object {
@@ -64,18 +62,15 @@ class object {
         void init();
 
         void process();
+        void process_phyisc();
+
         void draw( Shader* shader);
 
         void update_model();
 
-        void setTransform( glm::vec3 pos, glm::vec3 rot, bool body = true);
-        void setPosition( glm::vec3 pos, bool body = true);
-        void setRotation( glm::vec3 rot, bool body = true);
         void setType( object_type *type);
         object_type *getType() { return p_type; }
-        b3Body* getBody() { return p_body; }
-        void setBody( b3Body *body);
-        glm::vec3 rotationMatrixToEulerAngles(b3Mat33 &R);
+
         void setId( int id) { p_id = id; }
         int getId() { return p_id; }
 
@@ -83,24 +78,27 @@ class object {
         void setVelocity( glm::vec3 velocity) { p_velocity = velocity; }
         glm::vec3 getVerlocity() { return p_velocity; }
 
-        void addPosition( glm::vec3 position) { p_pos += position; }
-        glm::vec3 getPosition() { return p_pos; }
+        void setPosition( glm::vec3 position);
+        void addPosition( glm::vec3 position) { p_position += position; }
+        glm::vec3 getPosition() { return p_position; }
+
+        void setRotation( glm::vec3 rotation);
+        void addRotation( glm::vec3 rotation) { p_rotation += rotation; }
 
         void setUpdate( bool change = true) { p_model_change = change; }
     protected:
-    public:
+    private:
         int p_id;
+
         bool p_model_change;
+
         glm::mat4 p_model;
-        glm::vec3 p_pos;
-        glm::vec3 p_rot;
+        glm::vec3 p_position;
+        glm::vec3 p_rotation;
         glm::vec3 p_scale;
 
         object_type *p_type;
 
-        b3Body* p_body;
-
-        //glm::vec3 p_position;
         glm::vec3 p_velocity;
 };
 

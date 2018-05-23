@@ -1,7 +1,6 @@
 #ifndef CHUNK_H
 #define CHUNK_H 1
 
-#include <bounce/bounce.h>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -39,7 +38,7 @@ public:
     // pointer
     Chunk *next;
 
-    bool createPhysicBody( b3World *world, SDL_mutex *mutex);
+//    bool createPhysicBody( b3World *world, SDL_mutex *mutex);
     bool serialize( bool writeToBitstream, RakNet::BitStream *bitstream, int start, int end, block_list *blocks);
     int getSeed() { return p_seed; };
 
@@ -74,7 +73,7 @@ public:
     void changed( bool set, bool vbo_changed = false) { p_changed = set; p_updateVbo = vbo_changed; }
     bool isChanged() { return p_changed; }
 
-    b3Body* getBody() { return p_body; }
+//    b3Body* getBody() { return p_body; }
 protected:
 private:
     glm::ivec3 p_pos;
@@ -98,9 +97,9 @@ private:
     unsigned short* p_tile;
     unsigned char* p_lighting;
 
-    b3Body* p_body;
+/*    b3Body* p_body;
     b3ShapeDef *p_shape;
-    b3Mesh *p_mesh;
+    b3Mesh *p_mesh;*/
 
     // side
     std::vector<unsigned int> p_indices;

@@ -3,6 +3,15 @@
 const float SMALLER = (1.0f / 16.0f); // 16pxl width
 const float EPSILON = (1.0f / 1024.0f);
 
+bool physic::testAABB( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2)
+{
+    // check for overlap
+    if ( fabs(position1.x - position2.x) > (size1.x + size2.x) ) return false;
+    if ( fabs(position1.y - position2.y) > (size1.y + size2.y) ) return false;
+    if ( fabs(position1.z - position2.z) > (size1.z + size2.z) ) return false;
+    return true;
+};
+
 bool physic::checkLineCollision( Chunk* chunk, glm::vec3 from, glm::vec3 to) {
 
     bool l_found = false;

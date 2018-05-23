@@ -51,7 +51,7 @@ public:
 	inline int getBackgroundAlpha() { return p_alpha; }
 
 	inline SDL_Window* getWindow() { return p_window; }
-	inline SDL_GLContext getContext() { return p_glContext; }
+	inline SDL_GLContext* getContext() { return p_glContext; }
 	inline SDL_Renderer* getRenderer() { return p_renderer; }
 	inline SDL_Surface* getSurface() { return p_surface; }
 protected:
@@ -59,7 +59,7 @@ private:
     int p_width;
 	int p_height;
 	SDL_Window* p_window;
-	SDL_GLContext p_glContext;
+	SDL_GLContext* p_glContext;
 	SDL_Renderer* p_renderer;
 	SDL_Surface* p_surface;
 	float p_red;

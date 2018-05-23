@@ -2,7 +2,6 @@
 #define WORLD_H 1
 
 #include <queue>
-#include <bounce/bounce.h>
 
 #include "../graphic/graphic.h"
 #include "chunk.h"
@@ -17,19 +16,9 @@
 #define WORLD_HANDLE_THRENDS 1
 #define WORLD_UPDATE_THRENDS 3
 
-#define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0f / 60.0f )
+#define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0f / 120.0f )
 
 Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
-
-class world_physic: public b3World {
-    public:
-        void setDebugDraw( b3Draw *draw )  {
-            this->m_debugDraw = draw;
-        }
-
-    private:
-        b3Draw* m_debugDraw;
-};
 
 class world_data_list {
     public:
@@ -106,10 +95,8 @@ public:
     inline int getAmountChunks() const { return p_chunk_amount; }
     inline int getAmountChunksVisible() const { return p_chunk_visible_amount; }
     Chunk *getNode() { return p_chunk_start; }
-    world_physic *getPhysicWorld() { return p_physicScene; }
 
     void setGenerator( landscape *generator) { p_landscape_generator = generator; }
-    void DebugDraw( Shader *shader) { p_renderer.draw( *p_physicScene, shader); }
 protected:
 private:
     std::string p_name;
@@ -119,14 +106,14 @@ private:
     bool p_buysvector;
     bool p_world_tree_empty;
 
-    world_physic *p_physicScene;
-
     int p_chunk_amount;
     int p_chunk_visible_amount;
     Chunk* p_chunk_start;
     Chunk* p_chunk_last;
     block_list *p_blocklist;
     bool p_destroy;
+
+    glm::vec3 p_gravity;
 
     SDL_mutex *p_mutex_handle;
     SDL_mutex *p_mutex_physic;
@@ -148,8 +135,6 @@ private:
     int p_object_id;
 
     float p_time;
-
-    debug_draw p_renderer;
 };
 
 #endif // WORLD_H

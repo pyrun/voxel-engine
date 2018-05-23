@@ -1,6 +1,6 @@
 #include "debug_draw.h"
 
-debug_draw::debug_draw() {
+/*debug_draw::debug_draw() {
     p_vbo_vertex = 0;
     p_vbo_normal = 0;
     p_vbo_color = 0;
@@ -42,15 +42,6 @@ void debug_draw::drawSphere(float radius, unsigned int rings, unsigned int secto
 
             p_vector_size += 1;
     }
-
-    /*indices.resize(rings * sectors * 4);
-    std::vector<GLushort>::iterator i = indices.begin();
-    for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
-            *i++ = r * sectors + s;
-            *i++ = r * sectors + (s+1);
-            *i++ = (r+1) * sectors + (s+1);
-            *i++ = (r+1) * sectors + s;
-    }*/
 }
 
 void debug_draw::drawCapsuleSphere(const b3CapsuleShape* s, const b3Color& c, const b3Transform& xf) {
@@ -225,3 +216,4 @@ void debug_draw::draw(const b3World& world, Shader *shader) {
 
     p_vector_size = 0;
 }
+*/

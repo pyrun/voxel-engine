@@ -28,79 +28,85 @@ display::display( config *config) {
     bmask = 0x00ff0000;
     amask = 0xff000000;
 #endif
-
     // This line is only needed, if you want debug the program
     SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
 
     // disable V-Sync for openVR support( need more then 60Hz)
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
 
-    if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
-        fprintf(stderr, "Could not init SDL");
+    if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) < 0) {
+        fprintf(stderr, "display::display failed to start the SDL system\n");
         return;
     }
 
-	// benötigt opengl 4.0
+	// minimum version of opengl
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
+    // which opengl context we use
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
+    // disable multisamplebuffers
     SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0);
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0);
 
-    // bit grße der Farben
+    // size of color channel
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 3);
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 3);
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 2);
     SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 1);
 
-    // Tiefenbuffergröße
+    // size of the depth channel
     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16);
 
-    // Doublebuffer
+    // we use double buffer
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
 
-    // Erstelle Fenster
+    // creating window with the opengl context
 	p_window = SDL_CreateWindow( l_title.c_str(), l_pos_x, l_pos_y, p_width, p_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-	if( p_window == NULL)
-        printf( "error\n");
-	p_glContext = SDL_GL_CreateContext(p_window);
-	if( p_glContext == NULL)
-        printf( "error\n");
+	if( p_window == NULL) {
+        printf( "cant create the window %dx%d %dw %dh\n", l_pos_x, l_pos_y, p_width, p_height);
+        return;
+	}
+	p_glContext = (SDL_GLContext *)SDL_GL_CreateContext(p_window);
+	if( p_glContext == NULL){
+        printf( "display::display cant create opengl context\n");
+        SDL_DestroyWindow( p_window);
+        return;
+	}
     p_surface = SDL_CreateRGBSurface( 0, getTilesetWidth(), getTilesetHeight(), 32, rmask, gmask, bmask, amask);
     if( p_surface == NULL) {
-        printf( "Display: Surface cant create %s\n", SDL_GetError());
+        printf( "display::display software surface cant create; error \"%s\"\n", SDL_GetError());
     }
-    // Renderer
     p_renderer = SDL_CreateRenderer( p_window, -1, SDL_RENDERER_ACCELERATED);
     if( p_renderer == NULL) {
-        printf( "Display: Renderer could not be created! SDL Error \"%s\"", SDL_GetError());
+        printf( "display::display renderer could not be created; error \"%s\"", SDL_GetError());
     }
-	// Glew starten
+
+	// initializing glew
 	glewExperimental = GL_TRUE;
 	GLenum res = glewInit();
     if(res != GLEW_OK) {
-		printf( "Glew failed to initialize!" );
+		printf( "display::display glew was failed to initialize\n" );
     }
-    printf("OpenGL version supported by this platform (%s): \n",glGetString(GL_VERSION));
+    printf("display::display engine use opengl platform version \"%s\"\n",glGetString(GL_VERSION));
 
     // disable the build in vsync
     SDL_GL_SetSwapInterval(0);
 
-    // Tiefe nützen
+    // depth test enable for z sorting
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    // Cull Face
+    // cull face out that we not see
 	glEnable( GL_CULL_FACE);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 
-	// Blend
+	// enable blend for transparency
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// background color
+	// clear background
 	setBackgroundColor();
 }
 
