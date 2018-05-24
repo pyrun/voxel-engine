@@ -578,11 +578,12 @@ void world::process_thrend_physic() {
             l_object->addVelocity( p_gravity*WORLD_PHYSIC_FIXED_TIMESTEP);
 
             glm::vec3 l_collision_position = l_object->getPosition() + l_object->getVerlocity();
-            for( int i = 0; i < 10; i++) {
-                glm::ivec3 l_check_tile = glm::ivec3( l_collision_position.x, l_collision_position.y + i, l_collision_position.z);
+
+            for( int i = 0; i < abs( l_object->getVerlocity().y)+1; i++) {
+                glm::ivec3 l_check_tile = glm::ivec3( l_collision_position.x, l_collision_position.y - i, l_collision_position.z);
                 if( this->getTile( l_check_tile) != EMPTY_BLOCK_ID ) {
-                    if( physic::testAABB( l_collision_position, l_object->getType()->getHitbox(), l_check_tile, glm::vec3( 1)))
-                        l_object->setVelocity( glm::vec3(0));
+                    if( physic::testAABB( l_collision_position, l_object->getType()->getHitbox(), l_check_tile-glm::ivec3(1), glm::vec3( 1)))
+                        l_object->setVelocity( glm::vec3( 0, +0.01, 0));
                     break;
                 }
             }

@@ -8,6 +8,7 @@
 
 #include "../graphic/graphic.h"
 #include "../graphic/texture.h"
+#include "../graphic/debug_draw.h"
 
 #define DEFINITION_FILE "definition.xml"
 
@@ -25,11 +26,13 @@ class object_type {
         void updateVao();
 
         void draw( glm::mat4 model, Shader* shader);
+        void draw_debug( glm::mat4 model, Shader* shader);
 
         std::string getName() { return p_name; }
         glm::vec3 getScale() { return p_size; }
 
         glm::vec3 getHitbox() { return p_hitbox_size; }
+        glm::vec3 getHitboxOffset() { return p_hitbox_offset; }
     private:
         std::string p_name;
         std::string p_file;
@@ -52,6 +55,8 @@ class object_type {
 
         glm::vec3 p_hitbox_offset;
         glm::vec3 p_hitbox_size;
+
+        debug_draw p_debug_draw;
 };
 
 class object {
