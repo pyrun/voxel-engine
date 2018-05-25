@@ -83,6 +83,7 @@ public:
     void addDeleteChunk( glm::ivec3 position );
 
     void drawObjects( graphic *graphic, Shader *shader);
+    void drawObjectsDebug( graphic *graphic, Shader *shader);
     void drawVoxel( graphic *graphic, Shader *shader);
     void drawNode( Shader* shader);
 
@@ -108,8 +109,10 @@ private:
 
     int p_chunk_amount;
     int p_chunk_visible_amount;
+
     Chunk* p_chunk_start;
     Chunk* p_chunk_last;
+
     block_list *p_blocklist;
     bool p_destroy;
 

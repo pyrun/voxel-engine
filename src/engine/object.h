@@ -70,6 +70,7 @@ class object {
         void process_phyisc();
 
         void draw( Shader* shader);
+        void draw_debug( Shader* shader);
 
         void update_model();
 

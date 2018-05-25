@@ -574,17 +574,31 @@ void world::process_thrend_physic() {
         // p_time calculate
         p_time += ((float)WORLD_PHYSIC_FIXED_TIMESTEP*1000.f);
 
+        if( getChunk( glm::ivec3( 0, 0, 0)) == NULL)
+           return;
+
         for( object *l_object: p_objects) {
             l_object->addVelocity( p_gravity*WORLD_PHYSIC_FIXED_TIMESTEP);
 
             glm::vec3 l_collision_position = l_object->getPosition() + l_object->getVerlocity();
 
-            for( int i = 0; i < abs( l_object->getVerlocity().y)+1; i++) {
-                glm::ivec3 l_check_tile = glm::ivec3( l_collision_position.x, l_collision_position.y - i, l_collision_position.z);
-                if( this->getTile( l_check_tile) != EMPTY_BLOCK_ID ) {
-                    if( physic::testAABB( l_collision_position, l_object->getType()->getHitbox(), l_check_tile-glm::ivec3(1), glm::vec3( 1)))
-                        l_object->setVelocity( glm::vec3( 0, +0.01, 0));
-                    break;
+            for( int i = -1; i < fabs( l_object->getVerlocity().y)+1; i++) {
+                //printf( "%.2f\n", l_object->getVerlocity().y);
+
+                glm::ivec3 l_check_tile; // = glm::ivec3( l_collision_position.x / CHUNK_SIZE, , l_collision_position.z/ CHUNK_SIZE);
+
+                l_check_tile.x = (float)l_collision_position.x;
+                l_check_tile.y = l_collision_position.y + i;
+                l_check_tile.z = (float)l_collision_position.z;
+
+                Chunk *l_chunk = getChunk( glm::ivec3( 0, 0, 0) );
+
+//                printf( "%d %d %d\n", (int)l_check_tile.x, (int)l_check_tile.y, (int)l_check_tile.z);
+                if( l_chunk != NULL && l_chunk->getTile( l_check_tile) != EMPTY_BLOCK_ID ) {
+                    if( physic::testAABB( l_collision_position + l_object->getType()->getHitbox() + l_object->getType()->getHitboxOffset(), l_object->getType()->getHitbox(), l_check_tile, glm::vec3( 1, 1, 1))) {
+                        l_object->setVelocity( glm::vec3( 0, 0.0, 0));
+                        break;
+                    }
                 }
             }
 
@@ -756,6 +770,12 @@ void world::addDeleteChunk( glm::ivec3 position ) {
 void world::drawObjects( graphic *graphic, Shader *shader) {
     for( object *l_object: p_objects) {
         l_object->draw( shader);
+    }
+}
+
+void world::drawObjectsDebug( graphic *graphic, Shader *shader) {
+    for( object *l_object: p_objects) {
+        l_object->draw_debug( shader);
     }
 }
 

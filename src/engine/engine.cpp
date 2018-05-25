@@ -130,6 +130,7 @@ void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
         Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
             p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "steel_plate")->getID());
+            printf( "%d %d %d\n", (int)l_block_prev.x, (int)l_block_prev.y, (int)l_block_prev.z);
             //p_world_player->addTorchlight( l_chunk, l_block_prev, LIGHTING_MAX);
         }
     }
@@ -167,12 +168,12 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     p_world_player->drawObjects( p_graphic, l_shader);
 
     // draw debug lines
-    /*l_shader = p_graphic->getDebugShader();
+    l_shader = p_graphic->getDebugShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
     l_shader->update( MAT_MODEL, glm::mat4( 1));
-    p_world_player->DebugDraw( l_shader);*/
+    p_world_player->drawObjectsDebug( p_graphic, l_shader);
 
     // we are done
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -211,7 +212,7 @@ void engine::run() {
     glm::mat4 l_mvp;
     int l_delta = 0;
 
-    p_world_player->createObject( "player", glm::vec3( 5, 10, 0) );
+    p_world_player->createObject( "player", glm::vec3( 5.9, 10.9, 0) );
 
     if( !p_network->isClient()) {
         if( !p_world_player->load()) {

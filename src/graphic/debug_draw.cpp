@@ -22,14 +22,14 @@ debug_draw::~debug_draw() {
 void debug_draw::drawCube( glm::vec3 positon, glm::vec3 size, glm::vec3 color) {
     // add vertex
     int l_vertex_begin = p_vertex.size();
-    p_vertex.push_back( glm::vec3( size.x, size.y, size.z)); //0
-    p_vertex.push_back( glm::vec3(   0.0f, size.y, size.z)); //1
-    p_vertex.push_back( glm::vec3( size.x, size.y,   0.0f)); //2
-    p_vertex.push_back( glm::vec3(   0.0f, size.y,   0.0f)); //3
-    p_vertex.push_back( glm::vec3( size.x,   0.0f, size.z)); //4
-    p_vertex.push_back( glm::vec3(   0.0f,   0.0f, size.z)); //5
-    p_vertex.push_back( glm::vec3(   0.0f,   0.0f,   0.0f)); //6
-    p_vertex.push_back( glm::vec3( size.x,   0.0f,   0.0f)); //7
+    p_vertex.push_back( positon + glm::vec3( size.x, size.y, size.z)); //0
+    p_vertex.push_back( positon + glm::vec3(   0.0f, size.y, size.z)); //1
+    p_vertex.push_back( positon + glm::vec3( size.x, size.y,   0.0f)); //2
+    p_vertex.push_back( positon + glm::vec3(   0.0f, size.y,   0.0f)); //3
+    p_vertex.push_back( positon + glm::vec3( size.x,   0.0f, size.z)); //4
+    p_vertex.push_back( positon + glm::vec3(   0.0f,   0.0f, size.z)); //5
+    p_vertex.push_back( positon + glm::vec3(   0.0f,   0.0f,   0.0f)); //6
+    p_vertex.push_back( positon + glm::vec3( size.x,   0.0f,   0.0f)); //7
 
     p_color.push_back( glm::vec3( size.x, size.y, size.z));
     p_color.push_back( glm::vec3(   0.0f, size.y, size.z));

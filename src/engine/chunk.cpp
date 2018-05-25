@@ -243,7 +243,39 @@ unsigned short Chunk::getTile( int X, int Y, int Z) {
 }
 
 unsigned short Chunk::getTile( glm::ivec3 position) {
-    if( position.x < 0 || position.y < 0 ||position.z < 0)
+    Chunk *l_side;
+
+    // x
+    l_side = getSide( CHUNK_SIDE_X_NEG);
+    if( position.x < 0 && l_side ) {
+        return l_side->getTile( position + glm::ivec3( CHUNK_SIZE, 0, 0));
+    }
+    l_side = getSide( CHUNK_SIDE_X_POS);
+    if( position.x >= CHUNK_SIZE && l_side ) {
+        return l_side->getTile( position - glm::ivec3( CHUNK_SIZE, 0, 0));
+    }
+    // y
+    l_side = getSide( CHUNK_SIDE_Y_NEG);
+    if( position.y < 0 && l_side ) {
+        return l_side->getTile( position + glm::ivec3( 0, CHUNK_SIZE, 0));
+    }
+    l_side = getSide( CHUNK_SIDE_Y_POS);
+    if( position.y >= CHUNK_SIZE && l_side ) {
+        return l_side->getTile( position - glm::ivec3( 0, CHUNK_SIZE, 0));
+    }
+    // z
+    l_side = getSide( CHUNK_SIDE_Z_NEG);
+    if( position.z < 0 && l_side ) {
+        return l_side->getTile( position + glm::ivec3( 0, 0, CHUNK_SIZE));
+    }
+    l_side = getSide( CHUNK_SIDE_Z_POS);
+    if( position.z >= CHUNK_SIZE && l_side ) {
+        return l_side->getTile( position - glm::ivec3( 0, 0, CHUNK_SIZE));
+    }
+
+    if( position.x < 0 || position.x >= CHUNK_SIZE ||
+        position.y < 0 || position.y >= CHUNK_SIZE ||
+        position.z < 0 || position.z >= CHUNK_SIZE)
         return EMPTY_BLOCK_ID;
     return p_tile[ TILE_REGISTER( position.x, position.y, position.z)];
 }
