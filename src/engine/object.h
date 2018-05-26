@@ -85,6 +85,7 @@ class object {
         glm::vec3 getVerlocity() { return p_velocity; }
 
         void setPosition( glm::vec3 position);
+        void setPositionY( float value) { p_position.y = value; }
         void addPosition( glm::vec3 position) { p_position += position; }
         glm::vec3 getPosition() { return p_position; }
 

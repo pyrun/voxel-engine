@@ -212,7 +212,7 @@ void engine::run() {
     glm::mat4 l_mvp;
     int l_delta = 0;
 
-    p_world_player->createObject( "player", glm::vec3( 5.9, 10.9, 0) );
+    p_world_player->createObject( "player", glm::vec3( 5.8f, 10.9f, 0.5f) );
 
     if( !p_network->isClient()) {
         if( !p_world_player->load()) {

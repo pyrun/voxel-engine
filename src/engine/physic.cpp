@@ -5,10 +5,26 @@ const float EPSILON = (1.0f / 1024.0f);
 
 bool physic::testAABB( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2)
 {
+   //check the X axis
+   if( std::fabs( position1.x - position2.x) < size1.x + size2.x)
+   {
+      //check the Y axis
+      if( std::fabs( position1.y - position2.y) < size1.y + size2.y)
+      {
+          //check the Z axis
+          if( std::fabs( position1.z - position2.z) < size1.z + size2.z)
+          {
+             return true;
+          }
+      }
+   }
+
+   return false;
+
     // check for overlap
-    if ( fabs(position1.x - position2.x) > (size1.x + size2.x) ) return false;
-    if ( fabs(position1.y - position2.y) > (size1.y + size2.y) ) return false;
-    if ( fabs(position1.z - position2.z) > (size1.z + size2.z) ) return false;
+    if ( std::fabs(position1.x - position2.x) > (size1.x + size2.x) ) return false;
+    if ( std::fabs(position1.y - position2.y) > (size1.y + size2.y) ) return false;
+    if ( std::fabs(position1.z - position2.z) > (size1.z + size2.z) ) return false;
     return true;
 };
 

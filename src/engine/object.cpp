@@ -94,7 +94,7 @@ char *object_type::load_type( config *config, std::string l_path, std::string l_
         p_hitbox_size.y = atof( l_xml_hitbox->Attribute( "height"));
         p_hitbox_size.z = atof( l_xml_hitbox->Attribute( "depth"));
 
-        p_debug_draw.drawCube( p_hitbox_offset, p_hitbox_size, glm::vec3( 1, 0, 0));
+        p_debug_draw.drawCube( glm::vec3( 0), p_hitbox_size, glm::vec3( 1, 0, 0));
     }
     return "";
 }
