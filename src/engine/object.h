@@ -32,12 +32,12 @@ class object_type {
         glm::vec3 getScale() { return p_size; }
 
         glm::vec3 getHitbox() { return p_hitbox_size; }
-        glm::vec3 getHitboxOffset() { return p_hitbox_offset; }
     private:
         std::string p_name;
         std::string p_file;
         std::string p_texture_file;
         texture *p_texture;
+        glm::vec3 p_draw_offset;
 
         std::vector<glm::vec3> p_vertices;
         std::vector< glm::vec2 > p_texcoords;
@@ -53,7 +53,6 @@ class object_type {
         GLuint p_vbo_index;
         GLuint p_vbo_texture;
 
-        glm::vec3 p_hitbox_offset;
         glm::vec3 p_hitbox_size;
 
         debug_draw p_debug_draw;

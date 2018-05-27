@@ -74,6 +74,10 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         printf("object model file don't found\n");
         return false;
     }
+    // draw offset
+    p_draw_offset.x = atof( l_xml_file->Attribute( "x"));
+    p_draw_offset.y = atof( l_xml_file->Attribute( "y"));
+    p_draw_offset.z = atof( l_xml_file->Attribute( "z"));
 
     // get file name
     p_file = l_xml_file->GetText();
@@ -96,9 +100,6 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
     // size of hit box
     XMLElement* l_xml_hitbox = l_object->FirstChildElement( "hitbox" );
     if( l_xml_hitbox) {
-        p_hitbox_offset.x = atof( l_xml_hitbox->Attribute( "x"));
-        p_hitbox_offset.y = atof( l_xml_hitbox->Attribute( "y"));
-        p_hitbox_offset.z = atof( l_xml_hitbox->Attribute( "z"));
 
         p_hitbox_size.x = atof( l_xml_hitbox->Attribute( "width"));
         p_hitbox_size.y = atof( l_xml_hitbox->Attribute( "height"));
@@ -155,7 +156,7 @@ bool object_type::load_file( std::string file) {
           }
 
           p_indices.push_back( p_indices.size() );
-          p_vertices.push_back( glm::vec3( l_vertex_x, l_vertex_y, l_vertex_z));
+          p_vertices.push_back( glm::vec3( l_vertex_x, l_vertex_y, l_vertex_z) + p_draw_offset);
 
           // Optional: vertex colors
           // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];

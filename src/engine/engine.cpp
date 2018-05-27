@@ -45,6 +45,7 @@ engine::engine() {
     p_players.push_back( new player(p_world_player) );
 
     //p_player = p_players[0];
+    p_player = NULL;
 }
 
 engine::~engine() {

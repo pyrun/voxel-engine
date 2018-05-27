@@ -1,6 +1,7 @@
 <object name="player" script="script.lua" timer="200" gravity="0">
-	<file size="1.0">untitled.obj</file>
+	<file x="0.850" y="0.4" z="-0.11125" size="1.0">untitled.obj</file>
 	<texture2>bricks.jpg</texture2>
-	<hitbox x="-0.85" y="-0.4" z="0.1" width="0.8" height="1.789" depth="0.8"></hitbox>
+	<hitbox width="0.8" height="1.789" depth="0.8"></hitbox>
+	<player headx="0.4" heady="1.5" headz="0.4"></player>
 </object>
 
