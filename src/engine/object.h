@@ -19,7 +19,7 @@ class object_type {
 
         void init( Transform *transform);
 
-        char *load_type( config *config, std::string l_path, std::string l_name);
+        bool load_type( config *config, std::string l_path, std::string l_name);
         bool load_file( std::string file);
 
         void updateVbo();
@@ -82,10 +82,15 @@ class object {
 
         void addVelocity( glm::vec3 velocity) { p_velocity += velocity; }
         void setVelocity( glm::vec3 velocity) { p_velocity = velocity; }
+        void setVelocityX( float value) { p_velocity.x = value; }
+        void setVelocityY( float value) { p_velocity.y = value; }
+        void setVelocityZ( float value) { p_velocity.z = value; }
         glm::vec3 getVerlocity() { return p_velocity; }
 
         void setPosition( glm::vec3 position);
+        void setPositionX( float value) { p_position.x = value; }
         void setPositionY( float value) { p_position.y = value; }
+        void setPositionZ( float value) { p_position.z = value; }
         void addPosition( glm::vec3 position) { p_position += position; }
         glm::vec3 getPosition() { return p_position; }
 

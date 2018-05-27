@@ -35,7 +35,7 @@ void object_type::init( Transform *transform) {
     transform->setScale( p_size);
 }
 
-char *object_type::load_type( config *config, std::string l_path, std::string l_name) {
+bool object_type::load_type( config *config, std::string l_path, std::string l_name) {
     XMLDocument l_file;
     bool l_idle = false;
 
@@ -44,33 +44,43 @@ char *object_type::load_type( config *config, std::string l_path, std::string l_
     std::string l_pathfile = l_path + (char*)DEFINITION_FILE;
 
     // if file don't exist - don't load
-    if( file_exist( l_pathfile) == false)
-        return "file don't found\n";
+    if( file_exist( l_pathfile) == false) { // no message
+        return false;
+    }
 
     // load the file
     XMLError l_result = l_file.LoadFile( l_pathfile.c_str());
     if ( l_result != XML_SUCCESS) {
-        return "xml file was corrupt\n";
+        printf("xml file was corrupt\n");
+        return false;
     }
 
     // get the object child element
     XMLElement* l_object = l_file.FirstChildElement( "object" );
-    if( l_object == nullptr)
-        return "no object child found\n";
-    if( l_object->Attribute( "name"))
+    if( l_object == nullptr) {
+        printf("no object child found\n");
+        return false;
+    }
+    if( l_object->Attribute( "name")) {
         p_name = l_object->Attribute( "name");
-    else
-        return "object name didn't found\n";
+    } else {
+        printf("object name didn't found\n");
+        return false;
+    }
 
     // load file
     XMLElement* l_xml_file = l_object->FirstChildElement( "file" );
-    if( !l_xml_file)
-        return "object model file don't found\n";
+    if( !l_xml_file) {
+        printf("object model file don't found\n");
+        return false;
+    }
 
     // get file name
     p_file = l_xml_file->GetText();
-    if( !load_file( l_path + p_file))
-        return "object model cant load\n";
+    if( !load_file( l_path + p_file)) {
+        printf("object model cant load\n");
+        return false;
+    }
 
     // size object
     double l_size = std::strtod( l_xml_file->Attribute( "size"), 0);
@@ -96,7 +106,7 @@ char *object_type::load_type( config *config, std::string l_path, std::string l_
 
         p_debug_draw.drawCube( glm::vec3( 0), p_hitbox_size, glm::vec3( 1, 0, 0));
     }
-    return "";
+    return true;
 }
 
 bool object_type::load_file( std::string file) {
@@ -393,7 +403,7 @@ bool object_handle::load_folder( std::string folder, config *config) {
         object_type *l_type = new object_type();
 
         // load type
-        if( strlen( l_type->load_type( config, folder, l_entry->d_name)) > 0 ) {
+        if( !l_type->load_type( config, folder, l_entry->d_name) ) {
             delete l_type;
             l_type = NULL;
             load_folder( l_file, config);

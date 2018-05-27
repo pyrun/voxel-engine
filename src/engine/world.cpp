@@ -587,22 +587,24 @@ void world::process_thrend_physic() {
 
             // check world y
             bool l_hit = false;
-            glm::vec3 l_shift[4] = { glm::vec3( 0, 0, 0), glm::vec3( l_object->getType()->getHitbox().x, 0, 0),
-                                     glm::vec3( l_object->getType()->getHitbox().x, 0, l_object->getType()->getHitbox().z),
-                                     glm::vec3( 0, 0, l_object->getType()->getHitbox().z)};
-            for( int shift = 0; shift < 4 && l_hit == false; shift++) {
+            if( l_object->getVerlocity().y > 0 || l_object->getVerlocity().y < 0) {
+                glm::vec3 l_shift[4] = { glm::vec3( 0, 0, 0), glm::vec3( l_object->getType()->getHitbox().x, 0, 0),
+                                         glm::vec3( l_object->getType()->getHitbox().x, 0, l_object->getType()->getHitbox().z),
+                                         glm::vec3( 0, 0, l_object->getType()->getHitbox().z)};
+                for( int shift = 0; shift < 4 && l_hit == false; shift++) {
 
-                for( int i = -1; i < fabs( l_object->getVerlocity().y)+1; i++) {
-                    l_check_tile.x = (int)( l_collision_position.x + 0.5 - l_shift[ shift].x);
-                    l_check_tile.y = (int)( l_collision_position.y + 0.5 + i);
-                    l_check_tile.z = (int)( l_collision_position.z + 0.5 - l_shift[ shift].z);
+                    for( int i = -1; i < fabs( l_object->getVerlocity().y)+1; i++) {
+                        l_check_tile.x = (int)( l_collision_position.x + 0.5 - l_shift[ shift].x);
+                        l_check_tile.y = (int)( l_collision_position.y + 0.5 + i);
+                        l_check_tile.z = (int)( l_collision_position.z + 0.5 - l_shift[ shift].z);
 
-                    if( l_chunk != NULL && l_chunk->getTile( l_check_tile) != EMPTY_BLOCK_ID ) {
-                        if( physic::testAABB( l_collision_position + l_object->getType()->getHitbox(), l_object->getType()->getHitbox(), l_check_tile, l_size_block)) {
-                            l_object->setPositionY( l_check_tile.y + 1);
-                            l_object->setVelocity( glm::vec3( 0, 0.0, 0));
-                            l_hit = true;
-                            break;
+                        if( l_chunk != NULL && l_chunk->getTile( l_check_tile) != EMPTY_BLOCK_ID ) {
+                            if( physic::testAABB( l_collision_position + l_object->getType()->getHitbox(), l_object->getType()->getHitbox(), l_check_tile, l_size_block)) {
+                                l_object->setPositionY( l_check_tile.y + 1);
+                                l_object->setVelocity( glm::vec3( 0, 0.0, 0));
+                                l_hit = true;
+                                break;
+                            }
                         }
                     }
                 }
