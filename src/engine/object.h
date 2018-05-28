@@ -32,6 +32,7 @@ class object_type {
         glm::vec3 getScale() { return p_size; }
 
         glm::vec3 getHitbox() { return p_hitbox_size; }
+        glm::vec3 getHead() { return p_head; }
     private:
         std::string p_name;
         std::string p_file;
@@ -54,6 +55,7 @@ class object_type {
         GLuint p_vbo_texture;
 
         glm::vec3 p_hitbox_size;
+        glm::vec3 p_head;
 
         debug_draw p_debug_draw;
 };

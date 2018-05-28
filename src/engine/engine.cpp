@@ -44,8 +44,8 @@ engine::engine() {
     // player
     p_players.push_back( new player(p_world_player) );
 
-    //p_player = p_players[0];
-    p_player = NULL;
+    p_player = p_players[0];
+    //p_player = NULL;
 }
 
 engine::~engine() {
@@ -198,10 +198,9 @@ void engine::fly( int l_delta) {
 }
 
 void engine::walk( int l_delta) {
-    glm::vec3 l_up(0.0f, 1.0f, 0.0f);
-    float l_speed_inc = 1.5f;
-    float l_max_speed = 10.f;
-    Camera *l_cam = p_graphic->getCamera();
+    if( p_player) {
+        p_player->input( &p_input, p_graphic->getCamera(), l_delta);
+    }
 }
 
 
@@ -251,7 +250,7 @@ void engine::run() {
             fly( l_delta);
 
         if( p_player) {
-            cam->setPos( p_player->getPositonHead());
+            //cam->setPos( p_player->getPositonHead());
             walk( l_delta);
         }
 

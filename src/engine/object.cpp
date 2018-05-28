@@ -86,6 +86,16 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         return false;
     }
 
+    // player data
+    XMLElement* l_xml_player = l_object->FirstChildElement( "player" );
+    if( !l_xml_player) {
+        return false;
+    } else {
+        p_head.x = atof( l_xml_player->Attribute( "headx"));
+        p_head.y = atof( l_xml_player->Attribute( "heady"));
+        p_head.z = atof( l_xml_player->Attribute( "headz"));
+    }
+
     // size object
     double l_size = std::strtod( l_xml_file->Attribute( "size"), 0);
     p_size = glm::vec3( (float)l_size, (float)l_size, (float)l_size);
@@ -333,7 +343,7 @@ void object::update_model() {
     p_model_change = false;
 
     glm::mat4 l_posMat = glm::translate( p_position);
-    glm::mat4 l_scaleMat = glm::scale( p_scale);
+    glm::mat4 l_scaleMat = glm::scale( glm::vec3(1.0) );
     glm::mat4 l_rotX = glm::rotate( p_rotation.x, glm::vec3(1.0, 0.0, 0.0));
     glm::mat4 l_rotY = glm::rotate( p_rotation.y, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 l_rotZ = glm::rotate( p_rotation.z, glm::vec3(0.0, 0.0, 1.0));

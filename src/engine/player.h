@@ -3,6 +3,7 @@
 
 #include "object.h"
 #include "world.h"
+#include "input.h"
 
 class player
 {
@@ -11,6 +12,9 @@ class player
         virtual ~player();
 
         void setPosition( glm::vec3 position);
+
+        void input( Input *input, Camera *camera, int delta);
+
         glm::vec3 getPositonHead();
     protected:
 
