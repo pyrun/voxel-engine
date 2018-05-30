@@ -212,7 +212,13 @@ void engine::run() {
     glm::mat4 l_mvp;
     int l_delta = 0;
 
-    p_world_player->createObject( "player", glm::vec3( 5.8f, 10.9f, 0.5f) );
+    p_world_player->createObject( "player", glm::vec3( -5.5f, 10.0f, -5.5f) );
+
+    //p_world_player->createObject( "player", glm::vec3( +5.0f, 10.9f, +5.0f) );
+
+    /*p_world_player->createObject( "player", glm::vec3( -5.8f, 10.9f, -5.5f) );
+
+    p_world_player->createObject( "player", glm::vec3( -5.0f, 10.0f, +5.5f) );*/
 
     if( !p_network->isClient()) {
         if( !p_world_player->load()) {
@@ -250,7 +256,7 @@ void engine::run() {
             fly( l_delta);
 
         if( p_player) {
-            //cam->setPos( p_player->getPositonHead());
+            cam->setPos( p_player->getPositonHead());
             walk( l_delta);
         }
 

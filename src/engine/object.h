@@ -10,6 +10,8 @@
 #include "../graphic/texture.h"
 #include "../graphic/debug_draw.h"
 
+#include "physic.h"
+
 #define DEFINITION_FILE "definition.xml"
 
 class object_type {
@@ -99,6 +101,10 @@ class object {
         void addRotation( glm::vec3 rotation) { p_rotation += rotation; }
 
         void setUpdate( bool change = true) { p_model_change = change; }
+
+        void setHit( physic::hit_side side, bool value) { p_hits.set( side, value); }
+        void resetHit() { p_hits.reset(); }
+        bool getHit( physic::hit_side side) { return p_hits.get( side); }
     protected:
     private:
         int p_id;
@@ -113,6 +119,8 @@ class object {
         object_type *p_type;
 
         glm::vec3 p_velocity;
+
+        physic::hit p_hits;
 };
 
 class object_handle

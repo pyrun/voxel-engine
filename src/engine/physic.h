@@ -3,16 +3,34 @@
 
 #include <glm/glm.hpp>
 
-#include "object.h"
-#include "chunk.h"
-
 namespace physic
 {
-    bool testAABB( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2);
+    enum hit_side {
+        ground = 0,
+        top,
+        west,
+        east,
+        north,
+        south
+    };
 
-    bool checkLineCollision( Chunk* chunk, glm::vec3 from, glm::vec3 to);
+    class hit{
+        public:
+            hit();
+            ~hit();
 
-    glm::vec3 checkCollisionVoxel( Chunk* chunk, object *object);
+            void set( hit_side side, bool value);
+            bool get( hit_side side);
+
+            void reset();
+        public:
+            bool ground;
+            bool top;
+            bool west;
+            bool east;
+            bool north;
+            bool south;
+    };
 };
 
 #endif // PHYSIC_H

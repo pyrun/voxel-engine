@@ -269,30 +269,9 @@ void object_type::draw_debug( glm::mat4 model, Shader* shader) {
     p_debug_draw.draw( shader);
 }
 
-/*void object_type::setPhysic( b3Body *body)
-{
-    b3ShapeDef l_shapeDef;
-    l_shapeDef.density = 2.0f;
-    l_shapeDef.friction = 0.8f;
-
-
-    b3CapsuleShape cs;
-    cs.m_centers[0].Set(0.0f, 0.15f, 0.0f);
-    cs.m_centers[1].Set(0.0f, -0.15f, 0.0f);
-    cs.m_radius = 0.5f;
-
-    l_shapeDef.shape = &p_hullDef; //p_hullDef
-
-    body->CreateShape(l_shapeDef);
-
-    //bdef.orientation.Set(b3Vec3(0.0f, 1.0f, 0.0f), 0.5f * B3_PI);
-
-}*/
-
 object::object()
 {
     p_type = NULL;
-//    p_body = NULL;
     p_model_change = false;
 }
 
@@ -317,7 +296,6 @@ void object::process_phyisc() {
     // add velocity
     p_position += p_velocity;
 
-    //if( abs( p_position.y)-abs(l_old_position.y) > 0.01f );
     setUpdate();
 }
 
@@ -377,9 +355,6 @@ object_handle::object_handle()
 
 object_handle::~object_handle()
 {
-    /*for( auto l_type:p_types)
-        delete l_type;*/
-
     p_types.clear();
 }
 
@@ -397,21 +372,23 @@ bool object_handle::load_folder( std::string folder, config *config) {
     DIR *l_dir;
 
     struct dirent *l_entry;
+    object_type *l_type;
 
     // open dir
     l_dir = opendir(folder.c_str());
     if ( l_dir == NULL)  // error opening the directory?
         return false;
 
-    // open ech folder
+    // open every folder in this path
     while ((l_entry = readdir(l_dir)) != NULL) {
         std::string l_file = folder + l_entry->d_name + "/";
 
-        // dont go back folder
+        // skip the back folder; two folder
         if( l_entry->d_name[0] == '.')
             continue;
 
-        object_type *l_type = new object_type();
+        // creating type
+        l_type = new object_type();
 
         // load type
         if( !l_type->load_type( config, folder, l_entry->d_name) ) {
@@ -419,6 +396,8 @@ bool object_handle::load_folder( std::string folder, config *config) {
             l_type = NULL;
             load_folder( l_file, config);
         }
+
+        // if loaded add to the list
         if( l_type) {
             printf( "object_handle::load_folder \"%s\" loaded\n", l_type->getName().c_str());
             p_types.push_back( l_type);

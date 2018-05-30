@@ -15,15 +15,18 @@ player::~player()
 void player::input( Input *input, Camera *camera, int delta) {
     glm::vec3 l_up(0.0f, 1.0f, 0.0f);
     object *l_player = p_target_world->getObject( p_object_id);
-    float l_speed = 0.00001f;
+    float l_speed = 0.001f;
 
-    if( input->Map.Up ) {
+    if( input->Map.Up && l_player->getHit( physic::hit_side::ground)) {
         glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( camera->getUp(), camera->getForward())), l_up) * (float)delta * l_speed;
 
-        l_player->addVelocity( l_force + glm::vec3( 0, 0.001, 0));
+        l_player->addVelocity( l_force + glm::vec3( 0, 0.0, 0));
     }
-    if( input->Map.Down )
-        ;
+    if( input->Map.Down && l_player->getHit( physic::hit_side::ground)) {
+        glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( camera->getUp(), camera->getForward())), l_up) * (float)delta * l_speed;
+
+        l_player->addVelocity( -l_force + glm::vec3( 0, 0.0, 0));
+    }
     if( input->Map.Right )
         ;
     if( input->Map.Left )
