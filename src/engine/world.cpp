@@ -592,21 +592,21 @@ void world::process_thrend_physic() {
             glm::vec3 l_hitbox = l_object->getType()->getHitbox();
 
             // set shift table
-            glm::vec3 l_shift[4] = {    glm::vec3( 0, 0, 0),
-                                        glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.5f:-l_hitbox.x - 0.5f, 0, 0),
-                                        glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.5f:-l_hitbox.x - 0.5f, 0, l_collision_position.z>0?l_hitbox.z + 0.5f:-l_hitbox.z - 0.5f),
-                                        glm::vec3( 0, 0, l_collision_position.z>0?l_hitbox.z + 0.5f:-l_hitbox.z - 0.5f)};
+            glm::vec3 l_shift[4] = {glm::vec3( 0, 0, 0),
+                                    glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.5f:-l_hitbox.x - 0.5f, 0, 0),
+                                    glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.5f:-l_hitbox.x - 0.5f, 0, l_collision_position.z>0?l_hitbox.z + 0.5f:-l_hitbox.z - 0.5f),
+                                    glm::vec3( 0, 0, l_collision_position.z>0?l_hitbox.z + 0.5f:-l_hitbox.z - 0.5f)};
 
             l_collision_block.x = (int)l_collision_position.x;
             l_collision_block.y = (int)l_collision_position.y;
             l_collision_block.z = (int)l_collision_position.z;
 
-            if( fabs(l_collision_block.x) + l_size_block.x > fabs(l_collision_position.x) + l_hitbox.x ){
+            if( fabs( l_collision_block.x) + l_size_block.x > fabs( l_collision_position.x) + l_hitbox.x ){
                 l_shift[1].x = 0;
                 l_shift[2].x = 0;
             }
 
-            if( fabs(l_collision_block.z) + l_size_block.z > fabs(l_collision_position.z) + l_hitbox.z ) {
+            if( fabs( l_collision_block.z) + l_size_block.z > fabs( l_collision_position.z) + l_hitbox.z ) {
                 l_shift[2].z = 0;
                 l_shift[3].z = 0;
             }
@@ -625,7 +625,8 @@ void world::process_thrend_physic() {
                             l_object->setVelocityY( 0.0f);
                             l_object->setVelocityX( l_object->getVerlocity().x*0.8f);
                             l_object->setVelocityZ( l_object->getVerlocity().z*0.8f);
-                            l_object->setPositionY( l_collision_block.y + l_size_block.y);
+                            if( fabs( l_collision_block.y + l_size_block.y - l_object->getPosition().y) < WORLD_PHYSIC_STEP )
+                                l_object->setPositionY( l_collision_block.y + l_size_block.y);
                             l_hit = true;
                             break;
                         }

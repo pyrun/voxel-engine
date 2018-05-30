@@ -16,6 +16,8 @@
 #define WORLD_HANDLE_THRENDS 1
 #define WORLD_UPDATE_THRENDS 3
 
+#define WORLD_PHYSIC_STEP 0.2f
+
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0f / 120.0f )
 
 Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
