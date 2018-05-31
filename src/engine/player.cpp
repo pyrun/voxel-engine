@@ -22,6 +22,7 @@ void player::input( Input *input, Camera *camera, int delta) {
 
         l_player->addVelocity( l_force + glm::vec3( 0, 0.0, 0));
     }
+
     if( input->Map.Down && l_player->getHit( physic::hit_side::ground)) {
         glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( camera->getUp(), camera->getForward())), l_up) * (float)delta * l_speed;
 
@@ -39,7 +40,7 @@ void player::input( Input *input, Camera *camera, int delta) {
     }
 
     if( input->Map.Jump && l_player->getHit( physic::hit_side::ground) && l_player->getVerlocity().y < 0.0001f)
-        l_player->addVelocity( glm::vec3( 0.f, 0.05f, 0.f));
+        l_player->addVelocity( glm::vec3( 0.f, 0.055f, 0.f));
     if( input->Map.Shift )
         ;
 }
