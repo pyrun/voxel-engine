@@ -41,3 +41,12 @@ void hit::reset() {
     north = false;
     east = false;
 }
+
+bool physic::testAABB( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2)
+{
+    // check for overlap
+    if ( std::fabs(position1.x - position2.x) > (size1.x + size2.x) ) return false;
+    if ( std::fabs(position1.y - position2.y) > (size1.y + size2.y) ) return false;
+    if ( std::fabs(position1.z - position2.z) > (size1.z + size2.z) ) return false;
+    return true;
+};

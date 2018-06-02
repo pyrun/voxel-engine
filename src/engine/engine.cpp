@@ -252,8 +252,8 @@ void engine::run() {
         cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
 
         /// process
-        if( p_config->get( "fly", "engine", "false") == "true")
-            fly( l_delta);
+        //if( p_config->get( "fly", "engine", "false") == "true")
+        //    fly( l_delta);
 
         if( p_player) {
             cam->setPos( p_player->getPositonHead());

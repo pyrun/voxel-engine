@@ -645,30 +645,31 @@ void world::process_thrend_physic() {
             l_collision_block.z = (int)l_collision_position.z;
 
 
-            l_shift[0] = glm::vec3( 0, 0.0f, 0);
-            l_shift[1] = glm::vec3( 0, 0.0f, l_collision_position.z>0?l_hitbox.z + 0.2f:-l_hitbox.z - 0.2f);
-            l_shift[2] = glm::vec3( 0, l_hitbox.y, 0);
-            l_shift[3] = glm::vec3( 0, l_hitbox.y, l_collision_position.z>0?l_hitbox.z + 0.2f:-l_hitbox.z - 0.2f);
+            l_shift[0] = glm::vec3( 0.0f, 0.0f, 0.0f);
+            l_shift[1] = glm::vec3( 0.0f, 0.0f, l_collision_position.z>0?l_hitbox.z + 0.5f:-l_hitbox.z - 0.5f);
+            l_shift[2] = glm::vec3( 0.0f, l_hitbox.y, 0.0f);
+            l_shift[3] = glm::vec3( 0.0f, l_hitbox.y, l_collision_position.z>0?l_hitbox.z + 0.5f:-l_hitbox.z - 0.5f);
 
             if( fabs( l_collision_block.z) + l_size_block.z > fabs( l_collision_position.z) + l_hitbox.z ) {
                 l_shift[1].z = 0;
                 l_shift[3].z = 0;
             }
 
-            for( int i = -2; i < fabs( l_object->getVerlocity().x)+1 && l_hit == false; i++) {
+            for( int i = -1; i < fabs( l_object->getVerlocity().x)+1 && l_hit == false; i++) {
                 for( int shift = 0; shift < 4 && l_hit == false; shift++) {
+                    l_collision_position = l_object->getPosition() + l_object->getVerlocity();
                     // set y
-                    l_collision_block.x = (int)l_collision_position.x - i; // ;
+                    l_collision_block.x = (int)l_collision_position.x - i;
                     l_collision_block.y = (int)l_collision_position.y + (int)l_shift[ shift].y;
                     l_collision_block.z = (int)l_collision_position.z + (int)l_shift[ shift].z;
 
                     // check now tile
                     if( l_chunk != NULL && l_chunk->getTile( l_collision_block) != EMPTY_BLOCK_ID ) {
-                        if( l_collision_position.x + l_hitbox.x > l_collision_block.x && l_collision_position.x < l_collision_block.x + l_size_block.x &&
-                            l_collision_block.y + l_size_block.y > l_collision_position.y + 0.1f) {
 
+                        if( l_collision_position.x + l_hitbox.x + 0.05f > l_collision_block.x && l_collision_position.x - 0.05f < l_collision_block.x + l_size_block.x
+                            && l_collision_block.y + l_size_block.y > l_collision_position.y + 0.1f) {
                             // register the hit
-                            l_object->setVelocityX( 0);
+                            l_object->setVelocityX( 0.0 );
 
                             l_object->setHit( physic::hit_side::west, true);
                             l_hit = true;
@@ -688,9 +689,9 @@ void world::process_thrend_physic() {
             l_collision_block.z = (int)l_collision_position.z;
 
             l_shift[0] = glm::vec3( 0.0f, 0.0f, 0.0f);
-            l_shift[1] = glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.2f:-l_hitbox.x - 0.2f, 0.0f, 0.0f);
+            l_shift[1] = glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.5f:-l_hitbox.x - 0.5f, 0.0f, 0.0f);
             l_shift[2] = glm::vec3( 0.0f, l_hitbox.y, 0);
-            l_shift[3] = glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.2f:-l_hitbox.x - 0.2f, l_hitbox.y, 0.0f);
+            l_shift[3] = glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.5f:-l_hitbox.x - 0.5f, l_hitbox.y, 0.0f);
 
             if( fabs( l_collision_block.x) + l_size_block.x > fabs( l_collision_position.x) + l_hitbox.x ) {
                 l_shift[1].x = 0;
@@ -699,6 +700,7 @@ void world::process_thrend_physic() {
 
             for( int i = -1; i < fabs( l_object->getVerlocity().z)+1 && l_hit == false; i++) {
                 for( int shift = 0; shift < 4 && l_hit == false; shift++) {
+                    l_collision_position = l_object->getPosition() + l_object->getVerlocity();
                     // set y
                     l_collision_block.x = (int)l_collision_position.x + (int)l_shift[ shift].x;
                     l_collision_block.y = (int)l_collision_position.y + (int)l_shift[ shift].y;
@@ -706,9 +708,9 @@ void world::process_thrend_physic() {
 
                     // check now tile
                     if( l_chunk != NULL && l_chunk->getTile( l_collision_block) != EMPTY_BLOCK_ID ) {
-                        if( l_collision_position.z + l_hitbox.z > l_collision_block.z && l_collision_position.z < l_collision_block.z + l_size_block.z &&
+                        if( l_collision_position.z + l_hitbox.z + 0.05f > l_collision_block.z && l_collision_position.z - 0.05f < l_collision_block.z + l_size_block.z &&
+                            l_collision_position.x + l_hitbox.x - 0.3f > l_collision_block.x && l_collision_position.x + 0.3f < l_collision_block.x + l_size_block.x &&
                             l_collision_block.y + l_size_block.y > l_collision_position.y + 0.1f) {
-
                             // register the hit
                             l_object->setVelocityZ( 0.0f);
 
