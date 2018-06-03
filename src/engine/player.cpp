@@ -40,7 +40,7 @@ void player::input( Input *input, Camera *camera, int delta) {
     }
 
     if( input->Map.Jump && l_player->getHit( physic::hit_side::ground) && l_player->getVerlocity().y < 0.0001f)
-        l_player->addVelocity( glm::vec3( 0.f, 0.055f, 0.f));
+        l_player->addVelocity( glm::vec3( 0.f, 0.052f, 0.f));
     if( input->Map.Shift )
         ;
 }
