@@ -38,12 +38,12 @@ graphic::~graphic() {
     delete p_display;
 }
 
-void graphic::resizeWindow( int screen_width, int screen_height) {
-    glViewport(0, 0, screen_width, screen_height);
-    printf( "%d %d resize\n", screen_width, screen_height);
-    p_display->setSize( screen_width, screen_height);
+void graphic::resizeWindow( glm::vec2 screen) {
+    glViewport(0, 0, screen.x, screen.y);
+    printf( "%d %d resize\n", screen.x, screen.y);
+    p_display->setSize( screen.x, screen.y);
     // resize
-    p_camera->resize( (float)screen_width/(float)screen_height);
+    p_camera->resize( (float)screen.x/(float)screen.y);
 
     resizeDeferredShading();
 }

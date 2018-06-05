@@ -33,6 +33,7 @@ namespace physic
     };
 
     bool testAABB( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2);
+    bool testAABB2( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2);
 };
 
 #endif // PHYSIC_H

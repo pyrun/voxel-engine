@@ -622,7 +622,7 @@ void world::process_thrend_physic() {
                     if( l_chunk != NULL && l_chunk->getTile( l_collision_block) != EMPTY_BLOCK_ID ) {
                         if( l_collision_block.y + l_size_block.y > l_collision_position.y &&
                             l_collision_position.x + l_hitbox.x - 0.05f > l_collision_block.x && l_collision_position.x + 0.05f < l_collision_block.x + l_size_block.x &&
-                            l_collision_position.z + l_hitbox.z - 0.04f > l_collision_block.z && l_collision_position.z + 0.04f < l_collision_block.z + l_size_block.z) {
+                            l_collision_position.z + l_hitbox.z - 0.05f > l_collision_block.z && l_collision_position.z + 0.05f < l_collision_block.z + l_size_block.z) {
                             // hit and no more checking for y
                             l_object->setVelocityY( 0.0f);
                             l_object->setVelocityX( l_object->getVerlocity().x*0.8f);
@@ -640,7 +640,7 @@ void world::process_thrend_physic() {
             /// x collision
             l_hit = false;
 
-            l_collision_position = l_object->getPosition() + l_object->getVerlocity();
+            l_collision_position = l_object->getPosition() + glm::vec3( l_object->getVerlocity().x, 0, 0);
 
             l_collision_block.x = (int)l_collision_position.x;
             l_collision_block.y = (int)l_collision_position.y;
@@ -656,9 +656,9 @@ void world::process_thrend_physic() {
                 l_shift[3].z = 0;
             }
 
-            for( int i = -2; i < fabs( l_object->getVerlocity().x)+1 && l_hit == false; i++) {
+            for( int i = -2; i < fabs( l_object->getVerlocity().x)+2 && l_hit == false; i++) {
                 for( int shift = 0; shift < 4 && l_hit == false; shift++) {
-                    l_collision_position = l_object->getPosition() + l_object->getVerlocity();
+                    l_collision_position = l_object->getPosition() + glm::vec3( l_object->getVerlocity().x, 0, 0);
                     // set y
                     l_collision_block.x = (int)l_collision_position.x - i;
                     l_collision_block.y = (int)l_collision_position.y + (int)l_shift[ shift].y;
@@ -666,15 +666,27 @@ void world::process_thrend_physic() {
 
                     // check now tile
                     if( l_chunk != NULL && l_chunk->getTile( l_collision_block) != EMPTY_BLOCK_ID ) {
+                        bool l_change_position = false;
+                        if( physic::testAABB2( l_collision_position, l_hitbox, l_collision_block, l_size_block)) {
+                            if( l_object->getVerlocity().x < 0) {
+                                if( fabs( l_collision_block.x+l_size_block.x - l_collision_position.x) < 0.05f + fabs( l_object->getVerlocity().x) ) {
+                                    l_object->setPositionX( l_collision_block.x+l_size_block.x + 0.001f);
+                                    l_change_position = true;
+                                }
+                            } else {
+                                if( fabs( l_collision_block.x-l_hitbox.x - l_collision_position.x) < 0.05f + fabs( l_object->getVerlocity().x) ) {
+                                    l_object->setPositionX( l_collision_block.x-l_hitbox.x - 0.001f);
+                                    l_change_position = true;
+                                }
+                            }
 
-                        if( l_collision_position.x + l_hitbox.x + 0.05f > l_collision_block.x && l_collision_position.x - 0.05f < l_collision_block.x + l_size_block.x &&
-                            l_collision_position.z + l_hitbox.z - 0.04f > l_collision_block.z && l_collision_position.z + 0.04f < l_collision_block.z + l_size_block.z
-                            && l_collision_block.y + l_size_block.y > l_collision_position.y + 0.1f) {
                             // register the hit
-                            l_object->setVelocityX( 0.0 );
+                            if( l_change_position) {
+                                l_object->setVelocityX( 0.0 );
 
-                            l_object->setHit( physic::hit_side::west, true);
-                            l_hit = true;
+                                l_object->setHit( physic::hit_side::west, true);
+                                l_hit = true;
+                            }
                             break;
                         }
                     }
@@ -684,7 +696,7 @@ void world::process_thrend_physic() {
             /// z collision
             l_hit = false;
 
-            l_collision_position = l_object->getPosition() + l_object->getVerlocity();
+            l_collision_position = l_object->getPosition() + glm::vec3( 0, 0, l_object->getVerlocity().z);
 
             l_collision_block.x = (int)l_collision_position.x;
             l_collision_block.y = (int)l_collision_position.y;
@@ -702,7 +714,7 @@ void world::process_thrend_physic() {
 
             for( int i = -2; i < fabs( l_object->getVerlocity().z)+1 && l_hit == false; i++) {
                 for( int shift = 0; shift < 4 && l_hit == false; shift++) {
-                    l_collision_position = l_object->getPosition() + l_object->getVerlocity();
+                    l_collision_position = l_object->getPosition() + glm::vec3( 0, 0, l_object->getVerlocity().z);
                     // set y
                     l_collision_block.x = (int)l_collision_position.x + (int)l_shift[ shift].x;
                     l_collision_block.y = (int)l_collision_position.y + (int)l_shift[ shift].y;
@@ -710,14 +722,26 @@ void world::process_thrend_physic() {
 
                     // check now tile
                     if( l_chunk != NULL && l_chunk->getTile( l_collision_block) != EMPTY_BLOCK_ID ) {
-                        if( l_collision_position.z + l_hitbox.z + 0.05f > l_collision_block.z && l_collision_position.z - 0.05f < l_collision_block.z + l_size_block.z &&
-                            l_collision_position.x + l_hitbox.x - 0.05f > l_collision_block.x && l_collision_position.x + 0.05f < l_collision_block.x + l_size_block.x &&
-                            l_collision_block.y + l_size_block.y > l_collision_position.y + 0.1f) {
+                        if( physic::testAABB2( l_collision_position, l_hitbox, l_collision_block, l_size_block)) {
+                            bool l_change_position = false;
+                            if( l_object->getVerlocity().z < 0) {
+                                if( fabs( l_collision_block.z+l_size_block.z - l_collision_position.z) < 0.05f + fabs( l_object->getVerlocity().z) ) {
+                                    l_object->setPositionZ( l_collision_block.z+l_size_block.z + 0.001f);
+                                    l_change_position = true;
+                                }
+                            } else {
+                                if( fabs( l_collision_block.z-l_hitbox.z - l_collision_position.z) < 0.05f + fabs( l_object->getVerlocity().z) ) {
+                                    l_object->setPositionZ( l_collision_block.z-l_hitbox.z - 0.001f);
+                                    l_change_position = true;
+                                }
+                            }
                             // register the hit
-                            l_object->setVelocityZ( 0.0f);
+                            if( l_change_position) {
+                                l_object->setVelocityZ( 0.0f);
 
-                            l_object->setHit( physic::hit_side::north, true);
-                            l_hit = true;
+                                l_object->setHit( physic::hit_side::north, true);
+                                l_hit = true;
+                            }
                             break;
                         }
                     }

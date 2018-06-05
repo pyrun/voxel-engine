@@ -231,8 +231,12 @@ void engine::run() {
     }
 
     if( p_openvr) { // dirty hack -> force openVR resolution
-        glm::vec2 l_oldSize = p_graphic->getDisplay()->getSize();
+        //glm::vec2 l_oldSize = p_graphic->getDisplay()->getSize();
+        //p_graphic->getDisplay()->setSize( p_openvr->getScreenSize());
+
+        SDL_SetWindowSize( p_graphic->getWindow(), p_openvr->getScreenSize().x, p_openvr->getScreenSize().y);
         p_graphic->getDisplay()->setSize( p_openvr->getScreenSize());
+        p_graphic->resizeWindow( p_openvr->getScreenSize());
         p_graphic->resizeDeferredShading();
     }
 
@@ -260,7 +264,7 @@ void engine::run() {
         }
 
         if( p_input.getResize()) {
-            p_graphic->resizeWindow( p_input.getResizeW(), p_input.getResizeH());
+            p_graphic->resizeWindow( glm::vec2( p_input.getResizeW(), p_input.getResizeH()) );
             p_config->set( "width", std::to_string( p_input.getResizeW()), "graphic");
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
@@ -274,6 +278,9 @@ void engine::run() {
 
         /// render #1 openVR
         if( p_openvr ) {
+
+            cam->setPos( p_player->getPositonHead( false));
+
             glm::mat4 l_projection = p_openvr->getCurrentProjectionMatrix( vr::Eye_Left);
             glm::mat4 l_view_cam =  p_openvr->getCurrentViewMatrix( vr::Eye_Left) * p_graphic->getCamera()->getViewWithoutUp();
             render( l_view_cam, l_projection);
@@ -289,6 +296,8 @@ void engine::run() {
             p_openvr->renderEndRightEye();
 
             p_openvr->renderFrame();
+
+            cam->setPos( p_player->getPositonHead( true));
         }
 
 

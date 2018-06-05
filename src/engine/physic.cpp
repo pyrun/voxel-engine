@@ -50,3 +50,18 @@ bool physic::testAABB( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2
     if ( std::fabs(position1.z - position2.z) > (size1.z + size2.z) ) return false;
     return true;
 };
+
+bool physic::testAABB2( glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2)
+{
+    // Collision x-axis?
+    bool collisionX = position1.x + size1.x >= position2.x &&
+        position2.x + size2.x >= position1.x;
+    // Collision y-axis?
+    bool collisionY = position1.y + size1.y >= position2.y &&
+        position2.y + size2.y >= position1.y;
+    // Collision z-axis?
+    bool collisionZ = position1.z + size1.z >= position2.z &&
+        position2.z + size2.z >= position1.z;
+    // Collision only if on both axes
+    return collisionX && collisionY && collisionZ;
+}

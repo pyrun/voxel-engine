@@ -17,7 +17,7 @@ public:
     graphic( config *config);
     virtual ~graphic();
 
-    void resizeWindow( int screen_width, int screen_height);
+    void resizeWindow( glm::vec2 screen);
 
     void initDeferredShading();
     void resizeDeferredShading();

@@ -15,7 +15,7 @@ player::~player()
 void player::input( Input *input, Camera *camera, int delta) {
     glm::vec3 l_up(0.0f, 1.0f, 0.0f);
     object *l_player = p_target_world->getObject( p_object_id);
-    float l_speed = 0.001f;
+    float l_speed = 0.0009f;
 
     if( input->Map.Up && l_player->getHit( physic::hit_side::ground)) {
         glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( camera->getUp(), camera->getForward())), l_up) * (float)delta * l_speed;
@@ -45,9 +45,12 @@ void player::input( Input *input, Camera *camera, int delta) {
         ;
 }
 
-glm::vec3 player::getPositonHead() {
+glm::vec3 player::getPositonHead( bool height) {
     object *l_player = p_target_world->getObject( p_object_id);
-    return l_player->getType()->getHead()+l_player->getPosition();
+    glm::vec3 l_head = l_player->getType()->getHead();
+    if( height == false)
+        l_head.y = 0;
+    return l_head+l_player->getPosition();
 }
 
 void player::setPosition( glm::vec3 position)

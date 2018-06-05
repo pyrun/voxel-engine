@@ -510,9 +510,6 @@ void openvr::renderFrame()
     // for now as fast as possible
 	if ( p_hmd )
 	{
-		//RenderControllerAxes(); xy thing
-		//RenderStereoTargets();
-		//RenderCompanionWindow();
 
 		vr::Texture_t leftEyeTexture = {(void*)(uintptr_t)leftEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture );
