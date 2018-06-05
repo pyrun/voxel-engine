@@ -78,9 +78,14 @@
 					<Add directory="../../Miniupnpc/source/" />
 					<Add directory="../../bounce/include" />
 					<Add directory="../../lua/include" />
-					<Add directory="cpu/" />
 				</Compiler>
 				<Linker>
+					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
+					<Add option="-lopengl32" />
+					<Add option="-lglew32" />
+					<Add option="-lopenvr_dll" />
+					<Add option="-lRakNet" />
+					<Add option="-llua53" />
 					<Add directory="../../SDL2/lib" />
 					<Add directory="../../OpenGL/lib" />
 					<Add directory="../../openvr-mingw/lib" />
