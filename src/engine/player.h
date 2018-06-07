@@ -16,6 +16,7 @@ class player
         void input( Input *input, Camera *camera, int delta);
 
         glm::vec3 getPositonHead( bool height = true);
+        int getId() { return p_object_id; }
     protected:
 
     private:

@@ -281,6 +281,7 @@ object::~object() {
 
 void object::init()
 {
+    //setDrawOffset( p_type->get )
     p_scale = p_type->getScale();
 }
 
@@ -320,7 +321,7 @@ void object::update_model() {
 
     p_model_change = false;
 
-    glm::mat4 l_posMat = glm::translate( p_position);
+    glm::mat4 l_posMat = glm::translate( p_draw_offset + p_position);
     glm::mat4 l_scaleMat = glm::scale( glm::vec3(1.0) );
     glm::mat4 l_rotX = glm::rotate( p_rotation.x, glm::vec3(1.0, 0.0, 0.0));
     glm::mat4 l_rotY = glm::rotate( p_rotation.y, glm::vec3(0.0, 1.0, 0.0));

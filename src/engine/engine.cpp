@@ -281,6 +281,9 @@ void engine::run() {
 
             cam->setPos( p_player->getPositonHead( false));
 
+            object *l_obj = p_world_player->getObject( p_player->getId());
+            l_obj->setDrawOffset( p_openvr->getHeadPosition() );
+
             glm::mat4 l_projection = p_openvr->getCurrentProjectionMatrix( vr::Eye_Left);
             glm::mat4 l_view_cam =  p_openvr->getCurrentViewMatrix( vr::Eye_Left) * p_graphic->getCamera()->getViewWithoutUp();
             render( l_view_cam, l_projection);
@@ -296,12 +299,13 @@ void engine::run() {
             p_openvr->renderEndRightEye();
 
             p_openvr->renderFrame();
-
-            cam->setPos( p_player->getPositonHead( true));
         }
 
 
         /// render #2 window
+
+        cam->setPos( glm::vec3( -5, 10, -5));
+        //cam->setPos( p_player->getPositonHead( true));
 
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
         glm::mat4 l_projection = p_graphic->getCamera()->getProjection();

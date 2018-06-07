@@ -105,6 +105,9 @@ class object {
         void setHit( physic::hit_side side, bool value) { p_hits.set( side, value); }
         void resetHit() { p_hits.reset(); }
         bool getHit( physic::hit_side side) { return p_hits.get( side); }
+
+        void setDrawOffset( glm::vec3 offset) { p_draw_offset = offset; p_model_change = true; }
+        glm::vec3 getDrawOffset() { return p_draw_offset; }
     protected:
     private:
         int p_id;
@@ -115,12 +118,14 @@ class object {
         glm::vec3 p_position;
         glm::vec3 p_rotation;
         glm::vec3 p_scale;
+        glm::vec3 p_draw_offset;
 
         object_type *p_type;
 
         glm::vec3 p_velocity;
 
         physic::hit p_hits;
+
 };
 
 class object_handle

@@ -388,6 +388,11 @@ void openvr::updateHMDMatrixPose()
 	if ( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
 	{
 		p_mat4HMDPose = glm::inverse( p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd]);
+
+
+        p_position_head.x = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][0];
+        //p_position_head.y = p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][1];
+        p_position_head.z = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][2];
 		//p_mat4HMDPose.invert();
 	}
 }
