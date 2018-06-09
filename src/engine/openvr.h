@@ -61,12 +61,14 @@ class openvr
         glm::mat4 getCurrentViewProjectionMatrix( vr::Hmd_Eye nEye );
         glm::mat4 getCurrentProjectionMatrix(vr::Hmd_Eye nEye);
         glm::mat4 getCurrentViewMatrix(vr::Hmd_Eye nEye);
+        glm::vec3 getRotationMatrix(vr::HmdMatrix34_t matrix);
         glm::mat4 getHMDMatrixProjectionEye( vr::Hmd_Eye nEye );
         glm::mat4 getHMDMatrixPoseEye( vr::Hmd_Eye nEye );
 
         glm::vec2 getScreenSize() { return glm::vec2( p_nRenderWidth, p_nRenderHeight); }
 
         glm::vec3 getHeadPosition() { return p_position_head; }
+        glm::vec3 getHeadRotation() { return p_head_rotation; }
     protected:
 
     private:
@@ -99,6 +101,7 @@ class openvr
         glm::mat4 p_mat4ProjectionRight;
 
         glm::vec3 p_position_head;
+        glm::vec3 p_head_rotation;
 
         openvr_framebufferDesc leftEyeDesc;
         openvr_framebufferDesc rightEyeDesc;

@@ -392,6 +392,8 @@ void openvr::updateHMDMatrixPose()
         p_position_head.x = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][0];
         p_position_head.y = p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][1];
         p_position_head.z = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][2];
+
+        p_head_rotation = getRotationMatrix( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking );
 	}
 }
 
@@ -598,6 +600,18 @@ glm::mat4 openvr::getCurrentViewMatrix(vr::Hmd_Eye nEye)
 	}
 
 	return matMVP;
+}
+
+glm::vec3 openvr::getRotationMatrix(vr::HmdMatrix34_t matrix) {
+	glm::vec3 l_rotation;
+
+	l_rotation.x = sqrt(fmax(0, 1 + matrix.m[0][0] - matrix.m[1][1] - matrix.m[2][2])) / 2;
+	l_rotation.y = sqrt(fmax(0, 1 - matrix.m[0][0] + matrix.m[1][1] - matrix.m[2][2])) / 2;
+	l_rotation.z = sqrt(fmax(0, 1 - matrix.m[0][0] - matrix.m[1][1] + matrix.m[2][2])) / 2;
+	l_rotation.x = copysign( l_rotation.x, matrix.m[2][1] - matrix.m[1][2]);
+	l_rotation.y = copysign( l_rotation.y, matrix.m[0][2] - matrix.m[2][0]);
+	l_rotation.z = copysign( l_rotation.z, matrix.m[1][0] - matrix.m[0][1]);
+	return l_rotation;
 }
 
 glm::mat4 openvr::getHMDMatrixProjectionEye(vr::Hmd_Eye nEye)

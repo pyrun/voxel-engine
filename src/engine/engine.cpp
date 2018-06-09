@@ -215,6 +215,11 @@ void engine::run() {
             l_head.y = 0;
             l_obj->setDrawOffset( l_head);
 
+            glm::vec3 l_head_rotation = p_openvr->getHeadRotation();
+            l_head_rotation.x = 0;
+            l_head_rotation.z = 0;
+            l_obj->setRotation( l_head_rotation);
+
             glm::mat4 l_projection = p_openvr->getCurrentProjectionMatrix( vr::Eye_Left);
             glm::mat4 l_view_cam =  p_openvr->getCurrentViewMatrix( vr::Eye_Left) * p_graphic->getCamera()->getViewWithoutUp();
             render( l_view_cam, l_projection);
@@ -235,7 +240,7 @@ void engine::run() {
 
         /// render #2 window
 
-        //cam->setPos( glm::vec3( -5, 10, -5));
+        cam->setPos( glm::vec3( -5, 10, -5));
         //cam->setPos( p_player->getPositonHead( true));
 
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
