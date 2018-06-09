@@ -73,78 +73,6 @@ void engine::startClient( std::string address) {
     p_network->start_client( address);
 }
 
-void engine::raycastView( glm::vec3 position, glm::vec3 lookat, int forward) {
-    glm::vec3 l_postion_ray = position;
-    glm::vec3 l_postion_prev = position;
-    glm::vec3 l_block = { 0, 0, 0};
-    glm::vec3 l_block_prev;
-    bool l_found = false;
-
-    if( p_world_player == NULL)
-        return;
-
-    for(int i = 0; i < forward; i++) {
-        l_postion_prev = l_postion_ray;
-        l_postion_ray += lookat * 0.01f;
-
-        l_block.x = floorf( l_postion_ray.x);
-        l_block.y = floorf( l_postion_ray.y);
-        l_block.z = floorf( l_postion_ray.z);
-
-        Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block);
-        if( l_chunk) {
-            glm::vec3 l_chunk_pos = l_chunk->getPos() * glm::ivec3( CHUNK_SIZE);
-            if( l_chunk->getTile( l_block - l_chunk_pos) != EMPTY_BLOCK_ID) { // check for block
-                l_found = true;
-                break;
-            }
-        } else {
-            p_world_player->addChunk( l_block / glm::vec3(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE), false );
-        }
-    }
-    if( !l_found)
-        return;
-
-    // find out witch face we looking
-    glm::vec3 l_postion_floor_prev;
-    l_postion_floor_prev.x = floorf( l_postion_prev.x);
-    l_postion_floor_prev.y = floorf( l_postion_prev.y);
-    l_postion_floor_prev.z = floorf( l_postion_prev.z);
-
-    l_block_prev = l_block;
-
-    if( l_postion_floor_prev.x > l_block.x)
-        l_block_prev.x++;
-    else if( l_postion_floor_prev.x < l_block.x)
-        l_block_prev.x--;
-    else if( l_postion_floor_prev.y > l_block.y)
-        l_block_prev.y++;
-    else if( l_postion_floor_prev.y < l_block.y)
-        l_block_prev.y--;
-    else if( l_postion_floor_prev.z > l_block.z)
-        l_block_prev.z++;
-    else if( l_postion_floor_prev.z < l_block.z)
-        l_block_prev.z--;
-
-    // input handling
-    if( p_input.Map.Place && !p_input.MapOld.Place) {
-        Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block_prev);
-        if( l_chunk) {
-            p_world_player->changeBlock( l_chunk, l_block_prev, p_blocklist->getByName( "computer")->getID());
-            printf( "%d %d %d\n", (int)l_block_prev.x, (int)l_block_prev.y, (int)l_block_prev.z);
-        }
-    }
-
-    if( p_input.Map.Destory && !p_input.MapOld.Destory) {
-        Chunk *l_chunk = p_world_player->getChunkWithPosition( l_block);
-        if( l_chunk)
-            p_world_player->changeBlock( l_chunk, l_block, EMPTY_BLOCK_ID);
-    }
-
-    if( p_input.Map.Inventory && !p_input.MapOld.Inventory)
-        p_world_player->load();
-}
-
 
 void engine::render( glm::mat4 view, glm::mat4 projection) {
     Shader *l_shader = NULL;
@@ -209,7 +137,7 @@ void engine::run() {
     std::string l_title;
     struct clock l_clock;
     glm::mat4 l_mvp;
-    int l_delta = 0;
+    uint32_t l_delta = 0;
 
     p_world_player->createObject( "player", glm::vec3( -5.5f, 10.0f, -5.5f) );
 
@@ -261,6 +189,7 @@ void engine::run() {
         if( p_player) {
             cam->setPos( p_player->getPositonHead());
             walk( l_delta);
+            p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
         }
 
         if( p_input.getResize()) {
@@ -282,7 +211,9 @@ void engine::run() {
             cam->setPos( p_player->getPositonHead( false));
 
             object *l_obj = p_world_player->getObject( p_player->getId());
-            l_obj->setDrawOffset( p_openvr->getHeadPosition() );
+            glm::vec3 l_head = p_openvr->getHeadPosition();
+            l_head.y = 0;
+            l_obj->setDrawOffset( l_head);
 
             glm::mat4 l_projection = p_openvr->getCurrentProjectionMatrix( vr::Eye_Left);
             glm::mat4 l_view_cam =  p_openvr->getCurrentViewMatrix( vr::Eye_Left) * p_graphic->getCamera()->getViewWithoutUp();
@@ -304,7 +235,7 @@ void engine::run() {
 
         /// render #2 window
 
-        cam->setPos( glm::vec3( -5, 10, -5));
+        //cam->setPos( glm::vec3( -5, 10, -5));
         //cam->setPos( p_player->getPositonHead( true));
 
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
@@ -313,8 +244,6 @@ void engine::run() {
         render( l_view_cam, l_projection);
         p_graphic->getDisplay()->clear( false);
         p_graphic->renderDeferredShading();
-
-        raycastView( p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
 
         p_graphic->getDisplay()->swapBuffers();
 

@@ -40,8 +40,6 @@ public:
     void startServer();
     void startClient( std::string address = "127.0.0.1");
 
-    void raycastView( glm::vec3 position, glm::vec3 lookat, int forward);
-
     void render( glm::mat4 view, glm::mat4 projection);
 
     void fly( int l_delta);
@@ -75,7 +73,7 @@ private:
 
     // frame rate
     bool p_framecap;
-    int p_timecap;
+    uint32_t p_timecap;
     std::vector<int> p_framerate;
 };
 

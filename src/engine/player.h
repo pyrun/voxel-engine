@@ -11,6 +11,8 @@ class player
         player( world *world);
         virtual ~player();
 
+        void raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, int forward);
+
         void setPosition( glm::vec3 position);
 
         void input( Input *input, Camera *camera, int delta);
