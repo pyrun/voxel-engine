@@ -1,0 +1,6 @@
+<object name="hand" script="script.lua">
+	<file x="0.0" y="0.0" z="0.0" size="0.03185">hand.obj</file>
+	<texture>hand.png</texture>
+	<hitbox width="0.3" height="0.3" depth="0.1"></hitbox>
+</object>
+

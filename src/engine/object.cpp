@@ -68,6 +68,16 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         return false;
     }
 
+    if( l_object->Attribute( "gravity") )
+        p_gravity = atof( l_object->Attribute( "gravity"));
+    else
+        p_gravity = 1.0f;
+
+    if( l_object->Attribute( "script") )
+        p_script_file = l_path + l_object->Attribute( "script");
+    else
+        p_script_file = "";
+
     // load file
     XMLElement* l_xml_file = l_object->FirstChildElement( "file" );
     if( !l_xml_file) {
@@ -89,7 +99,7 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
     // player data
     XMLElement* l_xml_player = l_object->FirstChildElement( "player" );
     if( !l_xml_player) {
-        return false;
+        ;
     } else {
         p_head.x = atof( l_xml_player->Attribute( "headx"));
         p_head.y = atof( l_xml_player->Attribute( "heady"));
@@ -281,8 +291,16 @@ object::~object() {
 
 void object::init()
 {
-    //setDrawOffset( p_type->getDebugOffset() );
+    // get scale
     p_scale = p_type->getScale();
+
+    // load script
+    if( p_type->getFileScript().length() > 0)
+        p_script = new script( p_type->getFileScript());
+    else
+        p_script = NULL;
+
+    p_gravity = p_type->getGravityForce();
 }
 
 void object::process()
@@ -322,11 +340,12 @@ void object::update_model() {
 
     glm::mat4 l_posMat = glm::translate( p_type->getDebugOffset() + p_position + getDrawOffset());
     glm::mat4 l_posMat_hitbox = glm::translate( p_position);
+    glm::mat4 l_scaleMat = glm::scale( p_scale );
     glm::mat4 l_rotX = glm::rotate( p_rotation.x, glm::vec3(1.0, 0.0, 0.0));
     glm::mat4 l_rotY = glm::rotate( p_rotation.y, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 l_rotZ = glm::rotate( p_rotation.z, glm::vec3(0.0, 0.0, 1.0));
     glm::mat4 l_rotMat = l_rotX * l_rotY * l_rotZ;
-    p_model = l_posMat * l_rotMat;
+    p_model = l_posMat * l_rotMat * l_scaleMat;
     p_model_debug = l_posMat_hitbox;
 }
 

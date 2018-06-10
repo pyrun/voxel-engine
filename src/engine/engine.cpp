@@ -141,7 +141,7 @@ void engine::run() {
 
     p_world_player->createObject( "player", glm::vec3( -5.5f, 10.0f, -5.5f) );
 
-    p_world_player->createObject( "head", glm::vec3( 5.5f, 10.0f, 5.5f) );
+    p_world_player->createObject( "hand", glm::vec3( 5.5f, 10.0f, 5.5f) );
 
     //p_world_player->createObject( "player", glm::vec3( +5.0f, 10.9f, +5.0f) );
 

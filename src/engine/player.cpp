@@ -85,6 +85,11 @@ void player::input( Input *input, Camera *camera, int delta) {
     object *l_player = p_target_world->getObject( p_object_id);
     float l_speed = 0.0009f;
 
+    if( input->Map.Jump && l_player->getHit( physic::hit_side::ground) && l_player->getVerlocity().y < 0.0001f) {
+        l_player->addVelocity( glm::vec3( 0.f, 0.052f, 0.f));
+        l_player->setHit( physic::ground, false);
+    }
+
     if( input->Map.Up && l_player->getHit( physic::hit_side::ground)) {
         glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( camera->getUp(), camera->getForward())), l_up) * (float)delta * l_speed;
 
@@ -107,8 +112,6 @@ void player::input( Input *input, Camera *camera, int delta) {
         l_player->addVelocity( l_force);
     }
 
-    if( input->Map.Jump && l_player->getHit( physic::hit_side::ground) && l_player->getVerlocity().y < 0.0001f)
-        l_player->addVelocity( glm::vec3( 0.f, 0.052f, 0.f));
     if( input->Map.Shift )
         ;
 }

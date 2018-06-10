@@ -11,6 +11,7 @@
 #include "../graphic/debug_draw.h"
 
 #include "physic.h"
+#include "script.h"
 
 #define DEFINITION_FILE "definition.xml"
 
@@ -37,10 +38,14 @@ class object_type {
         glm::vec3 getHead() { return p_head; }
 
         glm::vec3 getDebugOffset() { return p_draw_offset; }
+        std::string getFileScript() { return p_script_file; }
+
+        float getGravityForce() { return p_gravity; }
     private:
         std::string p_name;
         std::string p_file;
         std::string p_texture_file;
+        std::string p_script_file;
         texture *p_texture;
         glm::vec3 p_draw_offset;
 
@@ -51,6 +56,7 @@ class object_type {
         bool p_model_changed;
 
         glm::vec3 p_size;
+        float p_gravity;
 
         GLuint p_vao;
         GLuint p_vbo_vertices;
@@ -108,6 +114,7 @@ class object {
 
         void setDrawOffset( glm::vec3 offset) { p_draw_offset = offset; p_model_change = true; }
         glm::vec3 getDrawOffset() { return p_draw_offset; }
+        float getGravityForce() { return p_gravity; }
     protected:
         void update_model();
     private:
@@ -123,8 +130,10 @@ class object {
         glm::vec3 p_draw_offset;
 
         object_type *p_type;
+        script *p_script;
 
         glm::vec3 p_velocity;
+        float p_gravity;
 
         physic::hit p_hits;
 
