@@ -141,6 +141,8 @@ void engine::run() {
 
     p_world_player->createObject( "player", glm::vec3( -5.5f, 10.0f, -5.5f) );
 
+    p_world_player->createObject( "head", glm::vec3( 5.5f, 10.0f, 5.5f) );
+
     //p_world_player->createObject( "player", glm::vec3( +5.0f, 10.9f, +5.0f) );
 
     /*p_world_player->createObject( "player", glm::vec3( -5.8f, 10.9f, -5.5f) );
@@ -172,6 +174,7 @@ void engine::run() {
 
     // set up clock
     l_clock.tick();
+
     while( p_isRunnig) { // Runniz
         l_timer.Start();
 
@@ -186,11 +189,6 @@ void engine::run() {
         //if( p_config->get( "fly", "engine", "false") == "true")
         //    fly( l_delta);
 
-        if( p_player) {
-            cam->setPos( p_player->getPositonHead());
-            walk( l_delta);
-            p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
-        }
 
         if( p_input.getResize()) {
             p_graphic->resizeWindow( glm::vec2( p_input.getResizeW(), p_input.getResizeH()) );
@@ -198,8 +196,15 @@ void engine::run() {
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
 
-        for( world *l_world:p_worlds)
+        for( world *l_world:p_worlds) {
             l_world->process_object_handling();
+            l_world->process_thrend_physic();
+        }
+
+        if( p_player && p_world_player->getPhysicFlag()) {
+            walk( l_delta);
+            p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
+        }
 
         if( p_input.Map.Inventory && !p_input.MapOld.Inventory ) {
 
@@ -207,7 +212,6 @@ void engine::run() {
 
         /// render #1 openVR
         if( p_openvr ) {
-
             cam->setPos( p_player->getPositonHead( false));
 
             object *l_obj = p_world_player->getObject( p_player->getId());
@@ -235,14 +239,19 @@ void engine::run() {
             p_openvr->renderEndRightEye();
 
             p_openvr->renderFrame();
+        } else {
+            object *l_obj = p_world_player->getObject( p_player->getId());
+            glm::vec3 l_body_rotation = glm::vec3( 0, cam->getHorizontalAngle(), 0);
+            l_obj->setRotation( l_body_rotation);
         }
 
 
         /// render #2 window
-
-        cam->setPos( glm::vec3( -5, 10, -5));
+        //cam->setPos( glm::vec3( -5, 10, -5));
         //cam->setPos( p_player->getPositonHead( true));
+        //cam->setPos( p_player->getPositonHead());
 
+        cam->setPos( p_player->getPositonHead());
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
         glm::mat4 l_projection = p_graphic->getCamera()->getProjection();
 

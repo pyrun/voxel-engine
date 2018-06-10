@@ -36,6 +36,8 @@ public:
 	inline glm::mat4 getViewWithoutUp() { return glm::lookAt(p_position, p_position + glm::vec3( p_direction.x, 0.f, p_direction.z ), glm::vec3( 0, 1.0f, 0)); }
 
 	void setDirection( glm::vec3 direction)  { p_direction = direction; }
+
+	float getHorizontalAngle() { return p_horizontalAngle; }
 protected:
     void calcOrientation();
 private:

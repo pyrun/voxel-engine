@@ -166,7 +166,7 @@ bool object_type::load_file( std::string file) {
           }
 
           p_indices.push_back( p_indices.size() );
-          p_vertices.push_back( glm::vec3( l_vertex_x, l_vertex_y, l_vertex_z) + p_draw_offset);
+          p_vertices.push_back( glm::vec3( l_vertex_x, l_vertex_y, l_vertex_z));
 
           // Optional: vertex colors
           // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
@@ -281,13 +281,13 @@ object::~object() {
 
 void object::init()
 {
-    //setDrawOffset( p_type->get )
+    //setDrawOffset( p_type->getDebugOffset() );
     p_scale = p_type->getScale();
 }
 
 void object::process()
 {
-    // to do script
+
 }
 
 void object::process_phyisc() {
@@ -302,7 +302,6 @@ void object::process_phyisc() {
 
 void object::draw( Shader* shader) {
     if( p_type) {
-
         update_model();
 
         p_type->draw( p_model, shader);
@@ -311,7 +310,7 @@ void object::draw( Shader* shader) {
 
 void object::draw_debug( Shader* shader) {
     if( p_type) {
-        p_type->draw_debug( p_model, shader);
+        p_type->draw_debug( p_model_debug, shader);
     }
 }
 
@@ -321,13 +320,14 @@ void object::update_model() {
 
     p_model_change = false;
 
-    glm::mat4 l_posMat = glm::translate( p_draw_offset + p_position);
-    glm::mat4 l_scaleMat = glm::scale( glm::vec3(1.0) );
+    glm::mat4 l_posMat = glm::translate( p_type->getDebugOffset() + p_position + getDrawOffset());
+    glm::mat4 l_posMat_hitbox = glm::translate( p_position);
     glm::mat4 l_rotX = glm::rotate( p_rotation.x, glm::vec3(1.0, 0.0, 0.0));
     glm::mat4 l_rotY = glm::rotate( p_rotation.y, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 l_rotZ = glm::rotate( p_rotation.z, glm::vec3(0.0, 0.0, 1.0));
     glm::mat4 l_rotMat = l_rotX * l_rotY * l_rotZ;
-    p_model = l_posMat * l_rotMat * l_scaleMat;
+    p_model = l_posMat * l_rotMat;
+    p_model_debug = l_posMat_hitbox;
 }
 
 void object::setType( object_type *type)

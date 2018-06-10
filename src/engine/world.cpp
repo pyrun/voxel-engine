@@ -34,22 +34,6 @@ static int world_thread_update(void *data)
     return 0;
 }
 
-static int world_thread_physic(void *data)
-{
-    for ( ;; ) {
-        world *l_world = (world*)data;
-
-        l_world->process_thrend_physic();
-
-        if( l_world->getDestory() )
-            break;
-
-        SDL_Delay(1);
-    }
-
-    return 0;
-}
-
 world::world( block_list* block_list, std::string name, object_handle *objectHandle) {
     p_buysvector = false;
     p_chunk_amount = 0;
@@ -74,7 +58,6 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
         p_thread_handle[i] = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
-    p_thread_physic = SDL_CreateThread( world_thread_physic, "world_thread_physic", (void *)this);
 }
 
 world::~world() {
@@ -89,7 +72,6 @@ world::~world() {
         SDL_WaitThread( p_thread_update[i], &l_return);
     for( int i = 0; i < WORLD_HANDLE_THRENDS; i++)
         SDL_WaitThread( p_thread_handle[i], &l_return);
-    SDL_WaitThread( p_thread_physic, &l_return);
 
     // destroy the mutex
     SDL_DestroyMutex( p_mutex_handle);
@@ -566,6 +548,8 @@ void world::process_thrend_physic() {
     while( (float)SDL_GetTicks() - p_time > WORLD_PHYSIC_FIXED_TIMESTEP*1000.f) {
         // time calculate for next pass
         p_time += ((float)WORLD_PHYSIC_FIXED_TIMESTEP*1000.f);
+
+        p_physic_flag = true;
         if( l_chunk == NULL)
            break;
 
@@ -630,9 +614,6 @@ void world::process_thrend_physic() {
                             // register the hit
                             if( l_change_position) {
                                 l_object->setVelocityY( 0.0f);
-                                l_object->setVelocityX( l_object->getVerlocity().x*0.8f);
-                                l_object->setVelocityZ( l_object->getVerlocity().z*0.8f);
-
                                 l_hit = true;
                             }
                             break;
@@ -758,6 +739,11 @@ void world::process_thrend_physic() {
                         }
                     }
                 }
+            }
+
+            if( l_object->getHit( physic::ground)) {
+                l_object->setVelocityX( l_object->getVerlocity().x*0.8f);
+                l_object->setVelocityZ( l_object->getVerlocity().z*0.8f);
             }
 
             // we finish with block collision

@@ -35,6 +35,8 @@ class object_type {
 
         glm::vec3 getHitbox() { return p_hitbox_size; }
         glm::vec3 getHead() { return p_head; }
+
+        glm::vec3 getDebugOffset() { return p_draw_offset; }
     private:
         std::string p_name;
         std::string p_file;
@@ -75,8 +77,6 @@ class object {
         void draw( Shader* shader);
         void draw_debug( Shader* shader);
 
-        void update_model();
-
         void setType( object_type *type);
         object_type *getType() { return p_type; }
 
@@ -109,12 +109,14 @@ class object {
         void setDrawOffset( glm::vec3 offset) { p_draw_offset = offset; p_model_change = true; }
         glm::vec3 getDrawOffset() { return p_draw_offset; }
     protected:
+        void update_model();
     private:
         int p_id;
 
         bool p_model_change;
 
         glm::mat4 p_model;
+        glm::mat4 p_model_debug;
         glm::vec3 p_position;
         glm::vec3 p_rotation;
         glm::vec3 p_scale;

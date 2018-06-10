@@ -100,6 +100,14 @@ public:
     Chunk *getNode() { return p_chunk_start; }
 
     void setGenerator( landscape *generator) { p_landscape_generator = generator; }
+
+    bool getPhysicFlag() {
+        if( p_physic_flag) {
+            p_physic_flag = false;
+            return true;
+        }
+        return p_physic_flag;
+    }
 protected:
 private:
     std::string p_name;
@@ -124,7 +132,6 @@ private:
     SDL_mutex *p_mutex_physic;
     SDL_Thread *p_thread_update[WORLD_UPDATE_THRENDS];
     SDL_Thread *p_thread_handle[WORLD_HANDLE_THRENDS];
-    SDL_Thread *p_thread_physic;
 
     std::queue<world_data_list> p_creatingList;
     std::queue<world_data_list> p_deletingList;
@@ -140,6 +147,8 @@ private:
     int p_object_id;
 
     float p_time;
+
+    bool p_physic_flag;
 };
 
 #endif // WORLD_H
