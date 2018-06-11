@@ -1,5 +1,6 @@
 function start( ... )
 	-- body
+	print( "test")
 end
 
 function destory( ... )

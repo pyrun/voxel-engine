@@ -40,7 +40,7 @@ graphic::~graphic() {
 
 void graphic::resizeWindow( glm::vec2 screen) {
     glViewport(0, 0, screen.x, screen.y);
-    printf( "%d %d resize\n", screen.x, screen.y);
+    printf( "graphic::resizeWindow resize screen to %.0fx%.0f\n", screen.x, screen.y);
     p_display->setSize( screen.x, screen.y);
     // resize
     p_camera->resize( (float)screen.x/(float)screen.y);
@@ -215,7 +215,7 @@ SDL_Surface* graphic::loadSurface(std::string File) {
     // Laden der Datei
     SDL_Surface* loaded = IMG_Load(File.c_str());
 	if( loaded == NULL ) {
-        printf( "Unable to load image %s!", File.c_str() ); // Fehler
+        printf( "graphic::loadSurface unable to load image %s!", File.c_str() ); // Fehler
         printf( "%s", SDL_GetError() );
         return NULL;
     } else {
@@ -237,9 +237,9 @@ void graphic::draw( SDL_Surface* Image, double X, double Y, int W, int H, int Sp
     source.w = W;
     source.h = H;
     if( Image == NULL )
-        printf( "Image dont load...\n");
+        printf( "graphic::draw image dont load...\n");
     if( p_display->getSurface() == NULL )
-        printf( "Screen dont load...\n");
+        printf( "graphic::draw screen dont load...\n");
     SDL_BlitSurface( Image, &source, p_display->getSurface(), &destination);
 }
 

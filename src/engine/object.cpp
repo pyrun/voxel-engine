@@ -301,6 +301,9 @@ void object::init()
         p_script = NULL;
 
     p_gravity = p_type->getGravityForce();
+
+    if( p_script)
+        p_script->call( "start", getId());
 }
 
 void object::process()
