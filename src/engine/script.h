@@ -10,17 +10,39 @@ extern "C" {
 
 #include <string>
 #include <iostream>
+#include <vector>
 
-class script
-{
-    public:
-        script( const std::string& filename);
-        ~script();
+namespace script {
 
-    protected:
+    class libs {
+        public:
+            libs();
+            ~libs();
 
-    private:
-        lua_State* p_luastate;
+            void (*func)( lua_State *);
+            std::string name;
+    };
+
+    void add_lib( std::string name, void (*func)( lua_State *));
+    void install_libs( lua_State *state);
+
+    class script
+    {
+        public:
+            script( const std::string& filename);
+            ~script();
+
+            void start();
+            void timer();
+            void end();
+
+            void addFunction( );
+        protected:
+
+        private:
+            lua_State* p_luastate;
+    };
+
 };
 
 #endif // SCRIPT_H

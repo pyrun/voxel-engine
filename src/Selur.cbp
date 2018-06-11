@@ -178,6 +178,8 @@
 		<Unit filename="engine/physic.h" />
 		<Unit filename="engine/player.cpp" />
 		<Unit filename="engine/player.h" />
+		<Unit filename="engine/script.cpp" />
+		<Unit filename="engine/script.h" />
 		<Unit filename="engine/world.cpp" />
 		<Unit filename="engine/world.h" />
 		<Unit filename="graphic/camera.cpp" />

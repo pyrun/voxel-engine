@@ -296,7 +296,7 @@ void object::init()
 
     // load script
     if( p_type->getFileScript().length() > 0)
-        p_script = new script( p_type->getFileScript());
+        p_script = new script::script( p_type->getFileScript());
     else
         p_script = NULL;
 

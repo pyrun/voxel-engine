@@ -130,7 +130,7 @@ class object {
         glm::vec3 p_draw_offset;
 
         object_type *p_type;
-        script *p_script;
+        script::script *p_script;
 
         glm::vec3 p_velocity;
         float p_gravity;
