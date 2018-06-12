@@ -13,7 +13,7 @@
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-server -openvrj" />
+				<Option parameters="-server -openvrl" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DWIN32" />
@@ -168,6 +168,7 @@
 		<Unit filename="engine/obj_loader.h" />
 		<Unit filename="engine/object.cpp" />
 		<Unit filename="engine/object.h" />
+		<Unit filename="engine/object_lua.cpp" />
 		<Unit filename="engine/openvr.cpp" />
 		<Unit filename="engine/openvr.h" />
 		<Unit filename="engine/openvr_models.cpp" />

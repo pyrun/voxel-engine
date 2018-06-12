@@ -24,7 +24,7 @@ void main()
     gNormal = vec4( normalize(Normal), 1);
 
     gTexture.xyz = TexCoords.xyz;
-    gTexture.w = 0.4;
+    gTexture.w = 0.05;
     
     gShadow = vec4( 1, 1, 1, 1);
 }

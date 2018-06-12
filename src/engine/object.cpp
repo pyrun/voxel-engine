@@ -295,10 +295,15 @@ void object::init()
     p_scale = p_type->getScale();
 
     // load script
-    if( p_type->getFileScript().length() > 0)
+    if( p_type->getFileScript().length() > 0) {
         p_script = new script::script( p_type->getFileScript());
-    else
+        if( p_script->getLuaState() == NULL) {
+            delete p_script;
+            p_script = NULL;
+        }
+    } else {
         p_script = NULL;
+    }
 
     p_gravity = p_type->getGravityForce();
 

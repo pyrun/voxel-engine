@@ -19,6 +19,9 @@ openvr::openvr()
 	p_hmd = NULL;
 	p_pRenderModels = NULL;
 
+	for( int i = 0; i < 2; i++)
+        p_hands[ i] = NULL;
+
 	p_fNearClip = 0.1f;
  	p_fFarClip = 3000.0f;
 
@@ -382,30 +385,20 @@ void openvr::updateHMDMatrixPose()
 				}
 			}
 			p_strPoseClasses += p_rDevClassChar[nDevice];
-		}
+        }
+
 	}
 
-	if ( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
-	{
-		p_mat4HMDPose = glm::inverse( p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd]);
+    if ( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
+    {
+        p_mat4HMDPose = glm::inverse( p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd]);
 
         p_position_head.x = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][0];
         p_position_head.y = p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][1];
         p_position_head.z = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][2];
 
         p_head_rotation = getRotationMatrix( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking );
-	}
-
-	if ( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
-	{
-		p_mat4HMDPose = glm::inverse( p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd]);
-
-        p_position_head.x = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][0];
-        p_position_head.y = p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][1];
-        p_position_head.z = -p_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd][3][2];
-
-        p_head_rotation = getRotationMatrix( p_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking );
-	}
+    }
 }
 
 void openvr::renderForLeftEye() {
@@ -566,6 +559,55 @@ void openvr::processVREvent( const vr::VREvent_t & event )
 		}
 		break;
 	}
+
+	switch( event.data.controller.button ) {
+        case vr::k_EButton_Grip:
+            switch(event.eventType)	{
+                case vr::VREvent_ButtonPress:
+                break;
+
+                case vr::VREvent_ButtonUnpress:
+                break;
+            }
+        break;
+
+        case vr::k_EButton_SteamVR_Trigger:
+            switch(event.eventType) {
+                case vr::VREvent_ButtonPress:
+                    printf("TRIGGER!!!\n");
+                break;
+
+                case vr::VREvent_ButtonUnpress:
+                break;
+            }
+        break;
+
+        case vr::k_EButton_SteamVR_Touchpad:
+            switch(event.eventType)	{
+                case vr::VREvent_ButtonPress:
+                break;
+
+                case vr::VREvent_ButtonUnpress:
+                break;
+
+                case vr::VREvent_ButtonTouch:
+                break;
+
+                case vr::VREvent_ButtonUntouch:
+                break;
+            }
+        break;
+
+        case vr::k_EButton_ApplicationMenu:
+            switch(event.eventType)	{
+                case vr::VREvent_ButtonPress:
+                break;
+
+                case vr::VREvent_ButtonUnpress:
+                break;
+            }
+        break;
+    }
 }
 
 glm::mat4 openvr::getCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)

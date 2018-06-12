@@ -23,6 +23,13 @@ struct openvr_framebufferDesc
     GLuint m_nResolveFramebufferId;
 };
 
+struct openvr_hands
+{
+    glm::vec3 position;
+    glm::vec3 rotation;
+    unsigned int index;
+};
+
 class openvr
 {
     public:
@@ -111,6 +118,8 @@ class openvr
 
         std::vector< openvr_models* > p_vecRenderModels;
         openvr_models *p_rTrackedDeviceToRenderModel[ vr::k_unMaxTrackedDeviceCount ];
+
+        openvr_hands *p_hands[ 2];
 };
 
 #endif // OPENVR_H
