@@ -1,6 +1,7 @@
-function start( ... )
+function start( this )
 	-- body
-	print( "test")
+	print( this, "hello world!")
+	print( this, "i have control about you! RISE AND SHINE")
 end
 
 function destory( ... )

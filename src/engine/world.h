@@ -151,4 +151,7 @@ private:
     bool p_physic_flag;
 };
 
+extern void lua_object_install( lua_State *state);
+extern void lua_object_set_targets( world *target);
+
 #endif // WORLD_H

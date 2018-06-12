@@ -1,18 +1,16 @@
 #include "script.h"
 
-using namespace script;
+std::vector<script::libs *> libs_vector;
 
-std::vector<libs *> libs_vector;
-
-libs::libs() {
+script::libs::libs() {
 
 }
 
-libs::~libs() {
+script::libs::~libs() {
 
 }
 
-void add_lib( std::string name, void (*func)( lua_State *)) {
+void script::add_lib( std::string name, void (*func)( lua_State *)) {
     // install load lua
     bool l_loaded = false;
     for( auto const& lib:libs_vector)
@@ -26,7 +24,7 @@ void add_lib( std::string name, void (*func)( lua_State *)) {
     }
 }
 
-void install_libs( lua_State *state) {
+void script::install_libs( lua_State *state) {
     for( auto const& l_lib:libs_vector)
         l_lib->func( state);
 }
@@ -35,7 +33,6 @@ void script::error (lua_State *luastate, char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
   vfprintf( stderr, fmt, argp);
-
   va_end(argp);
 }
 
@@ -68,7 +65,8 @@ void script::script::call( char *name, int id)
 
     // call
     if (lua_pcall( p_luastate, l_arguments, 0, 0) != 0) {
-        error( p_luastate, "script::start error running function `\"%s\"': %s", name, lua_tostring(p_luastate, -1));
+        std::string l_error = lua_tostring(p_luastate, -1);
+        error( p_luastate, "script::start error running function `\"%s\"': %s\n", name, l_error.c_str());
     }
 }
 

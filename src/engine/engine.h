@@ -14,6 +14,7 @@
 #include "input.h"
 #include "world.h"
 #include "player.h"
+#include "script.h"
 #include "../engine/config.h"
 #include "../engine/openvr.h"
 #include "../engine/network.h"

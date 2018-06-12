@@ -15,6 +15,11 @@
 
 #define DEFINITION_FILE "definition.xml"
 
+struct object_attach {
+    unsigned int id;
+    glm::vec3 offset;
+};
+
 class object_type {
     public:
         object_type();
@@ -66,6 +71,8 @@ class object_type {
 
         glm::vec3 p_hitbox_size;
         glm::vec3 p_head;
+
+        std::vector<object_attach> p_obj_attach;
 
         debug_draw p_debug_draw;
 };

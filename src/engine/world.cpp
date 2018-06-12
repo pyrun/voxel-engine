@@ -91,29 +91,26 @@ world::~world() {
 int world::createObject( std::string name, glm::vec3 position) {
     object *l_object;
 
-    object_type *l_type = p_pointer_object_handle->get( name);
+    // set target myself
+    lua_object_set_targets( this);
 
+    // get type
+    object_type *l_type = p_pointer_object_handle->get( name);
     if( !l_type) {
         printf( "world::createObject type \"%s\"not found\n", name.c_str());
         return -1;
     }
+
+    // now create object
     l_object = new object();
     l_object->setPosition( position);
-    l_object->setType( l_type);
     l_object->setId( ++p_object_id);
 
-    // creating the physic body
-    /*b3BodyDef l_bdef;
-    // set up def.
-    l_bdef.type = b3BodyType::e_dynamicBody;
-    l_bdef.fixedRotationX = true;
-    l_bdef.fixedRotationY = false;
-    l_bdef.fixedRotationZ = true;
-    b3Body* l_body = getPhysicWorld()->CreateBody(l_bdef);
-    l_object->setBody( l_body);*/
-
+    // puch back
     p_objects.push_back( l_object);
 
+    // set now type ( calls lua and install it)
+    l_object->setType( l_type);
     return 1;
 }
 

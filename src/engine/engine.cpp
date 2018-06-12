@@ -26,6 +26,9 @@ engine::engine() {
     p_landscape_generator = new landscape( p_config);
     p_network = new network( p_config);
 
+    // install lua
+    script::add_lib( "world", &lua_object_install);
+
     // load all objects
     p_object_handle = new object_handle();
     p_object_handle->load( p_config);
@@ -46,6 +49,8 @@ engine::engine() {
 
     p_player = p_players[0];
     //p_player = NULL;
+
+
 }
 
 engine::~engine() {

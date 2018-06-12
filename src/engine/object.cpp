@@ -302,8 +302,13 @@ void object::init()
 
     p_gravity = p_type->getGravityForce();
 
-    if( p_script)
+    if( p_script) {
+        // install libs
+        script::install_libs( p_script->getLuaState());
+
+        // first call
         p_script->call( "start", getId());
+    }
 }
 
 void object::process()
