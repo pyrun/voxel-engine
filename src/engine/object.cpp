@@ -78,6 +78,12 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
     else
         p_script_file = "";
 
+    if( l_object->Attribute( "timer") )
+        p_script_time = atoi( l_object->Attribute( "timer"));
+    else
+        p_script_time = 0;
+
+
     // load file
     XMLElement* l_xml_file = l_object->FirstChildElement( "file" );
     if( !l_xml_file) {
@@ -283,6 +289,10 @@ object::object()
 {
     p_type = NULL;
     p_model_change = false;
+    p_script_time = 0;
+    p_script = NULL;
+    p_gravity = 1.0f;
+    p_scale = glm::vec3( 0.f);
 }
 
 object::~object() {
@@ -306,6 +316,7 @@ void object::init()
     }
 
     p_gravity = p_type->getGravityForce();
+    p_script_time = p_type->getScriptTime();
 
     if( p_script) {
         // install libs
@@ -313,12 +324,28 @@ void object::init()
 
         // first call
         p_script->call( "start", getId());
+
+        p_timer.Start();
     }
 }
 
 void object::process()
 {
+    if( p_script) {
+        // script timer(a synch)
+        if( p_timer.GetTicks() > p_script_time) {
+            // call timer
+            p_script->call( "timer", getId(), p_script_time);
 
+            // start
+            p_timer.Start();
+
+            // reset hits now
+            resetHit();
+        }
+        else if( p_script_time == 0) // no timer -> reset after all ticks
+            resetHit();
+    }
 }
 
 void object::process_phyisc() {

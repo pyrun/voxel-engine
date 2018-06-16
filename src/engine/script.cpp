@@ -46,7 +46,7 @@ script::script::script( const std::string& filename)
     }
 }
 
-void script::script::call( char *name, int id)
+void script::script::call( char *name, int id, int par1, int par2, int par3)
 {
     int l_arguments = 0;
 
@@ -62,6 +62,9 @@ void script::script::call( char *name, int id)
 
     // push arguments
     lua_pushnumber( p_luastate, id); l_arguments++;
+    lua_pushnumber( p_luastate, par1); l_arguments++;
+    lua_pushnumber( p_luastate, par2); l_arguments++;
+    lua_pushnumber( p_luastate, par3); l_arguments++;
 
     // call
     if (lua_pcall( p_luastate, l_arguments, 0, 0) != 0) {

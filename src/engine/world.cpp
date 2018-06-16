@@ -548,13 +548,12 @@ void world::process_thrend_physic() {
 
         p_physic_flag = true;
         if( l_chunk == NULL)
-           break;
+           return;
 
         // calculate each object
         for( object *l_object: p_objects) {
             // reset hit sides and add gravity
             l_hit = false;
-            l_object->resetHit();
             l_object->addVelocity( p_gravity*WORLD_PHYSIC_FIXED_TIMESTEP*l_object->getGravityForce());
 
             l_hitbox = l_object->getType()->getHitbox();
@@ -585,14 +584,14 @@ void world::process_thrend_physic() {
                             bool l_change_position = false;
                             // check with side hit
                             if( l_object->getVerlocity().y < 0 ) {
-                                if( fabs( l_collision_block.y+l_size_block.y - l_collision_position.y) < 0.05f + fabs( l_object->getVerlocity().y) ) {
+                                if( fabs( l_collision_block.y+l_size_block.y - l_collision_position.y) < 0.001f + fabs( l_object->getVerlocity().y) ) {
                                     l_object->setPositionY( l_collision_block.y+l_size_block.y + 0.00f);
                                     l_change_position = true;
                                     l_object->setHit( physic::hit_side::ground, true);
                                 }
                             } else {
-                                if( fabs( l_collision_block.y-l_hitbox.y - l_collision_position.y) < 0.05f + fabs( l_object->getVerlocity().y) ) {
-                                    l_object->setPositionY( l_collision_block.y-l_hitbox.y - 0.00f);
+                                if( fabs( l_collision_block.y-l_hitbox.y - l_collision_position.y) < 0.001f + fabs( l_object->getVerlocity().y) ) {
+                                    l_object->setPositionY( l_collision_block.y-l_hitbox.y - 0.0f);
                                     l_change_position = true;
                                     l_object->setHit( physic::hit_side::top, true);
                                 }
@@ -603,7 +602,6 @@ void world::process_thrend_physic() {
                                 l_object->setVelocityY( 0.0f);
                                 l_hit = true;
                             }
-                            break;
                         }
                     }
                 }
@@ -638,25 +636,24 @@ void world::process_thrend_physic() {
                         bool l_change_position = false;
                         if( physic::testAABB2( l_collision_position, l_hitbox, l_collision_block, l_size_block)) {
                             if( l_object->getVerlocity().x < 0) {
-                                if( fabs( l_collision_block.x+l_size_block.x - l_collision_position.x) < 0.09f + fabs( l_object->getVerlocity().x) ) {
-                                    l_object->setPositionX( l_collision_block.x+l_size_block.x + 0.008f);
+                                if( fabs( l_collision_block.x+l_size_block.x - l_collision_position.x) < 0.001f + fabs( l_object->getVerlocity().x) ) {
+                                    l_object->setPositionX( l_collision_block.x+l_size_block.x + 0.001f);
                                     l_change_position = true;
+                                    l_object->setHit( physic::hit_side::east, true);
                                 }
                             } else {
-                                if( fabs( l_collision_block.x-l_hitbox.x - l_collision_position.x) < 0.09f + fabs( l_object->getVerlocity().x) ) {
-                                    l_object->setPositionX( l_collision_block.x-l_hitbox.x - 0.008f);
+                                if( fabs( l_collision_block.x-l_hitbox.x - l_collision_position.x) < 0.001f + fabs( l_object->getVerlocity().x) ) {
+                                    l_object->setPositionX( l_collision_block.x-l_hitbox.x - 0.001f);
                                     l_change_position = true;
+                                    l_object->setHit( physic::hit_side::west, true);
                                 }
                             }
 
                             // register the hit
                             if( l_change_position) {
                                 l_object->setVelocityX( 0.0 );
-
-                                l_object->setHit( physic::hit_side::west, true);
                                 l_hit = true;
                             }
-                            break;
                         }
                     }
                 }
@@ -692,14 +689,16 @@ void world::process_thrend_physic() {
                         if( physic::testAABB2( l_collision_position, l_hitbox, l_collision_block, l_size_block)) {
                             bool l_change_position = false;
                             if( l_object->getVerlocity().z < 0) {
-                                if( fabs( l_collision_block.z+l_size_block.z - l_collision_position.z) < 0.09f + fabs( l_object->getVerlocity().z) ) {
-                                    l_object->setPositionZ( l_collision_block.z+l_size_block.z + 0.008f);
+                                if( fabs( l_collision_block.z+l_size_block.z - l_collision_position.z) < 0.001f + fabs( l_object->getVerlocity().z) ) {
+                                    l_object->setPositionZ( l_collision_block.z+l_size_block.z + 0.001f);
                                     l_change_position = true;
+                                    l_object->setHit( physic::hit_side::south, true);
                                 }
                             } else {
-                                if( fabs( l_collision_block.z-l_hitbox.z - l_collision_position.z) < 0.09f + fabs( l_object->getVerlocity().z) ) {
-                                    l_object->setPositionZ( l_collision_block.z-l_hitbox.z - 0.008f);
+                                if( fabs( l_collision_block.z-l_hitbox.z - l_collision_position.z) < 0.001f + fabs( l_object->getVerlocity().z) ) {
+                                    l_object->setPositionZ( l_collision_block.z-l_hitbox.z - 0.001f);
                                     l_change_position = true;
+                                    l_object->setHit( physic::hit_side::north, true);
                                 }
                             }
 
@@ -707,10 +706,8 @@ void world::process_thrend_physic() {
                             if( l_change_position) {
                                 l_object->setVelocityZ( 0.0f);
 
-                                l_object->setHit( physic::hit_side::north, true);
                                 l_hit = true;
                             }
-                            break;
                         }
                     }
                 }

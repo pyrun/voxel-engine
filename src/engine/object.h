@@ -10,6 +10,8 @@
 #include "../graphic/texture.h"
 #include "../graphic/debug_draw.h"
 
+#include "../system/timer.h"
+
 #include "physic.h"
 #include "script.h"
 
@@ -46,11 +48,11 @@ class object_type {
         std::string getFileScript() { return p_script_file; }
 
         float getGravityForce() { return p_gravity; }
+        unsigned int getScriptTime() { return p_script_time; }
     private:
         std::string p_name;
         std::string p_file;
         std::string p_texture_file;
-        std::string p_script_file;
         texture *p_texture;
         glm::vec3 p_draw_offset;
 
@@ -62,6 +64,9 @@ class object_type {
 
         glm::vec3 p_size;
         float p_gravity;
+
+        std::string p_script_file;
+        unsigned int p_script_time;
 
         GLuint p_vao;
         GLuint p_vbo_vertices;
@@ -112,6 +117,7 @@ class object {
 
         void setRotation( glm::vec3 rotation);
         void addRotation( glm::vec3 rotation) { p_rotation += rotation; }
+        glm::vec3 getRotation() { return p_rotation; }
 
         void setUpdate( bool change = true) { p_model_change = change; }
 
@@ -122,6 +128,8 @@ class object {
         void setDrawOffset( glm::vec3 offset) { p_draw_offset = offset; p_model_change = true; }
         glm::vec3 getDrawOffset() { return p_draw_offset; }
         float getGravityForce() { return p_gravity; }
+
+        script::script *getScript() { return p_script; }
     protected:
         void update_model();
     private:
@@ -138,6 +146,8 @@ class object {
 
         object_type *p_type;
         script::script *p_script;
+        Timer p_timer;
+        unsigned int p_script_time;
 
         glm::vec3 p_velocity;
         float p_gravity;

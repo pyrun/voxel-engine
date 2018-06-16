@@ -36,7 +36,7 @@ namespace script {
             script( const std::string& filename);
             ~script();
 
-            void call( char *name, int id);
+            void call( char *name, int id, int par1 = 0, int par2 = 0, int par3 = 0);
 
             void addFunction( );
 

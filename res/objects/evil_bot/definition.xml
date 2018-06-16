@@ -1,4 +1,4 @@
-<object name="evil_bot" script="script.lua">
+<object name="evil_bot" timer="20" script="script.lua">
 	<file x="0.3" y="0.0" z="0.3" size="0.0625">roboter_evil.obj</file>
 	<texture>roboter_evil.png</texture>
 	<hitbox width="0.6" height="1.4" depth="0.6"></hitbox>

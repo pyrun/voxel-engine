@@ -49,8 +49,6 @@ engine::engine() {
 
     p_player = p_players[0];
     //p_player = NULL;
-
-
 }
 
 engine::~engine() {
@@ -77,7 +75,6 @@ void engine::startServer() {
 void engine::startClient( std::string address) {
     p_network->start_client( address);
 }
-
 
 void engine::render( glm::mat4 view, glm::mat4 projection) {
     Shader *l_shader = NULL;
@@ -149,8 +146,7 @@ void engine::run() {
 
     p_world_player->createObject( "hand", glm::vec3( 0.0f, 10.0f, 5.5f) );
 
-
-    p_world_player->createObject( "evil_bot", glm::vec3( 5, 10.9f, 0.0f) );
+    p_world_player->createObject( "evil_bot", glm::vec3( 5.2f, 10.9f, 0.0f) );
 
     /*p_world_player->createObject( "player", glm::vec3( -5.8f, 10.9f, -5.5f) );
 
@@ -204,6 +200,7 @@ void engine::run() {
         }
 
         for( world *l_world:p_worlds) {
+            lua_object_set_targets( l_world);
             l_world->process_object_handling();
             l_world->process_thrend_physic();
         }
