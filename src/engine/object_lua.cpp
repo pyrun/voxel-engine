@@ -4,6 +4,63 @@
 
 world *p_target;
 
+/// world
+static int lua_getTileId(lua_State* state) {
+    glm::vec3 l_tile_position;
+    if( !lua_isnumber( state, 1) | !lua_isnumber( state, 2) | !lua_isnumber( state, 3)) {
+        printf( "lua_getTileId call wrong argument\n");
+        return 0;
+    }
+
+    // get position
+    l_tile_position.x = lua_tonumber( state, 1);
+    l_tile_position.y = lua_tonumber( state, 2);
+    l_tile_position.z = lua_tonumber( state, 3);
+
+    // get tile
+    Chunk *l_chunk = p_target->getChunk( glm::ivec3( 0, 0, 0) );
+    if( l_chunk == NULL) {
+        lua_pushnumber( state, 0);
+        return 1;
+    }
+    unsigned int l_tile = l_chunk->getTile( l_tile_position);
+
+    // push the vector
+    lua_pushnumber( state, l_tile);
+
+    // finish
+    return 1;
+}
+
+static int lua_setTileId(lua_State* state) {
+    glm::vec3 l_tile_position;
+    if( !lua_isnumber( state, 1) | !lua_isnumber( state, 2) | !lua_isnumber( state, 3) | !lua_isnumber( state, 4)) {
+        printf( "lua_setTileId call wrong argument\n");
+        return 0;
+    }
+
+    // id
+    int l_tile = lua_tointeger( state, 1);
+
+    // get position
+    l_tile_position.x = lua_tonumber( state, 2);
+    l_tile_position.y = lua_tonumber( state, 3);
+    l_tile_position.z = lua_tonumber( state, 4);
+
+    // set tile
+    Chunk *l_chunk = p_target->getChunk( glm::ivec3( 0, 0, 0) );
+    if( l_chunk == NULL) {
+        lua_pushnumber( state, 0);
+        return 1;
+    }
+    p_target->setTile( l_chunk, l_tile_position, l_tile);
+
+    // push the vector
+    lua_pushnumber( state, l_tile);
+
+    // finish
+    return 1;
+}
 
 /// Position
 static int lua_getPosition(lua_State* state) {
@@ -248,6 +305,33 @@ static int lua_addVelocity(lua_State* state) {
     return 0;
 }
 
+/// hitbox
+static int lua_getHitbox(lua_State* state) {
+    glm::vec3 l_hitbox;
+    if( !lua_isnumber( state, 1)) {
+        printf( "lua_getHitbox call wrong argument\n");
+        return 0;
+    }
+
+    // get obj
+    int l_id = lua_tointeger( state, 1);
+    object *l_object = p_target->getObject( l_id);
+    if( l_object == NULL) {
+        printf( "lua_getHitbox object with %d# not found\n", l_id);
+        return 0;
+    }
+
+    l_hitbox = l_object->getType()->getHitbox();
+
+    // push the vector
+    lua_pushnumber( state, l_hitbox.x);
+    lua_pushnumber( state, l_hitbox.y);
+    lua_pushnumber( state, l_hitbox.z);
+
+    // finish
+    return 3;
+}
+
 /// get hit
 static int lua_getHit(lua_State* state) {
     bool l_hit;
@@ -284,7 +368,6 @@ static int lua_getHit(lua_State* state) {
     return 1;
 }
 
-
 static int lua_print(lua_State* state) {
     if( !lua_isnumber( state, 1) ) {
         printf( "lua_print call wrong argument\n");
@@ -315,6 +398,11 @@ static int lua_print(lua_State* state) {
 
 void lua_object_install( lua_State *state) {
     // defined functions
+    lua_pushcfunction( state, lua_getTileId);
+    lua_setglobal( state, "getTileId");
+    lua_pushcfunction( state, lua_setTileId);
+    lua_setglobal( state, "setTileId");
+
     lua_pushcfunction( state, lua_getPosition);
     lua_setglobal( state, "getPosition");
     lua_pushcfunction( state, lua_setPosition);
@@ -335,6 +423,9 @@ void lua_object_install( lua_State *state) {
     lua_setglobal( state, "setVelocity");
     lua_pushcfunction( state, lua_addVelocity);
     lua_setglobal( state, "addVelocity");
+
+    lua_pushcfunction( state, lua_getHitbox);
+    lua_setglobal( state, "getHitbox");
 
     lua_pushcfunction( state, lua_getHit);
     lua_setglobal( state, "getHit");
