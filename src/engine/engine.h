@@ -68,7 +68,6 @@ private:
     std::vector<world *> p_worlds;
 
     // player
-    world *p_world_player;
     player *p_player;
 
 

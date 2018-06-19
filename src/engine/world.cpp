@@ -111,7 +111,7 @@ int world::createObject( std::string name, glm::vec3 position) {
 
     // set now type ( calls lua and install it)
     l_object->setType( l_type);
-    return 1;
+    return p_object_id;
 }
 
 object *world::getObject( int id) {
@@ -119,6 +119,15 @@ object *world::getObject( int id) {
         if( l_object->getId() == id)
             return l_object;
     return NULL;
+}
+
+void world::deleteObject( int id) {
+    for( int i = 0; i < (int)p_objects.size(); i++) {
+        if( p_objects[i]->getId() == id) {
+            p_objects.erase( p_objects.begin() + i);
+            return;
+        }
+    }
 }
 
 int world::getTile( glm::ivec3 position) {

@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<block id="8">
+	<graphic>
+		<top>portal.png</top>
+		<bottom>portal.png</bottom>
+		<front>portal.png</front>
+		<back>portal.png</back>
+		<left>portal.png</left>
+		<right>portal.png</right>
+	</graphic>
+</block>

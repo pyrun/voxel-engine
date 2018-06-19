@@ -2,14 +2,19 @@
 
 player::player( world *world)
 {
-    p_object_id = world->createObject( "player", glm::vec3( 0, 20, 0));
-
     p_target_world = world;
+
+    createObject();
 }
 
 player::~player()
 {
 
+}
+
+void player::createObject() {
+    // create player
+    p_object_id = p_target_world->createObject( "player", glm::vec3( 20, 20, 0));
 }
 
 void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, int forward) {
@@ -68,7 +73,7 @@ void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, in
     if( input->Map.Place && !input->MapOld.Place) {
         Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
-            p_target_world->changeBlock( l_chunk, l_block_prev, 1);
+            p_target_world->changeBlock( l_chunk, l_block_prev, 8);
             printf( "%d %d %d\n", (int)l_block_prev.x, (int)l_block_prev.y, (int)l_block_prev.z);
         }
     }
@@ -114,6 +119,18 @@ void player::input( Input *input, Camera *camera, int delta) {
 
     if( input->Map.Shift )
         ;
+}
+
+void player::changeWorldTo( world *world) {
+    object *l_player = p_target_world->getObject( p_object_id);
+    if( !l_player)
+        return;
+    // delete old object
+    p_target_world->deleteObject( p_object_id);
+
+    // set new world and create again
+    p_target_world = world;
+    createObject();
 }
 
 glm::vec3 player::getPositonHead( bool height) {

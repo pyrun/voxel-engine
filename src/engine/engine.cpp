@@ -18,7 +18,6 @@ engine::engine() {
     p_openvr = NULL;
     p_isRunnig = true;
     p_framecap = true;
-    p_world_player = NULL;
     p_timecap = 12; // ms -> 90hz
 
     p_config = new config();
@@ -40,12 +39,30 @@ engine::engine() {
     // set up start world
     world *l_world = new world( p_blocklist, "0", p_object_handle);
     l_world->setGenerator( p_landscape_generator);
-
+    if( !l_world->load()) {
+        int l_size = 3;
+        int l_end = -3;
+        for( int x = -l_size; x <= l_size; x++)
+            for( int z = -l_size; z <= l_size; z++)
+                for( int y = 1; y > l_end; y--)
+                    l_world->addChunk( glm::vec3( x, y, z), true);
+    }
     p_worlds.push_back( l_world);
-    p_world_player = p_worlds[0];
+
+    l_world = new world( p_blocklist, "1", p_object_handle);
+    l_world->setGenerator( p_landscape_generator);
+    if( !l_world->load()) {
+        int l_size = 3;
+        int l_end = -3;
+        for( int x = -l_size; x <= l_size; x++)
+            for( int z = -l_size; z <= l_size; z++)
+                for( int y = 1; y > l_end; y--)
+                    l_world->addChunk( glm::vec3( x, y, z), true);
+    }
+    p_worlds.push_back( l_world);
 
     // player
-    p_players.push_back( new player(p_world_player) );
+    p_players.push_back( new player(p_worlds[0]) );
 
     p_player = p_players[0];
     //p_player = NULL;
@@ -88,14 +105,14 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
-    p_world_player->drawVoxel( p_graphic, l_shader);
+    p_player->getWorld()->drawVoxel( p_graphic, l_shader);
 
     // render object
     l_shader = p_graphic->getObjectShader();
     l_shader->Bind();
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
-    p_world_player->drawObjects( p_graphic, l_shader);
+    p_player->getWorld()->drawObjects( p_graphic, l_shader);
 
     // draw debug lines
     l_shader = p_graphic->getDebugShader();
@@ -103,7 +120,7 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     l_shader->update( MAT_PROJECTION, projection);
     l_shader->update( MAT_VIEW, view);
     l_shader->update( MAT_MODEL, glm::mat4( 1));
-    p_world_player->drawObjectsDebug( p_graphic, l_shader);
+    p_player->getWorld()->drawObjectsDebug( p_graphic, l_shader);
 
     // we are done
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -129,6 +146,18 @@ void engine::fly( int l_delta) {
 void engine::walk( int l_delta) {
     if( p_player) {
         p_player->input( &p_input, p_graphic->getCamera(), l_delta);
+
+        if( p_input.Map.Inventory && !p_input.MapOld.Inventory) {
+            /*if( p_player == p_players[1]) {
+                p_player = p_players[0];
+            } else {
+                p_player = p_players[1];
+            }*/
+            if( p_player->getWorld() == p_worlds[0])
+                p_player->changeWorldTo( p_worlds[1]);
+            else
+                p_player->changeWorldTo( p_worlds[0]);
+        }
     }
 }
 
@@ -141,36 +170,18 @@ void engine::run() {
     glm::mat4 l_mvp;
     uint32_t l_delta = 0;
 
-    p_world_player->createObject( "player", glm::vec3( -5.5f, 10.0f, -5.5f) );
-    p_world_player->createObject( "box", glm::vec3( 5.5f, 10.0f, 5.5f) );
+    p_worlds[0]->createObject( "player", glm::vec3( 40.0f, 10.0f, -5.5f) );
+    p_worlds[0]->createObject( "box", glm::vec3( 5.5f, 10.0f, 5.5f) );
 
-    p_world_player->createObject( "hand", glm::vec3( 0.0f, 10.0f, 5.5f) );
+    p_worlds[0]->createObject( "hand", glm::vec3( 0.0f, 10.0f, 5.5f) );
 
-    p_world_player->createObject( "evil_bot", glm::vec3( 5.2f, 10.9f, 0.0f) );
+    p_worlds[0]->createObject( "evil_bot", glm::vec3( 5.2f, 10.9f, 0.0f) );
 
-    /*p_world_player->createObject( "player", glm::vec3( -5.8f, 10.9f, -5.5f) );
-
-    p_world_player->createObject( "player", glm::vec3( -5.0f, 10.0f, +5.5f) );*/
-
-    if( !p_network->isClient()) {
-        if( !p_world_player->load()) {
-            int l_size = 3;
-            int l_end = -3;
-            for( int x = -l_size; x <= l_size; x++)
-                for( int z = -l_size; z <= l_size; z++)
-                    for( int y = 1; y > l_end; y--)
-                        p_world_player->addChunk( glm::vec3( x, y, z), true);
-        }
-    }
-
-    if( p_openvr) { // dirty hack -> force openVR resolution
-        //glm::vec2 l_oldSize = p_graphic->getDisplay()->getSize();
-        //p_graphic->getDisplay()->setSize( p_openvr->getScreenSize());
-
+    if( p_openvr) {
         SDL_SetWindowSize( p_graphic->getWindow(), p_openvr->getScreenSize().x, p_openvr->getScreenSize().y);
         p_graphic->getDisplay()->setSize( p_openvr->getScreenSize());
-        p_graphic->resizeWindow( p_openvr->getScreenSize());
         p_graphic->resizeDeferredShading();
+        p_graphic->resizeWindow( p_openvr->getScreenSize());
     }
 
     p_graphic->getCamera()->addPos( glm::vec3( 0, 5, 0));
@@ -205,7 +216,7 @@ void engine::run() {
             l_world->process_thrend_physic();
         }
 
-        if( p_player && p_world_player->getPhysicFlag()) {
+        if( p_player && p_player->getWorld()->getPhysicFlag()) {
             walk( l_delta);
             p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
         }
@@ -218,7 +229,7 @@ void engine::run() {
         if( p_openvr ) {
             cam->setPos( p_player->getPositonHead( false));
 
-            object *l_obj = p_world_player->getObject( p_player->getId());
+            object *l_obj = p_player->getWorld()->getObject( p_player->getId());
             glm::vec3 l_head = p_openvr->getHeadPosition();
             l_head.y = 0;
             l_obj->setDrawOffset( l_head);
@@ -244,17 +255,13 @@ void engine::run() {
 
             p_openvr->renderFrame();
         } else {
-            object *l_obj = p_world_player->getObject( p_player->getId());
+            object *l_obj = p_player->getWorld()->getObject( p_player->getId());
             glm::vec3 l_body_rotation = glm::vec3( 0, cam->getHorizontalAngle(), 0);
             l_obj->setRotation( l_body_rotation);
         }
 
 
         /// render #2 window
-        //cam->setPos( glm::vec3( -5, 10, -5));
-        //cam->setPos( p_player->getPositonHead( true));
-        //cam->setPos( p_player->getPositonHead());
-
         cam->setPos( p_player->getPositonHead());
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
         glm::mat4 l_projection = p_graphic->getCamera()->getProjection();
@@ -285,7 +292,7 @@ void engine::run() {
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         l_title = l_title + " X_" + NumberToString( cam->getPos().x) + " Y_" + NumberToString( cam->getPos().y) + " Z_" + NumberToString( cam->getPos().z );
-        l_title = l_title + " Chunks_" + NumberToString( (double) p_world_player->getAmountChunks()) + "/" + NumberToString( (double)p_world_player->getAmountChunksVisible() );
+        l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
         p_graphic->getDisplay()->setTitle( l_title);
 
         // one at evry frame

@@ -10,6 +10,27 @@ local l_noise_top = 0
 local l_noise_down = 0
 local l_size_inv = 30
 
+local hit = false
+
+local l_portal= getByName( "portal")
+function portal( chunk_id, x, y, z )
+	setBlock( chunk_id, l_portal, x-1, y, z)
+	setBlock( chunk_id, l_portal, x+0, y, z)
+	setBlock( chunk_id, l_portal, x+1, y, z)
+
+	setBlock( chunk_id, l_portal, x-1, y+4, z)
+	setBlock( chunk_id, l_portal, x+0, y+4, z)
+	setBlock( chunk_id, l_portal, x+1, y+4, z)
+
+	setBlock( chunk_id, l_portal, x+2, y+1, z)
+	setBlock( chunk_id, l_portal, x+2, y+2, z)
+	setBlock( chunk_id, l_portal, x+2, y+3, z)
+
+	setBlock( chunk_id, l_portal, x-2, y+1, z)
+	setBlock( chunk_id, l_portal, x-2, y+2, z)
+	setBlock( chunk_id, l_portal, x-2, y+3, z)
+end
+
 function rowX( real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
 
 end
@@ -49,6 +70,11 @@ function block( chunk_id, position_chunk_x, position_chunk_y, position_chunk_z, 
 		return false, 0;
 	elseif l_noise_down > real_pos_y then
 		return false, 0;
+	end
+
+	if rand( 60) == 1 and l_type == l_grass and hit == false then
+		hit = true
+		portal( chunk_id, real_pos_x-position_chunk_x, real_pos_y-position_chunk_y+1, real_pos_z-position_chunk_z)
 	end
 
 	return l_light, l_type

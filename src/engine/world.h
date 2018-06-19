@@ -60,6 +60,7 @@ public:
 
     int createObject( std::string name, glm::vec3 position);
     object *getObject( int id);
+    void deleteObject( int id);
 
     int getTile( glm::ivec3 position);
     Chunk *getChunkWithPosition( glm::ivec3 position);
