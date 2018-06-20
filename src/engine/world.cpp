@@ -274,6 +274,7 @@ void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
 }
 
 void world::process_thrend_handle() {
+    landscape_return *l_return;
     std::vector<glm::ivec3> l_lights;
 
     SDL_LockMutex ( p_mutex_handle);
@@ -313,9 +314,18 @@ void world::process_thrend_handle() {
 
             if( l_landscape) {
                 //SDL_LockMutex ( p_mutex_handle);
-                l_lights = p_landscape_generator->getGenerator( l_node)->generator( l_node, p_blocklist);
+                l_return = p_landscape_generator->getGenerator( l_node)->generator( l_node, p_blocklist);
+                l_lights = l_return->lights;
                 l_node->changed( true);
+
+                // set spawn point
+                if( l_return->spawn_point != glm::ivec3( 0, 0, 0)) {
+                    setSpawnPoint( l_return->spawn_point + l_node->getPos() * CHUNK_SIZE );
+                    //printf("position %d %d %d\n", (int)l_return->spawn_point.x, (int)l_return->spawn_point.y, (int)l_return->spawn_point.z);
+                }
+
                 //SDL_UnlockMutex ( p_mutex_handle);
+                delete l_return;
             }
 
             for( glm::ivec3 l_light:l_lights) {

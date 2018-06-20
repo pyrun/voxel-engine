@@ -101,6 +101,8 @@ public:
     Chunk *getNode() { return p_chunk_start; }
 
     void setGenerator( landscape *generator) { p_landscape_generator = generator; }
+    void setSpawnPoint( glm::ivec3 position) { p_spawn_point = position; }
+    glm::vec3 getSpawnPoint() { return p_spawn_point; }
 
     bool getPhysicFlag() {
         if( p_physic_flag) {
@@ -114,6 +116,7 @@ private:
     std::string p_name;
 
     landscape *p_landscape_generator;
+    glm::vec3 p_spawn_point;
 
     bool p_buysvector;
     bool p_world_tree_empty;

@@ -14,7 +14,8 @@ player::~player()
 
 void player::createObject() {
     // create player
-    p_object_id = p_target_world->createObject( "player", glm::vec3( 20, 20, 0));
+    p_object_id = p_target_world->createObject( "player", p_target_world->getSpawnPoint() );
+    //printf("position %d %d %d\n", (int)p_target_world->getSpawnPoint().x, (int)p_target_world->getSpawnPoint().y, (int)p_target_world->getSpawnPoint().z);
 }
 
 void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, int forward) {

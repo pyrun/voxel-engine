@@ -4,6 +4,41 @@ block_list* public_blocklist;
 
 int public_number = 0;
 Chunk *public_chunk_list[ MAX_CHUNKS_GENERATE];
+glm::ivec3 public_spawn_list[ MAX_CHUNKS_GENERATE];
+
+static int lua_setPortal (lua_State *state) {
+    glm::ivec3 l_position;
+    unsigned int l_chunk_id;
+    unsigned int l_block_portal = public_blocklist->getByName( "portal")->getID();
+
+    l_chunk_id = lua_tonumber( state, 1);
+    l_position.x = lua_tonumber( state, 2);
+    l_position.y = lua_tonumber( state, 3);
+    l_position.z = lua_tonumber( state, 4);
+
+    unsigned int l_portal_blocks_amount = 12;
+    glm::ivec3 l_portal_blocks[ l_portal_blocks_amount] = { glm::ivec3( -1,  0, 0),
+                                                            glm::ivec3(  0,  0, 0),
+                                                            glm::ivec3( +1,  0, 0),
+                                                            glm::ivec3( -1, +4, 0),
+                                                            glm::ivec3(  0, +4, 0),
+                                                            glm::ivec3( +1, +4, 0),
+                                                            glm::ivec3( +2, +1, 0),
+                                                            glm::ivec3( +2, +2, 0),
+                                                            glm::ivec3( +2, +3, 0),
+                                                            glm::ivec3( -2, +1, 0),
+                                                            glm::ivec3( -2, +2, 0),
+                                                            glm::ivec3( -2, +3, 0)};
+
+    // create portal
+    for( unsigned int i = 0; i < l_portal_blocks_amount; i++)
+        public_chunk_list[ l_chunk_id]->set( l_position + l_portal_blocks[i], l_block_portal, false);
+
+    // set spawn point
+    public_spawn_list[ l_chunk_id] = l_position + glm::ivec3( 0, 1, 0);
+
+    return 0;
+}
 
 static int lua_getByName (lua_State *state) {
     std::string l_name= lua_tostring( state, 1);
@@ -64,7 +99,7 @@ static int lua_setBlock (lua_State *state) {
     if( public_chunk_list[ l_chunk_id])
         public_chunk_list[ l_chunk_id]->set( l_position, l_block, false);
     else
-        printf( "lua_setBlock chunk didnt found!\n");
+        printf( "lua_setBlock chunk #%d didnt found!\n", l_chunk_id);
     return 0;
 }
 
@@ -74,6 +109,9 @@ landscape_script::landscape_script( int id, lua_State *state)
     p_luastate = state;
 
     // add lua function
+    lua_pushcfunction( state, lua_setPortal);
+    lua_setglobal( state, "setPortal");
+
     lua_pushcfunction( state, lua_getByName);
     lua_setglobal( state, "getByName");
 
@@ -101,17 +139,23 @@ void landscape_script::setState( lua_State *state)
     p_luastate = state;
 }
 
-std::vector<glm::ivec3> landscape_script::generator( Chunk* chunk, block_list* blocklist)
+landscape_return *landscape_script::generator( Chunk* chunk, block_list* blocklist)
 {
     int l_type = 0;
     bool l_light = false;
     srand( chunk->getSeed());
     std::vector<glm::ivec3> l_lights;
     public_blocklist = blocklist;
+    landscape_return *l_return = new landscape_return();
 
     // set chunk id
-    int l_id_chunk = ++public_number;
+    int l_id_chunk = public_number++;
+    if( l_id_chunk > MAX_CHUNKS_GENERATE) {
+        l_id_chunk = 0;
+        public_number = 0;
+    }
     public_chunk_list[ l_id_chunk] = chunk;
+    public_spawn_list[ l_id_chunk] = glm::ivec3( 0, 0, 0);
 
     glm::ivec3 l_position_chunk = chunk->getPos()*glm::ivec3(CHUNK_SIZE);
     glm::ivec3 l_random = glm::ivec3( rand(), rand(), rand());
@@ -198,9 +242,12 @@ std::vector<glm::ivec3> landscape_script::generator( Chunk* chunk, block_list* b
         }
     }
 
-    public_chunk_list[ l_id_chunk] = NULL;
+    //public_chunk_list[ l_id_chunk] = NULL;
 
-    return l_lights;
+    l_return->lights = l_lights;
+    l_return->spawn_point = public_spawn_list[ l_id_chunk];
+
+    return l_return;
 }
 
 landscape::landscape( config *configuration)
@@ -261,6 +308,7 @@ bool landscape::loadScripts( std::string path)
         printf( "landscape::loadScripts can't open the \"%s\" folder\n", path.c_str());
     }
     closedir( l_handle );
+    return true;
 }
 
 bool landscape::loadScript( std::string file)
@@ -274,4 +322,5 @@ bool landscape::loadScript( std::string file)
         printf( "landscape::loadScript \"%s\" added with id #%d\n", file.c_str(), p_id);
     p_generator.push_back( new landscape_script( p_id, l_state) );
     p_id++;
+    return true;
 }

@@ -10,7 +10,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 
-#define MAX_CHUNKS_GENERATE 64
+#define MAX_CHUNKS_GENERATE 128
+
+struct landscape_return {
+    std::vector<glm::ivec3> lights;
+    glm::ivec3 spawn_point;
+};
 
 class landscape_script{
     public:
@@ -19,7 +24,7 @@ class landscape_script{
 
         void setState( lua_State *state);
 
-        std::vector<glm::ivec3> generator( Chunk* chunk, block_list* blocklist);
+        landscape_return *generator( Chunk* chunk, block_list* blocklist);
     private:
         int p_id;
         lua_State* p_luastate;
@@ -42,7 +47,5 @@ class landscape{
         int p_id;
         std::vector<landscape_script*> p_generator;
 };
-
-std::vector<glm::ivec3> Landscape_Generator( Chunk* chunk, block_list* list);
 
 #endif // LANDSCAPE_GENERATOR_H
