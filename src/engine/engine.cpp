@@ -256,8 +256,10 @@ void engine::run() {
             p_openvr->renderFrame();
         } else {
             object *l_obj = p_player->getWorld()->getObject( p_player->getId());
-            glm::vec3 l_body_rotation = glm::vec3( 0, cam->getHorizontalAngle(), 0);
-            l_obj->setRotation( l_body_rotation);
+            if( l_obj) {
+                glm::vec3 l_body_rotation = glm::vec3( 0, cam->getHorizontalAngle(), 0);
+                l_obj->setRotation( l_body_rotation);
+            }
         }
 
 

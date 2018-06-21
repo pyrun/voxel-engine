@@ -4,8 +4,9 @@
 
 using namespace tinyxml2;
 
-config::config() {
+config::config( std::string file) {
     // load config
+    p_config_file = file;
     load();
 }
 
@@ -90,14 +91,16 @@ void config::save() {
         l_root->LinkEndChild( l_xml_category);
 
     // save the file
-    l_config.SaveFile( CONFIG_FILE);
+    l_config.SaveFile( p_config_file.c_str());
 }
 
 bool config::load() {
     XMLDocument l_config;
 
     //load the file
-    XMLError l_result = l_config.LoadFile(CONFIG_FILE);
+    XMLError l_result = l_config.LoadFile(p_config_file.c_str());
+    if( l_result == XML_ERROR_FILE_NOT_FOUND)
+        return false;
 
     // check the file
     XMLCheckResult(l_result);
@@ -125,6 +128,8 @@ bool config::load() {
         }
         l_xml_category = l_xml_category->NextSiblingElement();
     }
+
+    return true;
 }
 
 void config::save_parameter( XMLDocument *config, XMLNode *root, std::string name, std::string data) {

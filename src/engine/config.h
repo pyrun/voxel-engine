@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#define CONFIG_FILE "config.xml"
-
 #include "../xml/tinyxml2.h"
 
 class config_entity {
@@ -25,7 +23,7 @@ class config_entity {
 
 class config {
     public:
-        config();
+        config( std::string file = "config.xml");
         virtual ~config();
         void set( std::string id, std::string data, std::string category = "");
         std::string get( std::string id, std::string category, std::string defaultValue = "default");
@@ -39,6 +37,7 @@ class config {
 
     private:
         std::vector<config_entity> p_entity;
+        std::string p_config_file;
 };
 
 #endif // CONFIG_H

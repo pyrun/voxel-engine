@@ -63,6 +63,8 @@ function createTree( chunk_id, position_x, position_y, position_z)
 	setBlock( chunk_id, l_leaf, position_x, position_y+6, position_z)
 end
 
+local hit = false
+
 function block( chunk_id, position_chunk_x, position_chunk_y, position_chunk_z, real_pos_x, real_pos_y, real_pos_z, seedX, seedY, seedZ)
 	local l_light = false
 
@@ -88,6 +90,11 @@ function block( chunk_id, position_chunk_x, position_chunk_y, position_chunk_z, 
 	if rand( 22) == 1 and l_type == l_grass then
 		l_type = l_glowcrystal
 		l_light = true
+	end
+
+	if rand( 66) == 1 and l_type == l_grass and hit == false then
+		hit = true
+		setPortal( chunk_id, real_pos_x-position_chunk_x, real_pos_y-position_chunk_y+1, real_pos_z-position_chunk_z)
 	end
 
 	return l_light, l_type

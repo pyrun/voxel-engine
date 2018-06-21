@@ -3,6 +3,7 @@
 player::player( world *world)
 {
     p_target_world = world;
+    p_object_id = -1;
 
     createObject();
 }
@@ -14,8 +15,8 @@ player::~player()
 
 void player::createObject() {
     // create player
-    p_object_id = p_target_world->createObject( "player", p_target_world->getSpawnPoint() );
-    //printf("position %d %d %d\n", (int)p_target_world->getSpawnPoint().x, (int)p_target_world->getSpawnPoint().y, (int)p_target_world->getSpawnPoint().z);
+    if( p_target_world->getSpawnPoint() != glm::vec3( 0, 0, 0) )
+        p_object_id = p_target_world->createObject( "player", p_target_world->getSpawnPoint() );
 }
 
 void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, int forward) {
@@ -89,6 +90,10 @@ void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, in
 void player::input( Input *input, Camera *camera, int delta) {
     glm::vec3 l_up(0.0f, 1.0f, 0.0f);
     object *l_player = p_target_world->getObject( p_object_id);
+    if( !l_player) {
+        createObject();
+        return;
+    }
     float l_speed = 0.0009f;
 
     if( input->Map.Jump && l_player->getHit( physic::hit_side::ground) && l_player->getVerlocity().y < 0.0001f) {
@@ -136,6 +141,8 @@ void player::changeWorldTo( world *world) {
 
 glm::vec3 player::getPositonHead( bool height) {
     object *l_player = p_target_world->getObject( p_object_id);
+    if( l_player == NULL)
+        return glm::vec3( 0, 0, 0);
     glm::vec3 l_head = l_player->getType()->getHead();
     if( height == false)
         l_head.y = 0;

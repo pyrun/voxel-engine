@@ -311,7 +311,6 @@ void world::process_thrend_handle() {
         //SDL_UnlockMutex ( p_mutex_handle);
 
         if( l_node != NULL) {
-
             if( l_landscape) {
                 //SDL_LockMutex ( p_mutex_handle);
                 l_return = p_landscape_generator->getGenerator( l_node)->generator( l_node, p_blocklist);
@@ -321,7 +320,6 @@ void world::process_thrend_handle() {
                 // set spawn point
                 if( l_return->spawn_point != glm::ivec3( 0, 0, 0)) {
                     setSpawnPoint( l_return->spawn_point + l_node->getPos() * CHUNK_SIZE );
-                    //printf("position %d %d %d\n", (int)l_return->spawn_point.x, (int)l_return->spawn_point.y, (int)l_return->spawn_point.z);
                 }
 
                 //SDL_UnlockMutex ( p_mutex_handle);
@@ -553,6 +551,7 @@ void world::process_thrend_physic() {
     bool l_hit;
     glm::ivec3 l_collision_block;
     glm::vec3 l_collision_position;
+    glm::vec3 l_shift_position = glm::vec3( 0, 0, 0);
     Chunk *l_chunk;
     glm::vec3 l_size_block = glm::vec3( 1, 1, 1);
     glm::vec3 l_hitbox;
@@ -642,9 +641,20 @@ void world::process_thrend_physic() {
             l_shift[4] = glm::vec3( 0.0f, l_hitbox.y + 0.5f, 0.0f);
             l_shift[5] = glm::vec3( 0.0f, l_hitbox.y + 0.5f, l_collision_position.z>0?l_hitbox.z + 0.5f:-l_hitbox.z - 0.5f);
 
+
+
+            if(l_object->getPosition().y < 0 ) {
+                for( int shift = 0; shift < 6; shift++) {
+                    l_shift[ shift].y -= 1.0f;
+                }
+                l_shift_position.y = +0.01f;
+            } else {
+                l_shift_position.y = 0;
+            }
+
             for( int i = -2; i < fabs( l_object->getVerlocity().x)+2 && l_hit == false; i++) {
                 for( int shift = 0; shift < 6 && l_hit == false; shift++) {
-                    l_collision_position = l_object->getPosition() + glm::vec3( l_object->getVerlocity().x, 0, 0);
+                    l_collision_position = l_object->getPosition() + glm::vec3( l_object->getVerlocity().x, 0, 0) + l_shift_position;
                     // set collision position block
                     l_collision_block.x = (int)l_collision_position.x - i;
                     l_collision_block.y = (int)l_collision_position.y + (int)l_shift[ shift].y;
@@ -694,9 +704,18 @@ void world::process_thrend_physic() {
             l_shift[4] = glm::vec3( 0.0f, l_hitbox.y + 0.5f, 0);
             l_shift[5] = glm::vec3( l_collision_position.x>0?l_hitbox.x + 0.5f:-l_hitbox.x - 0.5f, l_hitbox.y + 0.5f, 0.0f);
 
+            if(l_object->getPosition().y < 0 ) {
+                for( int shift = 0; shift < 6; shift++) {
+                    l_shift[ shift].y -= 1.0f;
+                }
+                l_shift_position.y = +0.01f;
+            } else {
+                l_shift_position.y = 0;
+            }
+
             for( int i = -2; i < fabs( l_object->getVerlocity().z)+2 && l_hit == false; i++) {
                 for( int shift = 0; shift < 6 && l_hit == false; shift++) {
-                    l_collision_position = l_object->getPosition() + glm::vec3( 0, 0, l_object->getVerlocity().z);
+                    l_collision_position = l_object->getPosition() + glm::vec3( 0, 0, l_object->getVerlocity().z) + l_shift_position;
 
                     // set collision position block
                     l_collision_block.x = (int)l_collision_position.x + (int)l_shift[ shift].x;
@@ -965,21 +984,28 @@ void world::save() {
     l_time.Start();
     int l_amount = 0;
     std::string l_folder = "worldsave/" + p_name;
+    std::string l_folder_chunks = l_folder + "/chunks";
     mkdir( l_folder.c_str());
-
+    mkdir( l_folder_chunks.c_str());
 
     Chunk *l_node = p_chunk_start;
     for( ;; ) {
         if( l_node == NULL)
             break;
         l_amount++;
-        std::ofstream l_file( l_folder + "/" + patch::to_string( l_node->getPos().x) + "_" + patch::to_string( l_node->getPos().y)+ "_" + patch::to_string( l_node->getPos().z)+ "_" + ".schunk", std::ios::binary);
+        std::ofstream l_file( l_folder_chunks + "/" + patch::to_string( l_node->getPos().x) + "_" + patch::to_string( l_node->getPos().y)+ "_" + patch::to_string( l_node->getPos().z)+ "_" + ".schunk", std::ios::binary);
 
         l_node->save( &l_file);
 
         // next
         l_node = l_node->next;
     }
+
+    config *l_config = new config( l_folder + "/" + "config.xml");
+    l_config->set( "spawn_point_x", patch::to_string( getSpawnPoint().x), "world");
+    l_config->set( "spawn_point_y", patch::to_string( getSpawnPoint().y), "world");
+    l_config->set( "spawn_point_z", patch::to_string( getSpawnPoint().z), "world");
+    delete l_config;
 
     printf( "world::save %dms\n", l_time.GetTicks());
 }
@@ -994,20 +1020,21 @@ bool world::load() {
     std::string l_name;
     std::string l_filepath;
     std::string l_path = "worldsave/" + p_name + "/";
+    std::string l_folder_chunks = l_path + "/chunks/";
 
     // open folder
-    l_handle = opendir( l_path.c_str());
+    l_handle = opendir( l_folder_chunks.c_str());
     if ( l_handle != NULL ) {
         while ( 0 != ( l_dirEntry = readdir( l_handle ) ))  {
             l_name = l_dirEntry->d_name;
-            l_filepath =  l_path + l_name;
+            l_filepath =  l_folder_chunks + l_name;
             if( fileExists( l_filepath )) {
                 load_chunk( l_filepath);
                 l_found_once = true;
             }
         }
     } else {
-        printf( "world::load can't open the \"%s\" folder\n", l_path.c_str());
+        printf( "world::load can't open the \"%s\" folder\n", l_folder_chunks.c_str());
     }
     closedir( l_handle );
 
@@ -1018,6 +1045,13 @@ bool world::load() {
         l_node->changed( true);
         l_node = l_node->next;
     }
+
+    config *l_config = new config( l_path + "/" + "config.xml");
+    glm::vec3 l_spawn =  glm::vec3( atof( l_config->get( "spawn_point_x", "world", "0").c_str() ),
+                                    atof( l_config->get( "spawn_point_y", "world", "0").c_str() ),
+                                    atof( l_config->get( "spawn_point_z", "world", "0").c_str() ));
+    setSpawnPoint( l_spawn);
+    delete l_config;
 
     printf( "world::load %dms \"%s\" folder\n", l_time.GetTicks(), l_path.c_str());
 
