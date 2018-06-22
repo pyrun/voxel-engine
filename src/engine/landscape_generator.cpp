@@ -266,14 +266,22 @@ landscape::landscape( config *configuration)
 
 landscape::~landscape()
 {
-    for( landscape_script *l_generator:p_generator)
+    for( landscape_script *l_generator:p_world_generator)
+        delete l_generator;
+    for( landscape_script *l_generator:p_player_generator)
         delete l_generator;
 }
 
-landscape_script *landscape::getGenerator( Chunk *chunk)
+landscape_script *landscape::getWorldGenerator( Chunk *chunk)
 {
     int l_seed = chunk->getSeed();
-    return p_generator[ l_seed%p_generator.size()];
+    return p_world_generator[ l_seed%p_world_generator.size()];
+}
+
+landscape_script *landscape::getPlayerGenerator( Chunk *chunk)
+{
+    int l_seed = chunk->getSeed();
+    return p_player_generator[ l_seed%p_player_generator.size()];
 }
 
 bool landscape::fileExists(std::string filename) {
@@ -318,9 +326,17 @@ bool landscape::loadScript( std::string file)
 
     // load file and and to vector
     luaL_loadfile( l_state, file.c_str());
-    if( l_state)
-        printf( "landscape::loadScript \"%s\" added with id #%d\n", file.c_str(), p_id);
-    p_generator.push_back( new landscape_script( p_id, l_state) );
+    if( !l_state)
+        return false;
+
+    std::size_t l_found = file.find( "player");
+    if( l_found !=std::string::npos ) {
+        printf( "landscape::loadScript player_generator \"%s\" added with id #%d\n", file.c_str(), p_id);
+        p_player_generator.push_back( new landscape_script( p_id, l_state) );
+    } else {
+        printf( "landscape::loadScript world_generator \"%s\" added with id #%d\n", file.c_str(), p_id);
+        p_world_generator.push_back( new landscape_script( p_id, l_state) );
+    }
     p_id++;
     return true;
 }

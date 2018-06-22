@@ -313,7 +313,7 @@ void world::process_thrend_handle() {
         if( l_node != NULL) {
             if( l_landscape) {
                 //SDL_LockMutex ( p_mutex_handle);
-                l_return = p_landscape_generator->getGenerator( l_node)->generator( l_node, p_blocklist);
+                l_return = p_landscape_generator->getWorldGenerator( l_node)->generator( l_node, p_blocklist);
                 l_lights = l_return->lights;
                 l_node->changed( true);
 

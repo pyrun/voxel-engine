@@ -35,8 +35,8 @@ class landscape{
         landscape( config *configuration);
         ~landscape();
 
-        landscape_script *getGenerator( Chunk *chunk);
-
+        landscape_script *getWorldGenerator( Chunk *chunk);
+        landscape_script *getPlayerGenerator( Chunk *chunk);
     private:
         bool fileExists(std::string filename);
 
@@ -45,7 +45,8 @@ class landscape{
 
     private:
         int p_id;
-        std::vector<landscape_script*> p_generator;
+        std::vector<landscape_script*> p_world_generator;
+        std::vector<landscape_script*> p_player_generator;
 };
 
 #endif // LANDSCAPE_GENERATOR_H
