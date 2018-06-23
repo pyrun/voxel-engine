@@ -82,8 +82,7 @@ engine::engine() {
     p_network = new network( p_config);
 
     // install lua
-    script::add_lib( "world", &lua_object_install);
-    script::add_lib( "engine", &lua_engine_install);
+    install_lua();
 
     // load all objects
     p_object_handle = new object_handle();
@@ -148,6 +147,11 @@ void engine::startServer() {
 
 void engine::startClient( std::string address) {
     p_network->start_client( address);
+}
+
+void engine::install_lua() {
+    script::add_lib( "world", &lua_object_install);
+    script::add_lib( "engine", &lua_engine_install);
 }
 
 void engine::render( glm::mat4 view, glm::mat4 projection) {
@@ -280,8 +284,9 @@ void engine::run() {
             p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
         }
 
-        if( p_input.Map.Inventory && !p_input.MapOld.Inventory ) {
-
+        if( p_input.Map.Refresh && !p_input.MapOld.Refresh ) {
+            for( world *l_world:p_worlds)
+                l_world->reloadScripts();
         }
 
         /// render #1 openVR

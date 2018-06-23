@@ -41,6 +41,8 @@ public:
     void startServer();
     void startClient( std::string address = "127.0.0.1");
 
+    void install_lua();
+
     void render( glm::mat4 view, glm::mat4 projection);
 
     void fly( int l_delta);

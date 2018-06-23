@@ -332,7 +332,7 @@ static int lua_getHitbox(lua_State* state) {
     return 3;
 }
 
-/// get hit
+/// hit handling
 static int lua_getHit(lua_State* state) {
     bool l_hit;
     physic::hit_side l_side;
@@ -367,6 +367,38 @@ static int lua_getHit(lua_State* state) {
     // finish
     return 1;
 }
+
+static int lua_setHit(lua_State* state) {
+    bool l_hit;
+    physic::hit_side l_side;
+    if( !lua_isnumber( state, 1) || !lua_isnumber( state, 2) || !lua_isboolean( state, 3)) {
+        printf( "lua_setHit call wrong argument\n");
+        return 0;
+    }
+
+    // get obj
+    int l_id = lua_tointeger( state, 1);
+    int l_side_number = lua_tointeger( state, 2);
+    bool l_value = lua_toboolean( state, 3);
+    object *l_object = p_target->getObject( l_id);
+    if( l_object == NULL) {
+        printf( "lua_setHit object with %d# not found\n", l_id);
+        return 0;
+    }
+
+    switch( l_side_number) {
+        case 0: l_side = physic::hit_side::ground; break;
+        case 1: l_side = physic::hit_side::top; break;
+        case 2: l_side = physic::hit_side::west; break;
+        case 3: l_side = physic::hit_side::east; break;
+        case 4: l_side = physic::hit_side::north; break;
+        case 5: l_side = physic::hit_side::south; break;
+    }
+
+    l_object->setHit( l_side, l_value);
+    return 0;
+}
+
 
 static int lua_print(lua_State* state) {
     if( !lua_isnumber( state, 1) ) {
@@ -428,6 +460,8 @@ void lua_object_install( lua_State *state) {
 
     lua_pushcfunction( state, lua_getHit);
     lua_setglobal( state, "getHit");
+    lua_pushcfunction( state, lua_setHit);
+    lua_setglobal( state, "setHit");
 
     lua_pushcfunction( state, lua_print);
     lua_setglobal( state, "print");

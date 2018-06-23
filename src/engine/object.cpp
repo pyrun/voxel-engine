@@ -329,6 +329,25 @@ void object::init()
     }
 }
 
+void object::reloadScript() {
+    if( p_script)
+        delete p_script;
+    // load script
+    if( p_type->getFileScript().length() > 0) {
+        p_script = new script::script( p_type->getFileScript());
+        if( p_script->getLuaState() == NULL) {
+            delete p_script;
+            p_script = NULL;
+        }
+    } else {
+        p_script = NULL;
+    }
+
+    // install libs
+    if( p_script)
+        script::install_libs( p_script->getLuaState());
+}
+
 void object::process()
 {
     if( p_script) {

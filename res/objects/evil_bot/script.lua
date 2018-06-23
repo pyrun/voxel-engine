@@ -24,10 +24,10 @@ function timer( this, time )
 		setRotation( this, 0, 3.14/2, 0)
 	end
 
-	if getTileId( x+0.5, y-1, z) == 0 and side_x == false then
+	if getTileId( x+0.5, y-1, z) == 0 and side_x == false and ground then
 		side_x = true
 		setRotation( this, 0, -3.14/2, 0)
-	elseif getTileId( x-0.5+hitboxx, y-1, z) == 0 and side_x == true then
+	elseif getTileId( x-0.5+hitboxx, y-1, z) == 0 and side_x == true and ground then
 		side_x = false
 		setRotation( this, 0, 3.14/2, 0)
 	end
@@ -35,11 +35,11 @@ function timer( this, time )
 	if ground then
 		if side_x == false then 
 			if velx < 0.05 then
-				addVelocity( this, 0.01, 0, 0)
+				addVelocity( this, 0.01, 0.0, 0)
 			end
 		else
 			if velx > -0.05 then
-				addVelocity( this, -0.01, 0, 0)
+				addVelocity( this, -0.01, 0.0, 0)
 			end
 		end
 	end

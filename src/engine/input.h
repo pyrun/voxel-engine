@@ -22,6 +22,8 @@ public:
     bool Destory;
 
     bool MouseGrab;
+
+    bool Refresh;
 protected:
 private:
 };

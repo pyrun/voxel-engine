@@ -1,9 +1,10 @@
 #include "input.h"
 
 Input::Input() {
+    // setting the values
     GrabMouse = false;
-    Reset(); // anfangswerte reseten
-    Reset(); // 2te mal um auch altemap reset durchzuführen
+    Reset();
+    MapOld = Map;
 }
 Input::~Input() {
 
@@ -24,6 +25,9 @@ void Input::Reset() {
     Map.Destory = false;
 
     Map.MouseGrab = false;
+
+    // special keys
+    Map.Refresh = false;
 }
 
 bool Input::Handle( int l_width, int l_height, SDL_Window* l_window) {
@@ -74,6 +78,9 @@ bool Input::Handle( int l_width, int l_height, SDL_Window* l_window) {
     if( State & SDL_BUTTON(SDL_BUTTON_RIGHT) || Keys[SDL_SCANCODE_1]) {
         Map.Place = true;
     }
+    // special keys
+    if( Keys[ SDL_SCANCODE_F5])
+        Map.Refresh = true;
     // Richtungstasten
     if( Keys[SDL_SCANCODE_LEFT] | Keys[SDL_SCANCODE_A] )
         Map.Left = true;

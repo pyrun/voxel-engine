@@ -6,7 +6,8 @@ end
 
 function jump( this, delta)
 	if getHit( this, 0) then
-		addVelocity( this, 0, 0.052, 0)
+		addVelocity( this, 0, 0.06, 0)
+		setHit( this, 0, false)
 	end
 end
 

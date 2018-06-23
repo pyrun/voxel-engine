@@ -78,6 +78,7 @@ public:
     void deleteChunks( Chunk* chunk);
     void deleteChunk( Chunk* node);
     Chunk *createChunk( glm::ivec3 position);
+    void reloadScripts();
 
     bool CheckChunk( int pos_x, int pos_y, int pos_z);
     Chunk* getChunk( glm::ivec3 position);

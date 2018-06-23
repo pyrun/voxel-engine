@@ -88,6 +88,7 @@ class object {
         ~object();
 
         void init();
+        void reloadScript();
 
         void process();
         void process_phyisc();

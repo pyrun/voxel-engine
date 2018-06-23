@@ -883,6 +883,11 @@ Chunk *world::createChunk( glm::ivec3 position) {
     return node;
 }
 
+void world::reloadScripts() {
+    for( auto l_object:p_objects)
+        l_object->reloadScript();
+}
+
 bool world::CheckChunk( int X, int Y, int Z) {
     Chunk *tmp = p_chunk_start;
     for( ;; ) {

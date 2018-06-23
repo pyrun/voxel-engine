@@ -42,6 +42,7 @@ script::script::script( const std::string& filename)
     luaL_openlibs( p_luastate);
     if (luaL_loadfile( p_luastate, filename.c_str()) || lua_pcall( p_luastate, 0, 0, 0)) {
         std::cout<<"script::script: lua file not loaded ("<<filename<<")"<<std::endl;
+        std::cout<<"script::script: "<<lua_tostring( p_luastate, -1)<<std::endl;
         p_luastate = NULL;
     }
 }
