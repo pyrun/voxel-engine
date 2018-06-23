@@ -3,6 +3,62 @@
 #include "../system/timer.h"
 #include <stdio.h>
 
+engine *p_engine = NULL;
+
+/// force calculation
+static int lua_calcForceUp(lua_State* state) {
+    glm::vec3 l_up(0.0f, 1.0f, 0.0f);
+    if( !lua_isnumber( state, 1) && !lua_isnumber( state, 2) ) {
+        printf( "lua_calcForceUp call wrong argument\n");
+        return 0;
+    }
+
+    // get position
+    float l_delta = lua_tonumber( state, 1);
+    float l_speed = lua_tonumber( state, 2);
+
+    // get tile
+    glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( p_engine->getGraphic()->getCamera()->getUp(), p_engine->getGraphic()->getCamera()->getForward())), l_up) * l_delta * l_speed;
+
+    // push the vector
+    lua_pushnumber( state, l_force.x);
+    lua_pushnumber( state, l_force.y);
+    lua_pushnumber( state, l_force.z);
+
+    // finish
+    return 3;
+}
+
+static int lua_calcForceSide(lua_State* state) {
+    if( !lua_isnumber( state, 1) && !lua_isnumber( state, 2)) {
+        printf( "lua_calcForceSide call wrong argument\n");
+        return 0;
+    }
+
+    // get position
+    float l_delta = lua_tonumber( state, 1);
+    float l_speed = lua_tonumber( state, 2);
+
+    // get tile
+    glm::vec3 l_force = glm::cross( p_engine->getGraphic()->getCamera()->getUp(), p_engine->getGraphic()->getCamera()->getForward()) * l_delta * l_speed;
+
+    // push the vector
+    lua_pushnumber( state, l_force.x);
+    lua_pushnumber( state, l_force.y);
+    lua_pushnumber( state, l_force.z);
+
+    // finish
+    return 3;
+}
+
+void lua_engine_install( lua_State *state) {
+    // defined functions
+    lua_pushcfunction( state, lua_calcForceUp);
+    lua_setglobal( state, "calcForceUp");
+    lua_pushcfunction( state, lua_calcForceSide);
+    lua_setglobal( state, "calcForceSide");
+}
+
 std::string NumberToString( double Number) {
     /*std::ostringstream ss;
     ss << Number;
@@ -27,6 +83,7 @@ engine::engine() {
 
     // install lua
     script::add_lib( "world", &lua_object_install);
+    script::add_lib( "engine", &lua_engine_install);
 
     // load all objects
     p_object_handle = new object_handle();
@@ -217,6 +274,8 @@ void engine::run() {
         }
 
         if( p_player && p_player->getWorld()->getPhysicFlag()) {
+            lua_object_set_targets(  p_player->getWorld());
+            p_engine = this;
             walk( l_delta);
             p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
         }

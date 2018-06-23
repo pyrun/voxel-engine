@@ -47,6 +47,8 @@ public:
     void walk( int l_delta);
 
     void run();
+
+    graphic *getGraphic() { return p_graphic; }
 protected:
 
     void drawBox( glm::mat4 viewProjection, glm::vec3 pos);

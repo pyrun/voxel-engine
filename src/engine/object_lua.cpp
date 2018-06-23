@@ -397,7 +397,6 @@ static int lua_print(lua_State* state) {
 }
 
 void lua_object_install( lua_State *state) {
-    // defined functions
     lua_pushcfunction( state, lua_getTileId);
     lua_setglobal( state, "getTileId");
     lua_pushcfunction( state, lua_setTileId);

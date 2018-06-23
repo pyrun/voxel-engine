@@ -88,43 +88,34 @@ void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, in
 }
 
 void player::input( Input *input, Camera *camera, int delta) {
-    glm::vec3 l_up(0.0f, 1.0f, 0.0f);
     object *l_player = p_target_world->getObject( p_object_id);
-    if( !l_player) {
+    if( !l_player ) {
         createObject();
         return;
     }
-    float l_speed = 0.0009f;
 
-    if( input->Map.Jump && l_player->getHit( physic::hit_side::ground) && l_player->getVerlocity().y < 0.0001f) {
-        l_player->addVelocity( glm::vec3( 0.f, 0.052f, 0.f));
-        l_player->setHit( physic::ground, false);
+    if( !l_player->getScript())
+        return;
+
+    if( input->Map.Jump) {
+        l_player->getScript()->call( "jump", l_player->getId(), delta);
     }
 
-    if( input->Map.Up && l_player->getHit( physic::hit_side::ground)) {
-        glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( camera->getUp(), camera->getForward())), l_up) * (float)delta * l_speed;
-
-        l_player->addVelocity( l_force + glm::vec3( 0, 0.0, 0));
+    if( input->Map.Up) {
+        l_player->getScript()->call( "up", l_player->getId(), delta);
     }
 
-    if( input->Map.Down && l_player->getHit( physic::hit_side::ground)) {
-        glm::vec3 l_force = glm::cross( glm::normalize(glm::cross( camera->getUp(), camera->getForward())), l_up) * (float)delta * l_speed;
-
-        l_player->addVelocity( -l_force + glm::vec3( 0, 0.0, 0));
+    if( input->Map.Down) {
+        l_player->getScript()->call( "down", l_player->getId(), delta);
     }
 
-    if( input->Map.Right && l_player->getHit( physic::hit_side::ground) ) {
-        glm::vec3 l_force = -glm::cross( camera->getUp(), camera->getForward()) * (float)delta * l_speed;
-        l_player->addVelocity( l_force);
+    if( input->Map.Right) {
+        l_player->getScript()->call( "right", l_player->getId(), delta);
     }
 
-    if( input->Map.Left && l_player->getHit( physic::hit_side::ground) ) {
-        glm::vec3 l_force = glm::cross( camera->getUp(), camera->getForward()) * (float)delta * l_speed;
-        l_player->addVelocity( l_force);
+    if( input->Map.Left) {
+        l_player->getScript()->call( "left", l_player->getId(), delta);
     }
-
-    if( input->Map.Shift )
-        ;
 }
 
 void player::changeWorldTo( world *world) {
