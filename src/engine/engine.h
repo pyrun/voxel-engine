@@ -48,13 +48,15 @@ public:
     void fly( int l_delta);
     void walk( int l_delta);
 
-    void createWorld( std::string name);
+    world *createWorld( std::string name);
+    void loadWorld( std::string name);
     world *getWorld( std::string name);
 
     void run();
 
     graphic *getGraphic() { return p_graphic; }
     block_list *getBlocklist() { return p_blocklist; }
+    network *getNetwork() { return p_network; }
 protected:
 
     void drawBox( glm::mat4 viewProjection, glm::vec3 pos);

@@ -64,11 +64,13 @@ public:
 
     int getTile( glm::ivec3 position);
     Chunk *getChunkWithPosition( glm::ivec3 position);
-    void changeBlock( Chunk *chunk, glm::vec3 position, int id);
+    void changeBlock( Chunk *chunk, glm::vec3 position, int id, bool call = true);
     void setTile( Chunk *chunk, glm::ivec3 position, int id);
+    void (*changeCall)( world* world, Chunk *chunk, glm::ivec3 position, unsigned int id);
 
     void addTorchlight( Chunk *chunk, glm::ivec3 position, int value);
     void delTorchlight( Chunk *chunk, glm::ivec3 position);
+    void caluculationLight();
 
     void process_thrend_handle();
     void process_thrend_update();

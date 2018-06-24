@@ -60,9 +60,6 @@ void lua_engine_install( lua_State *state) {
 }
 
 std::string NumberToString( double Number) {
-    /*std::ostringstream ss;
-    ss << Number;
-    return ss.str();*/
     char buffer[255];
     sprintf( buffer, "%0.2f", Number);
     std::string temp = buffer;
@@ -79,6 +76,10 @@ world *extern_getWorld( std::string name) {
 
 block_list *extern_blocklist() {
     return p_engine->getBlocklist();
+}
+
+void extern_changeCall( world *world, Chunk *chunk, glm::ivec3 position, unsigned int id) {
+    p_engine->getNetwork()->sendBlockChange( world, chunk, position, id);
 }
 
 engine::engine() {
@@ -208,19 +209,34 @@ void engine::walk( int l_delta) {
     }
 }
 
-void engine::createWorld( std::string name) {
+world *engine::createWorld( std::string name) {
     for( int i = 0; i < (int)p_worlds.size(); i++) {
         if( p_worlds[i]->getName() == name)
-            return;
+            return p_worlds[i];
     }
     world *l_world = new world( p_blocklist, name, p_object_handle);
     l_world->setGenerator( p_landscape_generator);
+    if( p_network)
+        l_world->changeCall = &extern_changeCall;
     p_worlds.push_back( l_world);
 
     if( !p_player ) {
-        p_worlds[0]->setSpawnPoint( glm::vec3( 10, 10, 10));
         p_players.push_back( new player(p_worlds[0]) );
         p_player = p_players[0];
+    }
+
+    return l_world;
+}
+
+void engine::loadWorld( std::string name) {
+    world *l_world = createWorld( name);
+    if( !l_world->load()) {
+        int l_size = 3;
+        int l_end = -3;
+        for( int x = -l_size; x <= l_size; x++)
+            for( int z = -l_size; z <= l_size; z++)
+                for( int y = 1; y > l_end; y--)
+                    l_world->addChunk( glm::vec3( x, y, z), true);
     }
 }
 
@@ -242,33 +258,8 @@ void engine::run() {
 
     // set up start world
     if( p_network && p_network->isServer()) {
-        world *l_world = new world( p_blocklist, "0", p_object_handle);
-        l_world->setGenerator( p_landscape_generator);
-        if( !l_world->load()) {
-            int l_size = 3;
-            int l_end = -3;
-            for( int x = -l_size; x <= l_size; x++)
-                for( int z = -l_size; z <= l_size; z++)
-                    for( int y = 1; y > l_end; y--)
-                        l_world->addChunk( glm::vec3( x, y, z), true);
-        }
-        p_worlds.push_back( l_world);
-
-        l_world = new world( p_blocklist, "1", p_object_handle);
-        l_world->setGenerator( p_landscape_generator);
-        if( !l_world->load()) {
-            int l_size = 3;
-            int l_end = -3;
-            for( int x = -l_size; x <= l_size; x++)
-                for( int z = -l_size; z <= l_size; z++)
-                    for( int y = 1; y > l_end; y--)
-                        l_world->addChunk( glm::vec3( x, y, z), true);
-        }
-        p_worlds.push_back( l_world);
-
-        // player
-        p_players.push_back( new player(p_worlds[0]) );
-        p_player = p_players[0];
+        loadWorld( "0");
+        loadWorld( "1");
     }
 
     /*p_worlds[0]->createObject( "player", glm::vec3( 40.0f, 10.0f, -5.5f) );

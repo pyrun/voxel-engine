@@ -49,6 +49,8 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
     p_object_id = 0;
     p_gravity = glm::vec3( 0, -150.0/1000., 0);
 
+    changeCall = NULL;
+
     // creating two mutex
     p_mutex_handle = SDL_CreateMutex();
     p_mutex_physic = SDL_CreateMutex();
@@ -215,14 +217,16 @@ Chunk* world::getChunkWithPosition( glm::ivec3 position) {
     return NULL;
 }
 
-void world::changeBlock( Chunk *chunk, glm::vec3 position, int id) {
+void world::changeBlock( Chunk *chunk, glm::vec3 position, int id, bool call) {
     world_change_block l_change;
     l_change.position = position;
     l_change.id = id;
     l_change.chunk = chunk;
 
     p_change_blocks.push( l_change);
-    //p_change_blocks.push_back( l_change);
+
+    if( changeCall && call)
+        changeCall( this, chunk, position, id);
 }
 
 void world::setTile( Chunk *chunk, glm::ivec3 position, int id) {
@@ -253,11 +257,11 @@ void world::addTorchlight( Chunk *chunk, glm::ivec3 position, int value) {
     glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
     glm::ivec3 l_position = position - l_chunk_position;
 
-    //printf( "world::addTorchlight %d/%d/%d\n", position.x, position.y, position.z);
-
     // add too queue
     chunk->setTorchlight( l_position, value);
+    SDL_LockMutex ( p_mutex_handle);
     p_lightsAdd.emplace( l_position, chunk);
+    SDL_UnlockMutex ( p_mutex_handle);
 }
 
 void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
@@ -267,12 +271,31 @@ void world::delTorchlight( Chunk *chunk, glm::ivec3 position) {
     glm::ivec3 l_chunk_position = chunk->getPos() * glm::ivec3( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
     position = position - l_chunk_position;
 
-    //printf( "world::delTorchlight %d/%d/%d\n", position.x, position.y, position.z);
-
     // add too queue
     l_light = chunk->getTorchlight( position);
     chunk->setTorchlight( position, 0);
     p_lightsDel.emplace( position, chunk, l_light);
+}
+
+void world::caluculationLight() {
+    Chunk *l_chunk = p_chunk_start;
+    for( ;; ) {
+        if( l_chunk == NULL)
+            break;
+
+        // get every block
+        for( int x = 0; x < CHUNK_SIZE; x++) {
+            for( int y = 0; y < CHUNK_SIZE; y++) {
+                for( int z = 0; z < CHUNK_SIZE; z++) {
+                    block *l_block = p_blocklist->get( l_chunk->getTile( x, y, z));
+                    if( l_block && l_block->isLight())
+                        addTorchlight( l_chunk, glm::ivec3( x, y, z) + l_chunk->getPos()*CHUNK_SIZE, l_block->getLighting());
+                }
+            }
+        }
+
+        l_chunk = l_chunk->next;
+    }
 }
 
 void world::process_thrend_handle() {

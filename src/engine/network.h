@@ -38,7 +38,10 @@ class network
         void start_sever();
         void start_client( std::string ip = "127.0.0.1");
 
-        void sendBlockChange( Chunk *chunk, glm::vec3 pos, int id);
+        void sendSpawnPoint( std::string name);
+        void receiveSpawnPoint( BitStream *bitstream);
+
+        void sendBlockChange( world *world, Chunk *chunk, glm::ivec3 position, unsigned int id);
         void receiveBlockChange( BitStream *bitstream);
 
         void receiveChunk( BitStream *bitstream);
@@ -47,6 +50,9 @@ class network
         void sendAllChunks( world *world,RakNet::AddressOrGUID address);
         void receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID address);
         void sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int start, int end);
+
+        void sendWorldFinish( std::string name);
+        void receiveWorldFinish( BitStream *bitstream);
 
         bool process( std::vector<world *> *world);
 
