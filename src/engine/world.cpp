@@ -58,6 +58,8 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
         p_thread_handle[i] = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
+
+    printf( "world::world \"%s\" created\n", getName().c_str());
 }
 
 world::~world() {

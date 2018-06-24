@@ -50,6 +50,7 @@ public:
     void set( glm::ivec3 position, int ID, bool change = true);
     unsigned short getTile( int X, int Y, int Z);
     unsigned short getTile( glm::ivec3 position);
+    unsigned short getTile( int point);
     bool checkTile( glm::ivec3 position);
 
     int getTorchlight( glm::ivec3 position);

@@ -10,6 +10,7 @@
 #include "VariableDeltaSerializer.h"
 #include "RakSleep.h"
 #include "GetTime.h"
+#include "StringCompressor.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,11 +21,12 @@
 
 using namespace RakNet;
 
-enum
+enum network_topology
 {
+    NONE,
 	CLIENT,
 	SERVER
-} network_topology;
+};
 
 class network
 {
@@ -40,16 +42,20 @@ class network
         void receiveBlockChange( BitStream *bitstream);
 
         void receiveChunk( BitStream *bitstream);
-        void sendChunkData( Chunk *chunk, RakNet::AddressOrGUID address, int l_start, int l_end);
-        void sendChunk( Chunk *chunk, RakNet::AddressOrGUID address);
+        void sendChunkData( std::string name, Chunk *chunk, RakNet::AddressOrGUID address, int l_start, int l_end);
+        void sendChunk( std::string name, Chunk *chunk, RakNet::AddressOrGUID address);
         void sendAllChunks( world *world,RakNet::AddressOrGUID address);
         void receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID address);
         void sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int start, int end);
 
         bool process( std::vector<world *> *world);
 
-        bool isServer() { return p_isServer; }
-        bool isClient() { return p_isClient; }
+        bool isServer() { return p_topology==SERVER?true:false; }
+        bool isClient() { return p_topology==CLIENT?true:false; }
+
+        void (*createWorld)(std::string name);
+        world *(*getWorld)(std::string name);
+        block_list *(*getBlocklist)(void);
     protected:
 
     private:
@@ -57,10 +63,10 @@ class network
         RakNet::SocketDescriptor p_socketdescriptor;
         NetworkIDManager p_networkIdManager;
         RakNet::RakPeerInterface *p_rakPeerInterface;
+        RakNet::StringCompressor p_string_compressor;
 
         RakNet::Packet *p_packet;
-        bool p_isClient;
-        bool p_isServer;
+        network_topology p_topology;
 
         int p_port;
         int p_maxamountplayer;

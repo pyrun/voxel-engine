@@ -9,7 +9,8 @@ enum {
     ID_SET_BLOCK,
     ID_SET_CHUNK_DATA,
     ID_DEL_CHUNK,
-    ID_GET_CHUNK_DATA
+    ID_GET_CHUNK_DATA,
+    ID_GET_CHUNK_LIGHT_DATA
 };
 
 #endif // NETWORK_IDS_H

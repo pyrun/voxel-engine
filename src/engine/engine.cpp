@@ -69,9 +69,22 @@ std::string NumberToString( double Number) {
     return temp;
 }
 
+void extern_createWorld( std::string name) {
+    p_engine->createWorld( name);
+}
+
+world *extern_getWorld( std::string name) {
+    return p_engine->getWorld( name);
+}
+
+block_list *extern_blocklist() {
+    return p_engine->getBlocklist();
+}
+
 engine::engine() {
     // set values
     p_openvr = NULL;
+    p_player = NULL;
     p_isRunnig = true;
     p_framecap = true;
     p_timecap = 12; // ms -> 90hz
@@ -91,37 +104,6 @@ engine::engine() {
     // set block list up
     p_blocklist = new block_list( p_config);
     p_blocklist->init( p_graphic, p_config);
-
-    // set up start world
-    world *l_world = new world( p_blocklist, "0", p_object_handle);
-    l_world->setGenerator( p_landscape_generator);
-    if( !l_world->load()) {
-        int l_size = 3;
-        int l_end = -3;
-        for( int x = -l_size; x <= l_size; x++)
-            for( int z = -l_size; z <= l_size; z++)
-                for( int y = 1; y > l_end; y--)
-                    l_world->addChunk( glm::vec3( x, y, z), true);
-    }
-    p_worlds.push_back( l_world);
-
-    l_world = new world( p_blocklist, "1", p_object_handle);
-    l_world->setGenerator( p_landscape_generator);
-    if( !l_world->load()) {
-        int l_size = 3;
-        int l_end = -3;
-        for( int x = -l_size; x <= l_size; x++)
-            for( int z = -l_size; z <= l_size; z++)
-                for( int y = 1; y > l_end; y--)
-                    l_world->addChunk( glm::vec3( x, y, z), true);
-    }
-    p_worlds.push_back( l_world);
-
-    // player
-    p_players.push_back( new player(p_worlds[0]) );
-
-    p_player = p_players[0];
-    //p_player = NULL;
 }
 
 engine::~engine() {
@@ -134,6 +116,8 @@ engine::~engine() {
     delete p_graphic;
     delete p_landscape_generator;
     delete p_config;
+    if( p_network)
+        delete p_network;
 }
 
 void engine::startVR() {
@@ -162,26 +146,28 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     p_graphic->getDisplay()->clear( false);
 
     // render voxel
-    l_shader = p_graphic->getVoxelShader();
-    l_shader->Bind();
-    l_shader->update( MAT_PROJECTION, projection);
-    l_shader->update( MAT_VIEW, view);
-    p_player->getWorld()->drawVoxel( p_graphic, l_shader);
+    if( p_player) {
+        l_shader = p_graphic->getVoxelShader();
+        l_shader->Bind();
+        l_shader->update( MAT_PROJECTION, projection);
+        l_shader->update( MAT_VIEW, view);
+        p_player->getWorld()->drawVoxel( p_graphic, l_shader);
 
-    // render object
-    l_shader = p_graphic->getObjectShader();
-    l_shader->Bind();
-    l_shader->update( MAT_PROJECTION, projection);
-    l_shader->update( MAT_VIEW, view);
-    p_player->getWorld()->drawObjects( p_graphic, l_shader);
+        // render object
+        l_shader = p_graphic->getObjectShader();
+        l_shader->Bind();
+        l_shader->update( MAT_PROJECTION, projection);
+        l_shader->update( MAT_VIEW, view);
+        p_player->getWorld()->drawObjects( p_graphic, l_shader);
 
-    // draw debug lines
-    l_shader = p_graphic->getDebugShader();
-    l_shader->Bind();
-    l_shader->update( MAT_PROJECTION, projection);
-    l_shader->update( MAT_VIEW, view);
-    l_shader->update( MAT_MODEL, glm::mat4( 1));
-    p_player->getWorld()->drawObjectsDebug( p_graphic, l_shader);
+        // draw debug lines
+        l_shader = p_graphic->getDebugShader();
+        l_shader->Bind();
+        l_shader->update( MAT_PROJECTION, projection);
+        l_shader->update( MAT_VIEW, view);
+        l_shader->update( MAT_MODEL, glm::mat4( 1));
+        p_player->getWorld()->drawObjectsDebug( p_graphic, l_shader);
+    }
 
     // we are done
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -222,6 +208,29 @@ void engine::walk( int l_delta) {
     }
 }
 
+void engine::createWorld( std::string name) {
+    for( int i = 0; i < (int)p_worlds.size(); i++) {
+        if( p_worlds[i]->getName() == name)
+            return;
+    }
+    world *l_world = new world( p_blocklist, name, p_object_handle);
+    l_world->setGenerator( p_landscape_generator);
+    p_worlds.push_back( l_world);
+
+    if( !p_player ) {
+        p_worlds[0]->setSpawnPoint( glm::vec3( 10, 10, 10));
+        p_players.push_back( new player(p_worlds[0]) );
+        p_player = p_players[0];
+    }
+}
+
+world *engine::getWorld( std::string name) {
+    for( int i = 0; i < (int)p_worlds.size(); i++) {
+        if( p_worlds[i]->getName() == name)
+            return p_worlds[i];
+    }
+    return NULL;
+}
 
 void engine::run() {
     // set variables
@@ -231,12 +240,43 @@ void engine::run() {
     glm::mat4 l_mvp;
     uint32_t l_delta = 0;
 
-    p_worlds[0]->createObject( "player", glm::vec3( 40.0f, 10.0f, -5.5f) );
+    // set up start world
+    if( p_network && p_network->isServer()) {
+        world *l_world = new world( p_blocklist, "0", p_object_handle);
+        l_world->setGenerator( p_landscape_generator);
+        if( !l_world->load()) {
+            int l_size = 3;
+            int l_end = -3;
+            for( int x = -l_size; x <= l_size; x++)
+                for( int z = -l_size; z <= l_size; z++)
+                    for( int y = 1; y > l_end; y--)
+                        l_world->addChunk( glm::vec3( x, y, z), true);
+        }
+        p_worlds.push_back( l_world);
+
+        l_world = new world( p_blocklist, "1", p_object_handle);
+        l_world->setGenerator( p_landscape_generator);
+        if( !l_world->load()) {
+            int l_size = 3;
+            int l_end = -3;
+            for( int x = -l_size; x <= l_size; x++)
+                for( int z = -l_size; z <= l_size; z++)
+                    for( int y = 1; y > l_end; y--)
+                        l_world->addChunk( glm::vec3( x, y, z), true);
+        }
+        p_worlds.push_back( l_world);
+
+        // player
+        p_players.push_back( new player(p_worlds[0]) );
+        p_player = p_players[0];
+    }
+
+    /*p_worlds[0]->createObject( "player", glm::vec3( 40.0f, 10.0f, -5.5f) );
     p_worlds[0]->createObject( "box", glm::vec3( 5.5f, 10.0f, 5.5f) );
 
     p_worlds[0]->createObject( "hand", glm::vec3( 0.0f, 10.0f, 5.5f) );
 
-    p_worlds[0]->createObject( "evil_bot", glm::vec3( 5.2f, 10.9f, 0.0f) );
+    p_worlds[0]->createObject( "evil_bot", glm::vec3( 5.2f, 10.9f, 0.0f) );*/
 
     if( p_openvr) {
         SDL_SetWindowSize( p_graphic->getWindow(), p_openvr->getScreenSize().x, p_openvr->getScreenSize().y);
@@ -261,14 +301,19 @@ void engine::run() {
         cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
 
         /// process
-        //if( p_config->get( "fly", "engine", "false") == "true")
-        //    fly( l_delta);
-
-
         if( p_input.getResize()) {
             p_graphic->resizeWindow( glm::vec2( p_input.getResizeW(), p_input.getResizeH()) );
             p_config->set( "width", std::to_string( p_input.getResizeW()), "graphic");
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
+        }
+
+        //network
+        if( p_network) {
+            p_engine = this;
+            p_network->createWorld = &extern_createWorld;
+            p_network->getWorld = &extern_getWorld;
+            p_network->getBlocklist = &extern_blocklist;
+            p_network->process( &p_worlds);
         }
 
         for( world *l_world:p_worlds) {
@@ -319,16 +364,19 @@ void engine::run() {
 
             p_openvr->renderFrame();
         } else {
-            object *l_obj = p_player->getWorld()->getObject( p_player->getId());
-            if( l_obj) {
-                glm::vec3 l_body_rotation = glm::vec3( 0, cam->getHorizontalAngle(), 0);
-                l_obj->setRotation( l_body_rotation);
+            if( p_player) {
+                object *l_obj = p_player->getWorld()->getObject( p_player->getId());
+                if( l_obj) {
+                    glm::vec3 l_body_rotation = glm::vec3( 0, cam->getHorizontalAngle(), 0);
+                    l_obj->setRotation( l_body_rotation);
+                }
             }
         }
 
 
         /// render #2 window
-        cam->setPos( p_player->getPositonHead());
+        if( p_player)
+            cam->setPos( p_player->getPositonHead());
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
         glm::mat4 l_projection = p_graphic->getCamera()->getProjection();
 
@@ -358,7 +406,8 @@ void engine::run() {
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         l_title = l_title + " X_" + NumberToString( cam->getPos().x) + " Y_" + NumberToString( cam->getPos().y) + " Z_" + NumberToString( cam->getPos().z );
-        l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
+        if( p_player)
+            l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
         p_graphic->getDisplay()->setTitle( l_title);
 
         // one at evry frame

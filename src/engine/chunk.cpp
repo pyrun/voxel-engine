@@ -157,7 +157,8 @@ bool Chunk::serialize(bool writeToBitstream, RakNet::BitStream *bitstream, int s
             return false;
         }
         if(!writeToBitstream) {
-            if( blocks->get( p_tile[i]) == NULL && p_tile[i] != EMPTY_BLOCK_ID ) {
+            block *l_block = blocks->get( p_tile[i]);
+            if( l_block == NULL && p_tile[i] != EMPTY_BLOCK_ID ) {
                 p_tile[i] = 0;
                 return false;
             }
@@ -278,6 +279,10 @@ unsigned short Chunk::getTile( glm::ivec3 position) {
         position.z < 0 || position.z >= CHUNK_SIZE)
         return EMPTY_BLOCK_ID;
     return p_tile[ TILE_REGISTER( position.x, position.y, position.z)];
+}
+
+unsigned short Chunk::getTile( int point) {
+    return p_tile[ point];
 }
 
 bool Chunk::checkTile( glm::ivec3 position) {

@@ -12,8 +12,7 @@ network::network( config *config)
     p_socketdescriptor.socketFamily=AF_INET;
     p_port = atoi( config->get( "port", "network", "27558").c_str() );
     p_maxamountplayer = atoi( config->get( "max_player", "network", "32").c_str() );
-    p_isClient = false;
-    p_isServer = false;
+    p_topology = NONE;
 }
 
 network::~network()
@@ -34,7 +33,7 @@ void network::start()
 	printf("network::start: GUID is %s\n", p_rakPeerInterface->GetMyGUID().ToString());
 
 	// connect if client
-	if( network_topology == CLIENT)
+	if( p_topology == CLIENT)
 	{
 	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
 		printf("network::start Connecting...\n");
@@ -43,18 +42,16 @@ void network::start()
 
 void network::start_sever()
 {
-    network_topology = SERVER;
+    p_topology = SERVER;
     p_socketdescriptor.port = p_port;
-    p_isServer = true;
     start();
 }
 
 void network::start_client( std::string ip)
 {
-    network_topology = CLIENT;
+    p_topology = CLIENT;
     p_socketdescriptor.port = 0;
     p_ip = ip;
-    p_isClient = true;
     start();
 }
 
@@ -127,48 +124,64 @@ void network::receiveBlockChange( BitStream *bitstream) {
 void network::receiveChunk( BitStream *bitstream) {
     glm::ivec3 l_chunk_position;
     int l_start, l_end;
+    char l_name[16];
+    world *l_world;
+    Chunk *l_chunk;
 
+    p_string_compressor.DecodeString( l_name, 16, bitstream);
     bitstream->Read( l_chunk_position.x);
     bitstream->Read( l_chunk_position.y);
     bitstream->Read( l_chunk_position.z);
     bitstream->Read( l_start);
     bitstream->Read( l_end);
 
-/*    Chunk *l_chunk = getWorld()->getChunk( l_chunk_position);
-    if( !l_chunk) {
-        l_chunk = getWorld()->createChunk( l_chunk_position);
-    }
-    if( !l_chunk) {
-        printf( "network::readChunk cant create chunk!\n");
+    createWorld( l_name);
+    l_world = getWorld( l_name);
+    if( !l_world )
         return;
+
+    l_chunk = l_world->getChunk( l_chunk_position);
+    if( !l_chunk) {
+        l_chunk = l_world->createChunk( l_chunk_position);
     }
 
     // read, if corrupt send send a get message
-    if( !l_chunk->serialize( false, bitstream, l_start, l_end, p_blocks) )
+    if( !l_chunk->serialize( false, bitstream, l_start, l_end, getBlocklist()) )
         sendGetChunkData( RakNet::UNASSIGNED_SYSTEM_ADDRESS, l_chunk, l_start, l_end);
 
-    if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
-        l_chunk->changed( true);*/
+    if( l_end == CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) {
+        for( int x = 0; x < CHUNK_SIZE; x++) {
+            for( int y = 0; y < CHUNK_SIZE; y++) {
+                for( int z = 0; z < CHUNK_SIZE; z++) {
+                    block *l_block = getBlocklist()->get( l_chunk->getTile( x, y, z));
+                    if( l_block && l_block->isLight())
+                        l_world->addTorchlight( l_chunk, glm::ivec3( x, y, z) + l_chunk->getPos()*CHUNK_SIZE, l_block->getLighting());
+                }
+            }
+        }
+        l_chunk->changed( true);
+    }
 }
 
-void network::sendChunkData( Chunk *chunk, RakNet::AddressOrGUID address, int l_start, int l_end) {
+void network::sendChunkData( std::string name, Chunk *chunk, RakNet::AddressOrGUID address, int l_start, int l_end) {
     BitStream l_bitstream;
 
     l_bitstream.Write((RakNet::MessageID)ID_SET_CHUNK_DATA);
+    p_string_compressor.EncodeString( name.c_str(), 16, &l_bitstream);
     l_bitstream.Write( (int)chunk->getPos().x);
     l_bitstream.Write( (int)chunk->getPos().y);
     l_bitstream.Write( (int)chunk->getPos().z);
     l_bitstream.Write( l_start);
     l_bitstream.Write( l_end);
-//    chunk->serialize( true, &l_bitstream, l_start, l_end, p_blocks);
+    chunk->serialize( true, &l_bitstream, l_start, l_end, getBlocklist());
     p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED , 0, address, false);
 }
 
-void network::sendChunk( Chunk *chunk, RakNet::AddressOrGUID address) {
+void network::sendChunk( std::string name, Chunk *chunk, RakNet::AddressOrGUID address) {
     for( int l_width = 0; l_width < (CHUNK_SIZE*CHUNK_SIZE)/CHUNK_SIZE; l_width++) {
         int l_start = l_width*CHUNK_SIZE*CHUNK_SIZE;
         int l_end = l_start+(CHUNK_SIZE*CHUNK_SIZE);
-        sendChunkData( chunk, address, l_start, l_end);
+        sendChunkData( name, chunk, address, l_start, l_end);
     }
 }
 
@@ -177,7 +190,7 @@ void network::sendAllChunks( world *world, RakNet::AddressOrGUID address) {
     Chunk *l_node = world->getNode();
     while( l_node != NULL)
     {
-        sendChunk( l_node, address);
+        sendChunk( world->getName(), l_node, address);
         l_node = l_node->next;
         i++;
     }
@@ -217,7 +230,7 @@ void network::sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int
     p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, true);
 }
 
-bool network::process( std::vector<world *> *world)
+bool network::process( std::vector<world*> *world)
 {
     bool l_quit = false;
 
@@ -242,7 +255,8 @@ bool network::process( std::vector<world *> *world)
         case ID_NEW_INCOMING_CONNECTION:
             printf("ID_NEW_INCOMING_CONNECTION from %s\n", p_packet->systemAddress.ToString());
             // send all chunks data
-            //sendAllChunks( getWorld(), p_packet->guid);
+            for( auto *l_world:*world)
+                sendAllChunks( l_world, p_packet->guid);
             break;
         case ID_DISCONNECTION_NOTIFICATION:
             printf("ID_DISCONNECTION_NOTIFICATION\n");

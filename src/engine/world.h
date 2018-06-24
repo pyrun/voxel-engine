@@ -112,6 +112,7 @@ public:
         }
         return p_physic_flag;
     }
+    std::string getName() { return p_name; }
 protected:
 private:
     std::string p_name;
