@@ -150,7 +150,7 @@ landscape_return *landscape_script::generator( Chunk* chunk, block_list* blockli
 
     // set chunk id
     int l_id_chunk = public_number++;
-    if( l_id_chunk > MAX_CHUNKS_GENERATE) {
+    if( l_id_chunk >= MAX_CHUNKS_GENERATE) {
         l_id_chunk = 0;
         public_number = 0;
     }

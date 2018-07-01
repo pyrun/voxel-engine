@@ -105,6 +105,9 @@ engine::engine() {
     // set block list up
     p_blocklist = new block_list( p_config);
     p_blocklist->init( p_graphic, p_config);
+
+    // get standard player
+    p_player_file = p_config->get( "folder", "player", "players/") + p_config->get( "use", "player", "noname");
 }
 
 engine::~engine() {
@@ -224,7 +227,7 @@ world *engine::createWorld( std::string name, bool player) {
     p_worlds.push_back( l_world);
 
     if( !p_player ) {
-        p_players->load_player( "players/pyrun/", p_worlds[0]);
+        p_players->load_player( p_player_file, p_worlds[0]);
         //p_players.push_back( new player(p_worlds[0]) );
         p_player = p_players->getPlayer()[0];
     }
@@ -267,7 +270,6 @@ void engine::run() {
 
         if( !p_player ) {
             p_players->load_player( "players/pyrun/", p_worlds[0]);
-            //p_players.push_back( new player(p_worlds[0]) );
             p_player = p_players->getPlayer()[0];
         }
     }
@@ -407,8 +409,10 @@ void engine::run() {
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
         l_title = l_title + " X_" + NumberToString( cam->getPos().x) + " Y_" + NumberToString( cam->getPos().y) + " Z_" + NumberToString( cam->getPos().z );
-        if( p_player)
+        if( p_player) {
             l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
+            l_title = l_title + " Name: \"" + p_player->getName() + "\"";
+        }
         p_graphic->getDisplay()->setTitle( l_title);
 
         // one at evry frame

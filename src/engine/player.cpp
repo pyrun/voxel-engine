@@ -187,7 +187,7 @@ void player_handle::load( std::string path) {
             l_name = l_dirEntry->d_name;
             l_filepath =  l_path + l_name;
             if( fileExists( l_filepath )) {
-                //load_player( l_filepath);
+                //load_player( l_filepath, );
                 l_found_once = true;
             }
         }
@@ -198,7 +198,10 @@ void player_handle::load( std::string path) {
 }
 
 void player_handle::load_player( std::string folder_player, world *world) {
-    config *l_config = new config( folder_player + "/" + "player.xml");
+    std::string l_file = folder_player + "/" + "player.xml";
+    if( fileExists( l_file) == false)
+        mkdir( folder_player.c_str());
+    config *l_config = new config( l_file);
     player *l_player  = new player( world);
 
     l_player->setName( l_config->get( "name", "player", "noname"));

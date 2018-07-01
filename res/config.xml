@@ -21,6 +21,10 @@
     <objects>
         <folder>objects/</folder>
     </objects>
+    <player>
+        <use>pyrun</use>
+        <folder>players/</folder>
+    </player>
     <world>
         <script_folder>world_generator/</script_folder>
     </world>

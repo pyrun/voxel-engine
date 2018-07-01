@@ -1019,6 +1019,7 @@ void world::save() {
     int l_amount = 0;
     std::string l_folder = "worldsave/" + p_name;
     std::string l_folder_chunks = l_folder + "/chunks";
+    mkdir( "worldsave/");
     mkdir( l_folder.c_str());
     mkdir( l_folder_chunks.c_str());
 

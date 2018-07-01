@@ -76,6 +76,8 @@ private:
     // world
     std::vector<world *> p_worlds;
 
+    std::string p_player_file;
+
     // player
     player *p_player;
     player_handle *p_players;
