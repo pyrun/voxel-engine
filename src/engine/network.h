@@ -67,7 +67,7 @@ class network
 
     private:
 
-        RakNet::SocketDescriptor p_socketdescriptor;
+        RakNet::SocketDescriptor *p_socketdescriptor;
         NetworkIDManager p_networkIdManager;
         RakNet::RakPeerInterface *p_rakPeerInterface;
         RakNet::StringCompressor p_string_compressor;

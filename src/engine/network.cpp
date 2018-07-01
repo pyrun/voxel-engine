@@ -8,10 +8,13 @@ network::network( config *config)
 {
     p_rakPeerInterface = NULL;
 
-    // broadcast on 255.255.255.255 at IPv4
-    p_socketdescriptor.socketFamily=AF_INET;
     p_port = atoi( config->get( "port", "network", "27558").c_str() );
     p_maxamountplayer = atoi( config->get( "max_player", "network", "32").c_str() );
+
+    // broadcast on 255.255.255.255 at IPv4
+    p_socketdescriptor = new RakNet::SocketDescriptor();
+    //p_socketdescriptor->socketFamily=AF_UNSPEC;
+
     p_topology = NONE;
 }
 
@@ -27,30 +30,30 @@ void network::start()
 {
     // Start RakNet
     p_rakPeerInterface = RakNet::RakPeerInterface::GetInstance();
-	p_rakPeerInterface->Startup( p_maxamountplayer, &p_socketdescriptor, 1);
+	p_rakPeerInterface->Startup( p_maxamountplayer, p_socketdescriptor, 1);
 	p_rakPeerInterface->SetMaximumIncomingConnections( p_maxamountplayer);
-
-	printf("network::start: GUID is %s\n", p_rakPeerInterface->GetMyGUID().ToString());
 
 	// connect if client
 	if( p_topology == CLIENT)
 	{
+	    printf("network::start Connecting...\n");
 	    p_rakPeerInterface->Connect( p_ip.c_str(), p_port, 0, 0, 0);
-		printf("network::start Connecting...\n");
 	}
+
+	printf("network::start GUID is \"%s\" IP \"%s\"\n", p_rakPeerInterface->GetMyGUID().ToString(), p_rakPeerInterface->GetMyBoundAddress().ToString());
 }
 
 void network::start_sever()
 {
     p_topology = SERVER;
-    p_socketdescriptor.port = p_port;
+    p_socketdescriptor->port = p_port;
     start();
 }
 
 void network::start_client( std::string ip)
 {
     p_topology = CLIENT;
-    p_socketdescriptor.port = 0;
+    p_socketdescriptor->port = 0;
     p_ip = ip;
     start();
 }
