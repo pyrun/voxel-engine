@@ -34,7 +34,7 @@ static int world_thread_update(void *data)
     return 0;
 }
 
-world::world( block_list* block_list, std::string name, object_handle *objectHandle) {
+world::world( block_list* block_list, std::string name, object_handle *objectHandle, bool player) {
     p_buysvector = false;
     p_chunk_amount = 0;
     p_chunk_visible_amount = 0;
@@ -48,6 +48,7 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
     p_pointer_object_handle = objectHandle;
     p_object_id = 0;
     p_gravity = glm::vec3( 0, -150.0/1000., 0);
+    p_player_world = player;
 
     changeCall = NULL;
 
@@ -338,7 +339,10 @@ void world::process_thrend_handle() {
         if( l_node != NULL) {
             if( l_landscape) {
                 //SDL_LockMutex ( p_mutex_handle);
-                l_return = p_landscape_generator->getWorldGenerator( l_node)->generator( l_node, p_blocklist);
+                if( p_player_world)
+                    l_return = p_landscape_generator->getPlayerGenerator( l_node)->generator( l_node, p_blocklist);
+                else
+                    l_return = p_landscape_generator->getWorldGenerator( l_node)->generator( l_node, p_blocklist);
                 l_lights = l_return->lights;
                 l_node->changed( true);
 

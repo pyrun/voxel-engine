@@ -56,6 +56,7 @@ class network
 
         bool process( std::vector<world *> *world);
 
+        bool isNone() { return p_topology==NONE?true:false; }
         bool isServer() { return p_topology==SERVER?true:false; }
         bool isClient() { return p_topology==CLIENT?true:false; }
 

@@ -144,3 +144,66 @@ void player::setPosition( glm::vec3 position)
 {
     p_position = position;
 }
+
+void player::setName( std::string name) {
+    p_name = name;
+}
+
+player_handle::player_handle()
+{
+
+}
+
+player_handle::~player_handle()
+{
+
+}
+
+bool player_handle::fileExists(std::string filename) {
+    std::ifstream l_file;
+    // file open and close
+    l_file.open ( filename.c_str());
+    if (l_file.is_open()) {
+        l_file.close();
+        return true;
+    }
+    l_file.close();
+    return false;
+}
+
+
+void player_handle::load( std::string path) {
+    DIR* l_handle;
+    struct dirent* l_dirEntry;
+    bool l_found_once = false;
+    std::string l_name;
+    std::string l_filepath;
+    std::string l_path = path + "/";
+
+    // open folder
+    l_handle = opendir( l_path.c_str());
+    if ( l_handle != NULL ) {
+        while ( 0 != ( l_dirEntry = readdir( l_handle ) ))  {
+            l_name = l_dirEntry->d_name;
+            l_filepath =  l_path + l_name;
+            if( fileExists( l_filepath )) {
+                //load_player( l_filepath);
+                l_found_once = true;
+            }
+        }
+    } else {
+        printf( "player_handle::load can't open the \"%s\" folder\n", l_path.c_str());
+    }
+    closedir( l_handle );
+}
+
+void player_handle::load_player( std::string folder_player, world *world) {
+    config *l_config = new config( folder_player + "/" + "player.xml");
+    player *l_player  = new player( world);
+
+    l_player->setName( l_config->get( "name", "player", "noname"));
+
+    p_players.push_back( l_player);
+    delete l_config;
+    printf( "player_handle::load_player player \"%s\" loaded\n", l_player->getName().c_str());
+}

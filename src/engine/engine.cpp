@@ -67,7 +67,7 @@ std::string NumberToString( double Number) {
 }
 
 void extern_createWorld( std::string name) {
-    p_engine->createWorld( name);
+    p_engine->createWorld( name, false);
 }
 
 world *extern_getWorld( std::string name) {
@@ -93,7 +93,7 @@ engine::engine() {
     p_config = new config();
     p_graphic = new graphic( p_config);
     p_landscape_generator = new landscape( p_config);
-    p_network = new network( p_config);
+    p_players = new player_handle();
 
     // install lua
     install_lua();
@@ -108,6 +108,7 @@ engine::engine() {
 }
 
 engine::~engine() {
+    delete p_players;
     for( auto l_world:p_worlds)
         delete l_world;
     p_worlds.clear();
@@ -127,10 +128,12 @@ void engine::startVR() {
 }
 
 void engine::startServer() {
+    p_network = new network( p_config);
     p_network->start_sever();
 }
 
 void engine::startClient( std::string address) {
+    p_network = new network( p_config);
     p_network->start_client( address);
 }
 
@@ -209,27 +212,28 @@ void engine::walk( int l_delta) {
     }
 }
 
-world *engine::createWorld( std::string name) {
+world *engine::createWorld( std::string name, bool player) {
     for( int i = 0; i < (int)p_worlds.size(); i++) {
         if( p_worlds[i]->getName() == name)
             return p_worlds[i];
     }
-    world *l_world = new world( p_blocklist, name, p_object_handle);
+    world *l_world = new world( p_blocklist, name, p_object_handle, player);
     l_world->setGenerator( p_landscape_generator);
     if( p_network)
         l_world->changeCall = &extern_changeCall;
     p_worlds.push_back( l_world);
 
     if( !p_player ) {
-        p_players.push_back( new player(p_worlds[0]) );
-        p_player = p_players[0];
+        p_players->load_player( "players/pyrun/", p_worlds[0]);
+        //p_players.push_back( new player(p_worlds[0]) );
+        p_player = p_players->getPlayer()[0];
     }
 
     return l_world;
 }
 
-void engine::loadWorld( std::string name) {
-    world *l_world = createWorld( name);
+void engine::loadWorld( std::string name, bool player) {
+    world *l_world = createWorld( name, player);
     if( !l_world->load()) {
         int l_size = 3;
         int l_end = -3;
@@ -257,9 +261,15 @@ void engine::run() {
     uint32_t l_delta = 0;
 
     // set up start world
-    if( p_network && p_network->isServer()) {
-        loadWorld( "0");
+    if( (p_network && (p_network->isServer() || p_network->isNone())) || !p_network ) {
+        loadWorld( "0", true);
         loadWorld( "1");
+
+        if( !p_player ) {
+            p_players->load_player( "players/pyrun/", p_worlds[0]);
+            //p_players.push_back( new player(p_worlds[0]) );
+            p_player = p_players->getPlayer()[0];
+        }
     }
 
     /*p_worlds[0]->createObject( "player", glm::vec3( 40.0f, 10.0f, -5.5f) );

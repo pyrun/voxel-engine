@@ -55,7 +55,7 @@ class world_light_node {
 
 class world {
 public:
-    world( block_list* block_list, std::string name, object_handle *objectHandle);
+    world( block_list* block_list, std::string name, object_handle *objectHandle, bool player = false);
     virtual ~world();
 
     int createObject( std::string name, glm::vec3 position);
@@ -124,6 +124,7 @@ private:
 
     bool p_buysvector;
     bool p_world_tree_empty;
+    bool p_player_world;
 
     int p_chunk_amount;
     int p_chunk_visible_amount;

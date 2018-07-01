@@ -48,8 +48,8 @@ public:
     void fly( int l_delta);
     void walk( int l_delta);
 
-    world *createWorld( std::string name);
-    void loadWorld( std::string name);
+    world *createWorld( std::string name, bool player);
+    void loadWorld( std::string name, bool player = false);
     world *getWorld( std::string name);
 
     void run();
@@ -72,14 +72,13 @@ private:
 
     // objects
     object_handle *p_object_handle;
-    std::vector<player *> p_players;
 
     // world
     std::vector<world *> p_worlds;
 
     // player
     player *p_player;
-
+    player_handle *p_players;
 
     // frame rate
     bool p_framecap;
