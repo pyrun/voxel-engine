@@ -226,12 +226,6 @@ world *engine::createWorld( std::string name, bool player) {
         l_world->changeCall = &extern_changeCall;
     p_worlds.push_back( l_world);
 
-    if( !p_player ) {
-        p_players->load_player( p_player_file, p_worlds[0]);
-        //p_players.push_back( new player(p_worlds[0]) );
-        p_player = p_players->getPlayer()[0];
-    }
-
     return l_world;
 }
 
@@ -316,7 +310,7 @@ void engine::run() {
             p_network->createWorld = &extern_createWorld;
             p_network->getWorld = &extern_getWorld;
             p_network->getBlocklist = &extern_blocklist;
-            p_network->process( &p_worlds);
+            p_network->process( &p_worlds, p_players);
         }
 
         for( world *l_world:p_worlds) {

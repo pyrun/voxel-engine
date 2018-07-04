@@ -13,6 +13,7 @@
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="-server" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DWIN32" />

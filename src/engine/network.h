@@ -18,6 +18,7 @@
 #include "world.h"
 #include "network_ids.h"
 #include "object.h"
+#include "player.h"
 
 using namespace RakNet;
 
@@ -41,6 +42,10 @@ class network
         void sendSpawnPoint( std::string name);
         void receiveSpawnPoint( BitStream *bitstream);
 
+        void sendAllObjects( world *targetworld);
+        void sendCreateObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, std::string type, glm::vec3 position);
+        void receiveCreateObject( BitStream *bitstream);
+
         void sendBlockChange( world *world, Chunk *chunk, glm::ivec3 position, unsigned int id);
         void receiveBlockChange( BitStream *bitstream);
 
@@ -54,7 +59,7 @@ class network
         void sendWorldFinish( std::string name);
         void receiveWorldFinish( BitStream *bitstream);
 
-        bool process( std::vector<world *> *world);
+        bool process( std::vector<world *> *world, player_handle *player);
 
         bool isNone() { return p_topology==NONE?true:false; }
         bool isServer() { return p_topology==SERVER?true:false; }

@@ -115,6 +115,7 @@ public:
         return p_physic_flag;
     }
     std::string getName() { return p_name; }
+    std::vector<object*> getObjects() { return p_objects; }
 protected:
 private:
     std::string p_name;
