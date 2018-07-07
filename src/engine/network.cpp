@@ -149,6 +149,8 @@ void network::receiveCreateObject( BitStream *bitstream) {
         return;
 
     l_world->createObject( l_type_name, l_position);
+
+    printf( "network::receiveCreateObject %s %.1f %.1f %.1f\n", l_name, l_position.x, l_position.y, l_position.z);
 }
 
 void network::sendBlockChange( world *world, Chunk *chunk, glm::ivec3 position, unsigned int id) {
@@ -382,8 +384,9 @@ bool network::process( std::vector<world*> *world, player_handle *player)
             printf("ID_NO_FREE_INCOMING_CONNECTIONS\n");
             l_quit=true;
             break;
-        case ID_CONNECTION_REQUEST_ACCEPTED:
+        case ID_CONNECTION_REQUEST_ACCEPTED: // client
             printf("ID_CONNECTION_REQUEST_ACCEPTED\n");
+            //sendPlayer( );
             break;
         case ID_NEW_INCOMING_CONNECTION:
             printf("ID_NEW_INCOMING_CONNECTION from %s\n", p_packet->systemAddress.ToString());

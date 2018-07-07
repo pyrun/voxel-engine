@@ -259,11 +259,13 @@ void engine::run() {
 
     // set up start world
     if( (p_network && (p_network->isServer() || p_network->isNone())) || !p_network ) {
+        // load world
         loadWorld( "0", true);
         loadWorld( "1");
 
+        // load player
         if( !p_player ) {
-            p_players->load_player( "players/pyrun/", p_worlds[0]);
+            p_players->load_player( p_player_file, p_worlds[0]);
             p_player = p_players->getPlayer()[0];
         }
     }
@@ -275,6 +277,7 @@ void engine::run() {
 
     p_worlds[0]->createObject( "evil_bot", glm::vec3( 5.2f, 10.9f, 0.0f) );*/
 
+    // set resolution
     if( p_openvr) {
         SDL_SetWindowSize( p_graphic->getWindow(), p_openvr->getScreenSize().x, p_openvr->getScreenSize().y);
         p_graphic->getDisplay()->setSize( p_openvr->getScreenSize());
@@ -287,15 +290,16 @@ void engine::run() {
     // set up clock
     l_clock.tick();
 
-    while( p_isRunnig) { // Runniz
+    // loop
+    while( p_isRunnig) {
         l_timer.Start();
 
         p_input.Reset();
         p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
 
-        Camera *cam = p_graphic->getCamera();
-        cam->horizontalAngle ( -p_input.Map.MousePos.x * 2);
-        cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
+        Camera *l_cam = p_graphic->getCamera();
+        l_cam->horizontalAngle ( -p_input.Map.MousePos.x * 2);
+        l_cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
 
         /// process
         if( p_input.getResize()) {
@@ -311,6 +315,15 @@ void engine::run() {
             p_network->getWorld = &extern_getWorld;
             p_network->getBlocklist = &extern_blocklist;
             p_network->process( &p_worlds, p_players);
+
+            // load player if client no player load
+            if( !p_player && p_network->isClient() ) {
+                // try load player if world there
+                if( p_worlds.size() > 0 ) {
+                    p_players->load_player( p_player_file, p_worlds[0]);
+                    p_player = p_players->getPlayer()[0];
+                }
+            }
         }
 
         for( world *l_world:p_worlds) {
@@ -333,7 +346,7 @@ void engine::run() {
 
         /// render #1 openVR
         if( p_openvr ) {
-            cam->setPos( p_player->getPositonHead( false));
+            l_cam->setPos( p_player->getPositonHead( false));
 
             object *l_obj = p_player->getWorld()->getObject( p_player->getId());
             glm::vec3 l_head = p_openvr->getHeadPosition();
@@ -364,7 +377,7 @@ void engine::run() {
             if( p_player) {
                 object *l_obj = p_player->getWorld()->getObject( p_player->getId());
                 if( l_obj) {
-                    glm::vec3 l_body_rotation = glm::vec3( 0, cam->getHorizontalAngle(), 0);
+                    glm::vec3 l_body_rotation = glm::vec3( 0, l_cam->getHorizontalAngle(), 0);
                     l_obj->setRotation( l_body_rotation);
                 }
             }
@@ -373,7 +386,7 @@ void engine::run() {
 
         /// render #2 window
         if( p_player)
-            cam->setPos( p_player->getPositonHead());
+            l_cam->setPos( p_player->getPositonHead());
         glm::mat4 l_view_cam = p_graphic->getCamera()->getView();
         glm::mat4 l_projection = p_graphic->getCamera()->getProjection();
 
@@ -402,7 +415,7 @@ void engine::run() {
         double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
-        l_title = l_title + " X_" + NumberToString( cam->getPos().x) + " Y_" + NumberToString( cam->getPos().y) + " Z_" + NumberToString( cam->getPos().z );
+        l_title = l_title + " X_" + NumberToString( l_cam->getPos().x) + " Y_" + NumberToString( l_cam->getPos().y) + " Z_" + NumberToString( l_cam->getPos().z );
         if( p_player) {
             l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
             l_title = l_title + " Name: \"" + p_player->getName() + "\"";
