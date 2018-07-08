@@ -5,7 +5,7 @@ player::player( world *world)
     p_target_world = world;
     p_object_id = -1;
 
-    createObject();
+    //createObject();
 }
 
 player::~player()
@@ -90,7 +90,6 @@ void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, in
 void player::input( Input *input, Camera *camera, int delta) {
     object *l_player = p_target_world->getObject( p_object_id);
     if( !l_player ) {
-        createObject();
         return;
     }
 
@@ -140,6 +139,10 @@ glm::vec3 player::getPositonHead( bool height) {
     return l_head+l_player->getPosition();
 }
 
+object *player::getObject() {
+    return getWorld()->getObject( p_object_id);
+}
+
 void player::setPosition( glm::vec3 position)
 {
     p_position = position;
@@ -147,6 +150,14 @@ void player::setPosition( glm::vec3 position)
 
 void player::setName( std::string name) {
     p_name = name;
+}
+
+void player::setId( unsigned int id) {
+    p_object_id = id;
+}
+
+void player::setGUID( RakNet::RakNetGUID guid) {
+    p_guid = guid;
 }
 
 player_handle::player_handle()
@@ -171,6 +182,16 @@ bool player_handle::fileExists(std::string filename) {
     return false;
 }
 
+player *player_handle::createPlayer( world *world) {
+    player *l_player  = new player( world);
+
+    // set values
+    l_player->setName( "noname");
+
+    // return pointer
+    p_players.push_back( l_player);
+    return l_player;
+}
 
 void player_handle::load( std::string path) {
     DIR* l_handle;
@@ -209,4 +230,12 @@ void player_handle::load_player( std::string folder_player, world *world) {
     p_players.push_back( l_player);
     delete l_config;
     printf( "player_handle::load_player player \"%s\" loaded\n", l_player->getName().c_str());
+}
+
+player *player_handle::getPlayerGUID( RakNet::RakNetGUID guid) {
+    for( player *l_player:p_players){
+        if( l_player->getGUID() == guid)
+            return l_player;
+    }
+    return NULL;
 }

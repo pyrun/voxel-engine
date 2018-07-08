@@ -58,7 +58,7 @@ public:
     world( block_list* block_list, std::string name, object_handle *objectHandle, bool player = false);
     virtual ~world();
 
-    int createObject( std::string name, glm::vec3 position);
+    int createObject( std::string name, glm::vec3 position, unsigned int id = 0);
     object *getObject( int id);
     void deleteObject( int id);
 

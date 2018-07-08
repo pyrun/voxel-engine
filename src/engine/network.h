@@ -43,7 +43,7 @@ class network
         void receiveSpawnPoint( BitStream *bitstream);
 
         void sendAllObjects( world *targetworld);
-        void sendCreateObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, std::string type, glm::vec3 position);
+        void sendCreateObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, std::string type, glm::vec3 position, unsigned int id);
         void receiveCreateObject( BitStream *bitstream);
 
         void sendBlockChange( world *world, Chunk *chunk, glm::ivec3 position, unsigned int id);
@@ -55,6 +55,9 @@ class network
         void sendAllChunks( world *world,RakNet::AddressOrGUID address);
         void receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID address);
         void sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int start, int end);
+
+        void sendBindPlayer( player *player);
+        void receiveBindPlayer( BitStream *bitstream, player_handle *players, world *world);
 
         void sendWorldFinish( std::string name);
         void receiveWorldFinish( BitStream *bitstream);

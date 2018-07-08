@@ -93,7 +93,7 @@ world::~world() {
     }
 }
 
-int world::createObject( std::string name, glm::vec3 position) {
+int world::createObject( std::string name, glm::vec3 position, unsigned int id) {
     object *l_object;
 
     // set target myself
@@ -109,10 +109,20 @@ int world::createObject( std::string name, glm::vec3 position) {
     // now create object
     l_object = new object();
     l_object->setPosition( position);
-    l_object->setId( ++p_object_id);
+
+    // set id
+    if( id == 0) {
+        l_object->setId( ++p_object_id);
+    } else {
+        l_object->setId( id);
+        p_object_id = id;
+    }
 
     // puch back
     p_objects.push_back( l_object);
+
+    //
+    printf( "\"%s\" %d %.1f %.1f %.1f\n", name.c_str(), p_object_id, position.x, position.y, position.z);
 
     // set now type ( calls lua and install it)
     l_object->setType( l_type);

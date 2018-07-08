@@ -267,6 +267,7 @@ void engine::run() {
         if( !p_player ) {
             p_players->load_player( p_player_file, p_worlds[0]);
             p_player = p_players->getPlayer()[0];
+            p_player->createObject();
         }
     }
 

@@ -114,11 +114,11 @@ void network::sendAllObjects( world *targetworld) {
     std::vector<object *> l_objects = targetworld->getObjects();
 
     for( object *l_object:l_objects) {
-        sendCreateObject( RakNet::UNASSIGNED_SYSTEM_ADDRESS, true, targetworld, l_object->getType()->getName(), l_object->getPosition());
+        sendCreateObject( RakNet::UNASSIGNED_SYSTEM_ADDRESS, true, targetworld, l_object->getType()->getName(), l_object->getPosition(), l_object->getId());
     }
 }
 
-void network::sendCreateObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, std::string type, glm::vec3 position) {
+void network::sendCreateObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, std::string type, glm::vec3 position, unsigned int id) {
     BitStream l_bitstream;
 
     l_bitstream.Write((RakNet::MessageID)ID_CREATE_OBJECT);
@@ -127,6 +127,7 @@ void network::sendCreateObject( RakNet::AddressOrGUID address, bool broadcast, w
     l_bitstream.Write( position.x);
     l_bitstream.Write( position.y);
     l_bitstream.Write( position.z);
+    l_bitstream.Write( id);
     p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, broadcast);
 }
 
@@ -137,18 +138,20 @@ void network::receiveCreateObject( BitStream *bitstream) {
     char l_type_name[32];
     world *l_world;
     Chunk *l_chunk;
+    unsigned int l_id;
 
     p_string_compressor.DecodeString( l_name, 16, bitstream);
     p_string_compressor.DecodeString( l_type_name, 32, bitstream);
     bitstream->Read( l_position.x);
     bitstream->Read( l_position.y);
     bitstream->Read( l_position.z);
+    bitstream->Read( l_id);
 
     l_world = getWorld( l_name);
     if( !l_world )
         return;
 
-    l_world->createObject( l_type_name, l_position);
+    l_world->createObject( l_type_name, l_position, l_id);
 
     printf( "network::receiveCreateObject %s %.1f %.1f %.1f\n", l_name, l_position.x, l_position.y, l_position.z);
 }
@@ -333,6 +336,45 @@ void network::sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int
     p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, true);
 }
 
+void network::sendBindPlayer( player *player) {
+    BitStream l_bitstream;
+    RakNet::AddressOrGUID l_address;
+    bool l_broadcast;
+
+    // send
+    l_address = RakNet::UNASSIGNED_SYSTEM_ADDRESS;
+    l_broadcast = true;
+    l_bitstream.Write((RakNet::MessageID)ID_PLAYER_BIND);
+
+    // data
+    l_bitstream.Write( player->getId() );
+    p_string_compressor.EncodeString( player->getName().c_str(), 16, &l_bitstream);
+    l_bitstream.Write( true );
+
+    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, RELIABLE_ORDERED, 0, l_address, l_broadcast);
+}
+
+void network::receiveBindPlayer( BitStream *bitstream, player_handle *players, world *world) {
+    unsigned int l_id;
+    char l_name[16];
+    bool l_player_bool = false;
+
+    // data
+    bitstream->Read( l_id);
+    p_string_compressor.DecodeString( l_name, 16, bitstream);
+    bitstream->Read( l_player_bool);
+
+    // handle data
+    player *l_player = players->getPlayer()[0];
+
+    if( !l_player)
+        l_player = players->createPlayer( world);
+    l_player->setName( l_name);
+    l_player->setId( l_id);
+
+    printf( "receiveBindPlayer %s %d\n", l_name, l_id);
+}
+
 void network::sendWorldFinish( std::string name) {
     BitStream l_bitstream;
     RakNet::AddressOrGUID l_address;
@@ -365,7 +407,7 @@ void network::receiveWorldFinish( BitStream *bitstream) {
     l_world->caluculationLight();
 }
 
-bool network::process( std::vector<world*> *world, player_handle *player)
+bool network::process( std::vector<world*> *worlds, player_handle *players)
 {
     bool l_quit = false;
 
@@ -389,17 +431,35 @@ bool network::process( std::vector<world*> *world, player_handle *player)
             //sendPlayer( );
             break;
         case ID_NEW_INCOMING_CONNECTION:
-            printf("ID_NEW_INCOMING_CONNECTION from %s\n", p_packet->systemAddress.ToString());
-            // send all chunks data
-            for( auto *l_world:*world) {
-                sendSpawnPoint( l_world->getName()); // set spawn point
-                sendAllChunks( l_world, p_packet->guid); // send chunks
-                sendWorldFinish( l_world->getName()); // send we are finish
-                sendAllObjects( l_world); // send all objects
+            {
+                printf("ID_NEW_INCOMING_CONNECTION from %s\n", p_packet->systemAddress.ToString());
+                // create player
+                player *l_player = players->createPlayer( worlds->at(0));
+                l_player->setGUID( p_packet->guid);
+                l_player->createObject();
+
+                // send all chunks data
+                for( auto *l_world:*worlds) {
+                    sendSpawnPoint( l_world->getName()); // set spawn point
+                    sendAllChunks( l_world, p_packet->guid); // send chunks
+                    sendWorldFinish( l_world->getName()); // send we are finish
+                    sendAllObjects( l_world); // send all objects
+                }
+                sendBindPlayer( l_player);
             }
             break;
         case ID_DISCONNECTION_NOTIFICATION:
-            printf("ID_DISCONNECTION_NOTIFICATION\n");
+            {
+                printf("ID_DISCONNECTION_NOTIFICATION\n");
+                player *l_player = players->getPlayerGUID( p_packet->guid);
+                if( l_player) {
+                    object *l_object = l_player->getObject();
+                    if( l_object) {
+                        world *l_world = l_player->getWorld();
+                        l_world->deleteObject( l_object->getId());
+                    }
+                }
+            }
             break;
         case ID_CONNECTION_LOST:
             printf("ID_CONNECTION_LOST\n");
@@ -460,6 +520,14 @@ bool network::process( std::vector<world*> *world, player_handle *player)
             RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
             l_bitsteam.IgnoreBytes(sizeof(RakNet::MessageID));
             receiveCreateObject( &l_bitsteam);
+        }
+        break;
+        case ID_PLAYER_BIND:
+        {
+            RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
+            l_bitsteam.IgnoreBytes(sizeof(RakNet::MessageID));
+            if( worlds->size() > 0)
+                receiveBindPlayer( &l_bitsteam, players, worlds->at(0) );
         }
         break;
         }
