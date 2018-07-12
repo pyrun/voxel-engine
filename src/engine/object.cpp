@@ -325,7 +325,7 @@ void object::init()
         // first call
         p_script->call( "start", getId());
 
-        p_timer.Start();
+        p_timer.start();
     }
 }
 
@@ -352,12 +352,12 @@ void object::process()
 {
     if( p_script) {
         // script timer(a synch)
-        if( p_timer.GetTicks() > p_script_time) {
+        if( p_timer.getTicks() > p_script_time) {
             // call timer
             p_script->call( "timer", getId(), p_script_time);
 
             // start
-            p_timer.Start();
+            p_timer.start();
 
             // reset hits now
             resetHit();

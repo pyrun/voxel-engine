@@ -50,7 +50,11 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
     p_gravity = glm::vec3( 0, -150.0/1000., 0);
     p_player_world = player;
 
+    // calls
     changeCall = NULL;
+    createObjectCall = NULL;
+    objectSyncCall = NULL;
+    deleteObjectCall = NULL;
 
     // creating two mutex
     p_mutex_handle = SDL_CreateMutex();
@@ -61,6 +65,9 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
         p_thread_handle[i] = SDL_CreateThread( world_thread_handle, "world_thread_handle", (void *)this);
     for( int i = 0; i < WORLD_UPDATE_THRENDS; i++)
         p_thread_update[i] = SDL_CreateThread( world_thread_update, "world_thread_update", (void *)this);
+
+    // timer
+    p_snyc_object_timer.start();
 
     printf( "world::world \"%s\" created\n", getName().c_str());
 }
@@ -93,7 +100,7 @@ world::~world() {
     }
 }
 
-int world::createObject( std::string name, glm::vec3 position, unsigned int id) {
+int world::createObject( std::string name, glm::vec3 position, unsigned int id, bool call) {
     object *l_object;
 
     // set target myself
@@ -126,6 +133,11 @@ int world::createObject( std::string name, glm::vec3 position, unsigned int id) 
 
     // set now type ( calls lua and install it)
     l_object->setType( l_type);
+
+    // call function ( network)
+    if( createObjectCall != NULL && call)
+        createObjectCall( this, name, position, p_object_id);
+
     return p_object_id;
 }
 
@@ -802,8 +814,19 @@ void world::process_thrend_physic() {
 }
 
 void world::process_object_handling() {
+    bool p_sync = false;
+
+    // check for next sync
+    if ( p_snyc_object_timer.getTicks() > WORLD_OBJECT_SYNC) {
+        p_sync = true;
+        p_snyc_object_timer.start();
+    }
+
+    // each object call process
     for( object *l_object: p_objects) {
-        l_object->process( );
+        if( p_sync && objectSyncCall != NULL)
+            objectSyncCall( this, l_object);
+        l_object->process();
     }
 }
 
@@ -1024,8 +1047,8 @@ bool world::fileExists(std::string filename) {
 }
 
 void world::save() {
-    Timer l_time;
-    l_time.Start();
+    timer l_time;
+    l_time.start();
     int l_amount = 0;
     std::string l_folder = "worldsave/" + p_name;
     std::string l_folder_chunks = l_folder + "/chunks";
@@ -1052,12 +1075,12 @@ void world::save() {
     l_config->set( "spawn_point_z", patch::to_string( getSpawnPoint().z), "world");
     delete l_config;
 
-    printf( "world::save %dms\n", l_time.GetTicks());
+    printf( "world::save %dms\n", l_time.getTicks());
 }
 
 bool world::load() {
-    Timer l_time;
-    l_time.Start();
+    timer l_time;
+    l_time.start();
 
     DIR* l_handle;
     struct dirent* l_dirEntry;
@@ -1098,7 +1121,7 @@ bool world::load() {
     setSpawnPoint( l_spawn);
     delete l_config;
 
-    printf( "world::load %dms \"%s\" folder\n", l_time.GetTicks(), l_path.c_str());
+    printf( "world::load %dms \"%s\" folder\n", l_time.getTicks(), l_path.c_str());
 
     if( l_found_once)
         return true;

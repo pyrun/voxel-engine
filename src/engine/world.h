@@ -20,6 +20,8 @@
 
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0f / 120.0f )
 
+#define WORLD_OBJECT_SYNC 16 // ms
+
 Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
 class world_data_list {
@@ -58,7 +60,7 @@ public:
     world( block_list* block_list, std::string name, object_handle *objectHandle, bool player = false);
     virtual ~world();
 
-    int createObject( std::string name, glm::vec3 position, unsigned int id = 0);
+    int createObject( std::string name, glm::vec3 position, unsigned int id = 0, bool call = true);
     object *getObject( int id);
     void deleteObject( int id);
 
@@ -67,6 +69,9 @@ public:
     void changeBlock( Chunk *chunk, glm::vec3 position, int id, bool call = true);
     void setTile( Chunk *chunk, glm::ivec3 position, int id);
     void (*changeCall)( world* world, Chunk *chunk, glm::ivec3 position, unsigned int id);
+    void (*createObjectCall)( world *world, std::string type, glm::vec3 position, unsigned int id);
+    void (*objectSyncCall)( world *world, object *object);
+    void (*deleteObjectCall)( world *world, unsigned int id);
 
     void addTorchlight( Chunk *chunk, glm::ivec3 position, int value);
     void delTorchlight( Chunk *chunk, glm::ivec3 position);
@@ -155,6 +160,7 @@ private:
     object_handle *p_pointer_object_handle;
     std::vector<object*> p_objects;
     int p_object_id;
+    timer p_snyc_object_timer;
 
     float p_time;
 

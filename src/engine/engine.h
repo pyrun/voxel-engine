@@ -57,6 +57,8 @@ public:
     graphic *getGraphic() { return p_graphic; }
     block_list *getBlocklist() { return p_blocklist; }
     network *getNetwork() { return p_network; }
+    player *getPlayer() { return p_player; }
+    player_handle *getPlayerHandle() { return p_players; }
 protected:
 
     void drawBox( glm::mat4 viewProjection, glm::vec3 pos);

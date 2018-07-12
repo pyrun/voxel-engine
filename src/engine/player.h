@@ -55,7 +55,8 @@ class player_handle {
         void load( std::string path);
         void load_player( std::string folder_player, world *world);
 
-        player *getPlayerGUID( RakNet::RakNetGUID guid);
+        player *getPlayerByGUID( RakNet::RakNetGUID guid);
+        player *getPlayerByObject( object *object);
         std::vector<player *> getPlayer() { return p_players; }
     private:
         std::vector<player *> p_players;

@@ -1,38 +1,38 @@
 #include "timer.h"
 
-Timer::Timer() {
-    Running = false;
-    TimeStart = 0;
-    TimeEnd = 0;
+timer::timer() {
+    p_running = false;
+    p_start = 0;
+    p_end = 0;
 }
-Timer::~Timer() {
+timer::~timer() {
 }
-void Timer::Start() {
-    TimeStart = SDL_GetTicks();
-    Running = true;
-}
-
-bool Timer::IsRunnig() {
-    return Running;
+void timer::start() {
+    p_start = SDL_GetTicks();
+    p_running = true;
 }
 
-void Timer::Pause() {
-    if( Running == true) {
-        TimePause = SDL_GetTicks(); // timer zeit aufnhemn
-        Running = false;
+bool timer::isRunnig() {
+    return p_running;
+}
+
+void timer::pause() {
+    if( p_running == true) {
+        p_pause = SDL_GetTicks(); // timer zeit aufnhemn
+        p_running = false;
     } else {
-        TimeStart += SDL_GetTicks()-TimePause; // Timer Pause abziehen
-        Running = true; // Läuft ja wieder
+        p_start += SDL_GetTicks() - p_pause; // Timer Pause abziehen
+        p_running = true; // Läuft ja wieder
     }
 }
-void Timer::Stop() { // Reset
-    if( Running == false) {
-        Pause();
+void timer::stop() { // Reset
+    if( p_running == false) {
+        pause();
         //SDL_Log( "Bevor ein Timer gestoppt werden soll sollte Pause entfert werden!");
     }
-    TimeEnd = SDL_GetTicks(); //
+    p_end = SDL_GetTicks(); //
 }
-int Timer::GetTicks() {
-    return SDL_GetTicks() - TimeStart;
+int timer::getTicks() {
+    return SDL_GetTicks() - p_start;
 }
 

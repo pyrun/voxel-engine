@@ -1,9 +1,5 @@
 #include "network.h"
 
-/** \brief network main class
- *
- *
- */
 network::network( config *config)
 {
     p_rakPeerInterface = NULL;
@@ -58,10 +54,9 @@ void network::start_client( std::string ip)
     start();
 }
 
-void network::sendSpawnPoint( std::string name) {
+void network::sendSpawnPoint( std::string name, RakNet::AddressOrGUID address) {
     glm::vec3 l_position;
     BitStream l_bitstream;
-    RakNet::AddressOrGUID l_address;
     bool l_broadcast;
 
     // get world spawn point
@@ -77,14 +72,13 @@ void network::sendSpawnPoint( std::string name) {
     l_position = l_world->getSpawnPoint();
 
     // send
-    l_address = RakNet::UNASSIGNED_SYSTEM_ADDRESS;
-    l_broadcast = true;
+    l_broadcast = false;
     l_bitstream.Write((RakNet::MessageID)ID_SET_WORLD_SPAWN_POINT);
     p_string_compressor.EncodeString( name.c_str(), 16, &l_bitstream);
     l_bitstream.Write( (float)l_position.x);
     l_bitstream.Write( (float)l_position.y);
     l_bitstream.Write( (float)l_position.z);
-    p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 0, l_address, l_broadcast);
+    p_rakPeerInterface->Send( &l_bitstream, IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 0, address, l_broadcast);
 }
 
 void network::receiveSpawnPoint( BitStream *bitstream) {
@@ -110,11 +104,11 @@ void network::receiveSpawnPoint( BitStream *bitstream) {
     l_world->setSpawnPoint( l_position);
 }
 
-void network::sendAllObjects( world *targetworld) {
+void network::sendAllObjects( world *targetworld, RakNet::AddressOrGUID address) {
     std::vector<object *> l_objects = targetworld->getObjects();
 
     for( object *l_object:l_objects) {
-        sendCreateObject( RakNet::UNASSIGNED_SYSTEM_ADDRESS, true, targetworld, l_object->getType()->getName(), l_object->getPosition(), l_object->getId());
+        sendCreateObject( address, false, targetworld, l_object->getType()->getName(), l_object->getPosition(), l_object->getId());
     }
 }
 
@@ -151,9 +145,84 @@ void network::receiveCreateObject( BitStream *bitstream) {
     if( !l_world )
         return;
 
-    l_world->createObject( l_type_name, l_position, l_id);
+    l_world->createObject( l_type_name, l_position, l_id, false);
 
     printf( "network::receiveCreateObject %s %.1f %.1f %.1f\n", l_name, l_position.x, l_position.y, l_position.z);
+}
+
+void network::sendMatrixObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, object *object) {
+    BitStream l_bitstream;
+
+    l_bitstream.Write((RakNet::MessageID)ID_MATRIX_OBJECT);
+    p_string_compressor.EncodeString( targetworld->getName().c_str(), 16, &l_bitstream);
+    l_bitstream.Write( object->getId());
+    l_bitstream.Write( object->getPosition().x); // Pos
+    l_bitstream.Write( object->getPosition().y);
+    l_bitstream.Write( object->getPosition().z);
+    l_bitstream.Write( object->getRotation().x); // Rotation
+    l_bitstream.Write( object->getRotation().y);
+    l_bitstream.Write( object->getRotation().z);
+    l_bitstream.Write( object->getVerlocity().x); // Verlocity
+    l_bitstream.Write( object->getVerlocity().y);
+    l_bitstream.Write( object->getVerlocity().z);
+    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, RELIABLE_ORDERED , 0, address, broadcast);
+}
+
+void network::receiveMatrixObject( BitStream *bitstream) {
+    glm::vec3 l_position;
+    glm::vec3 l_rotation;
+    glm::vec3 l_verlocity;
+    char l_name[16];
+    world *l_world;
+    unsigned int l_id;
+
+    p_string_compressor.DecodeString( l_name, 16, bitstream);
+    bitstream->Read( l_id);
+    bitstream->Read( l_position.x);
+    bitstream->Read( l_position.y);
+    bitstream->Read( l_position.z);
+    bitstream->Read( l_rotation.x);
+    bitstream->Read( l_rotation.y);
+    bitstream->Read( l_rotation.z);
+    bitstream->Read( l_verlocity.x);
+    bitstream->Read( l_verlocity.y);
+    bitstream->Read( l_verlocity.z);
+
+
+    l_world = getWorld( l_name);
+    if( !l_world )
+        return;
+
+    object *l_object = l_world->getObject( l_id);
+    l_object->setPosition( l_position);
+    l_object->setRotation( l_rotation);
+    l_object->setVelocity( l_verlocity);
+}
+
+void network::sendDeleteObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, unsigned int id) {
+    BitStream l_bitstream;
+
+    l_bitstream.Write((RakNet::MessageID)ID_DELETE_OBJECT);
+    p_string_compressor.EncodeString( targetworld->getName().c_str(), 16, &l_bitstream);
+    l_bitstream.Write( id);
+    p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, broadcast);
+}
+
+void network::receiveDeleteObject( BitStream *bitstream) {
+    char l_name[16];
+    world *l_world;
+    unsigned int l_id;
+
+    p_string_compressor.DecodeString( l_name, 16, bitstream);
+    bitstream->Read( l_id);
+
+    l_world = getWorld( l_name);
+    if( !l_world )
+        return;
+
+    l_world->deleteObject( l_id);
+
+    printf( "network::receiveDeleteObject %d\n", l_id);
 }
 
 void network::sendBlockChange( world *world, Chunk *chunk, glm::ivec3 position, unsigned int id) {
@@ -336,14 +405,12 @@ void network::sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int
     p_rakPeerInterface->Send( &l_bitstream, MEDIUM_PRIORITY, RELIABLE_ORDERED , 0, address, true);
 }
 
-void network::sendBindPlayer( player *player) {
+void network::sendBindPlayer( player *player, RakNet::AddressOrGUID address) {
     BitStream l_bitstream;
-    RakNet::AddressOrGUID l_address;
     bool l_broadcast;
 
     // send
-    l_address = RakNet::UNASSIGNED_SYSTEM_ADDRESS;
-    l_broadcast = true;
+    l_broadcast = false;
     l_bitstream.Write((RakNet::MessageID)ID_PLAYER_BIND);
 
     // data
@@ -351,7 +418,7 @@ void network::sendBindPlayer( player *player) {
     p_string_compressor.EncodeString( player->getName().c_str(), 16, &l_bitstream);
     l_bitstream.Write( true );
 
-    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, RELIABLE_ORDERED, 0, l_address, l_broadcast);
+    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, RELIABLE_ORDERED, 0, address, l_broadcast);
 }
 
 void network::receiveBindPlayer( BitStream *bitstream, player_handle *players, world *world) {
@@ -375,17 +442,15 @@ void network::receiveBindPlayer( BitStream *bitstream, player_handle *players, w
     printf( "receiveBindPlayer %s %d\n", l_name, l_id);
 }
 
-void network::sendWorldFinish( std::string name) {
+void network::sendWorldFinish( std::string name, RakNet::AddressOrGUID address) {
     BitStream l_bitstream;
-    RakNet::AddressOrGUID l_address;
     bool l_broadcast;
 
     // send
-    l_address = RakNet::UNASSIGNED_SYSTEM_ADDRESS;
-    l_broadcast = true;
+    l_broadcast = false;
     l_bitstream.Write((RakNet::MessageID)ID_WORLD_TRANSFER_FINISH);
     p_string_compressor.EncodeString( name.c_str(), 16, &l_bitstream);
-    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, RELIABLE_ORDERED, 0, l_address, l_broadcast);
+    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, RELIABLE_ORDERED, 0, address, l_broadcast);
 }
 
 void network::receiveWorldFinish( BitStream *bitstream) {
@@ -428,6 +493,7 @@ bool network::process( std::vector<world*> *worlds, player_handle *players)
             break;
         case ID_CONNECTION_REQUEST_ACCEPTED: // client
             printf("ID_CONNECTION_REQUEST_ACCEPTED\n");
+            p_server_guid = p_packet->guid;
             //sendPlayer( );
             break;
         case ID_NEW_INCOMING_CONNECTION:
@@ -440,18 +506,18 @@ bool network::process( std::vector<world*> *worlds, player_handle *players)
 
                 // send all chunks data
                 for( auto *l_world:*worlds) {
-                    sendSpawnPoint( l_world->getName()); // set spawn point
+                    sendSpawnPoint( l_world->getName(), p_packet->guid); // set spawn point
                     sendAllChunks( l_world, p_packet->guid); // send chunks
-                    sendWorldFinish( l_world->getName()); // send we are finish
-                    sendAllObjects( l_world); // send all objects
+                    sendWorldFinish( l_world->getName(), p_packet->guid); // send we are finish
+                    sendAllObjects( l_world, p_packet->guid); // send all objects
                 }
-                sendBindPlayer( l_player);
+                sendBindPlayer( l_player, p_packet->systemAddress);
             }
             break;
         case ID_DISCONNECTION_NOTIFICATION:
             {
                 printf("ID_DISCONNECTION_NOTIFICATION\n");
-                player *l_player = players->getPlayerGUID( p_packet->guid);
+                player *l_player = players->getPlayerByGUID( p_packet->guid);
                 if( l_player) {
                     object *l_object = l_player->getObject();
                     if( l_object) {
@@ -522,6 +588,20 @@ bool network::process( std::vector<world*> *worlds, player_handle *players)
             receiveCreateObject( &l_bitsteam);
         }
         break;
+        case ID_MATRIX_OBJECT:
+        {
+            RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
+            l_bitsteam.IgnoreBytes(sizeof(RakNet::MessageID));
+            receiveMatrixObject( &l_bitsteam);
+        }
+        break;
+        case ID_DELETE_OBJECT:
+        {
+            RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
+            l_bitsteam.IgnoreBytes(sizeof(RakNet::MessageID));
+            receiveDeleteObject( &l_bitsteam);
+        }
+        break;
         case ID_PLAYER_BIND:
         {
             RakNet::BitStream l_bitsteam( p_packet->data, p_packet->length, false);
@@ -534,4 +614,10 @@ bool network::process( std::vector<world*> *worlds, player_handle *players)
     }
 
     return l_quit;
+}
+
+int network::getAveragePing( RakNet::RakNetGUID guid) {
+    if( p_rakPeerInterface)
+        return p_rakPeerInterface->GetAveragePing( guid);
+    return -1;
 }

@@ -55,8 +55,8 @@ Chunk::Chunk( glm::ivec3 position, int seed) {
 }
 
 Chunk::~Chunk() {
-    Timer timer;
-    timer.Start();
+    timer timer;
+    timer.start();
     // node reset
     next = NULL;
     // Löschen p_tile
@@ -71,7 +71,7 @@ Chunk::~Chunk() {
     delete[] p_lighting;
 
     //printf( "~Chunk(): remove p_tile in %dms\n", timer.GetTicks());
-    timer.Start();
+    timer.start();
 
     // vbo daten löschen
     glDeleteBuffers(1, &p_vboIndex);
@@ -499,7 +499,7 @@ void Chunk::updateArray( block_list *List) {
     int i = 0;
     glm::ivec2 l_side_textur_position;
     glm::ivec3 l_block;
-    Timer timer;
+    timer timer;
 
     // thread safe
     while( p_at_update)
@@ -509,7 +509,7 @@ void Chunk::updateArray( block_list *List) {
     if( !List )
         return;
 
-    timer.Start();
+    timer.start();
 
     /*p_indices.clear( );
     p_vertices.clear( );
@@ -764,9 +764,6 @@ void Chunk::updateForm()
 }
 
 void Chunk::updateVbo() {
-    Timer timer;
-    timer.Start();
-
     // Nicht bearbeiten falls es anderweilig bearbeitet wird
     if( p_elements == 0)
         return;

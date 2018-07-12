@@ -78,6 +78,37 @@ block_list *extern_blocklist() {
     return p_engine->getBlocklist();
 }
 
+void extern_createObject( world *world, std::string type, glm::vec3 position, unsigned int id) {
+    if( p_engine == NULL || world == NULL || p_engine->getNetwork() == NULL)
+        return;
+    p_engine->getNetwork()->sendCreateObject( RakNet::UNASSIGNED_SYSTEM_ADDRESS, true, world, type, position, id);
+}
+
+void extern_transferData( world *world, object *object) {
+    if( p_engine == NULL || world == NULL || object == NULL || p_engine->getNetwork() == NULL)
+        return;
+    if( p_engine->getNetwork()->isServer()) {
+        if( !p_engine->getPlayerHandle()->getPlayerByObject( object) )
+            p_engine->getNetwork()->sendMatrixObject( RakNet::UNASSIGNED_SYSTEM_ADDRESS, true, world, object);
+        else {
+            std::vector<player *> l_players = p_engine->getPlayerHandle()->getPlayer();
+            for( player *l_player:l_players) {
+                if( l_player->getId() != object->getId())
+                    p_engine->getNetwork()->sendMatrixObject( l_player->getGUID(), false, world, object);
+            }
+        }
+    } else {
+        if( p_engine->getPlayer() != NULL && p_engine->getPlayer()->getId() == object->getId() )
+            p_engine->getNetwork()->sendMatrixObject( RakNet::UNASSIGNED_SYSTEM_ADDRESS, true, world, object);
+    }
+}
+
+void extern_deleteObject( world *world, unsigned int id) {
+    if( p_engine == NULL || world == NULL || p_engine->getNetwork() == NULL)
+        return;
+    p_engine->getNetwork()->sendDeleteObject( RakNet::UNASSIGNED_SYSTEM_ADDRESS, true, world, id);
+}
+
 void extern_changeCall( world *world, Chunk *chunk, glm::ivec3 position, unsigned int id) {
     p_engine->getNetwork()->sendBlockChange( world, chunk, position, id);
 }
@@ -86,6 +117,7 @@ engine::engine() {
     // set values
     p_openvr = NULL;
     p_player = NULL;
+    p_network = NULL;
     p_isRunnig = true;
     p_framecap = true;
     p_timecap = 12; // ms -> 90hz
@@ -207,10 +239,11 @@ void engine::walk( int l_delta) {
             } else {
                 p_player = p_players[1];
             }*/
-            if( p_player->getWorld() == p_worlds[0])
+            /*if( p_player->getWorld() == p_worlds[0])
                 p_player->changeWorldTo( p_worlds[1]);
             else
-                p_player->changeWorldTo( p_worlds[0]);
+                p_player->changeWorldTo( p_worlds[0]);*/
+            p_player->getWorld()->createObject( "evil_bot", p_player->getObject()->getPosition() + glm::vec3( 0, 0, 1));
         }
     }
 }
@@ -222,8 +255,13 @@ world *engine::createWorld( std::string name, bool player) {
     }
     world *l_world = new world( p_blocklist, name, p_object_handle, player);
     l_world->setGenerator( p_landscape_generator);
-    if( p_network)
+
+    if( p_network) {
         l_world->changeCall = &extern_changeCall;
+        l_world->createObjectCall = &extern_createObject;
+        l_world->objectSyncCall = &extern_transferData;
+        l_world->deleteObjectCall = &extern_deleteObject;
+    }
     p_worlds.push_back( l_world);
 
     return l_world;
@@ -251,7 +289,7 @@ world *engine::getWorld( std::string name) {
 
 void engine::run() {
     // set variables
-    Timer l_timer;
+    timer l_timer;
     std::string l_title;
     struct clock l_clock;
     glm::mat4 l_mvp;
@@ -293,7 +331,7 @@ void engine::run() {
 
     // loop
     while( p_isRunnig) {
-        l_timer.Start();
+        l_timer.start();
 
         p_input.Reset();
         p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
@@ -327,6 +365,7 @@ void engine::run() {
             }
         }
 
+        // every world
         for( world *l_world:p_worlds) {
             lua_object_set_targets( l_world);
             l_world->process_object_handling();
@@ -415,12 +454,15 @@ void engine::run() {
 
         double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
-        l_title = l_title + " " + NumberToString( (double)l_timer.GetTicks()) + "ms";
+        l_title = l_title + " " + NumberToString( (double)l_timer.getTicks()) + "ms";
         l_title = l_title + " X_" + NumberToString( l_cam->getPos().x) + " Y_" + NumberToString( l_cam->getPos().y) + " Z_" + NumberToString( l_cam->getPos().z );
         if( p_player) {
             l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
             l_title = l_title + " Name: \"" + p_player->getName() + "\"";
+            l_title = l_title + " Id: \"" + NumberToString( (double)p_player->getId()) + "\"";
         }
+        if( p_network->isClient())
+            l_title = l_title + " Ping: \"" + NumberToString( (double)p_network->getAveragePing( p_network->getServerGUID() )) + "\"";
         p_graphic->getDisplay()->setTitle( l_title);
 
         // one at evry frame
@@ -433,7 +475,7 @@ void engine::run() {
 
         }
 
-        l_delta = l_timer.GetTicks();
+        l_delta = l_timer.getTicks();
     }
 }
 

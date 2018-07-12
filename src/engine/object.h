@@ -147,7 +147,7 @@ class object {
 
         object_type *p_type;
         script::script *p_script;
-        Timer p_timer;
+        timer p_timer;
         unsigned int p_script_time;
 
         glm::vec3 p_velocity;

@@ -232,9 +232,17 @@ void player_handle::load_player( std::string folder_player, world *world) {
     printf( "player_handle::load_player player \"%s\" loaded\n", l_player->getName().c_str());
 }
 
-player *player_handle::getPlayerGUID( RakNet::RakNetGUID guid) {
+player *player_handle::getPlayerByGUID( RakNet::RakNetGUID guid) {
     for( player *l_player:p_players){
         if( l_player->getGUID() == guid)
+            return l_player;
+    }
+    return NULL;
+}
+
+player *player_handle::getPlayerByObject( object *object) {
+    for( player *l_player:p_players){
+        if( l_player->getId() == object->getId())
             return l_player;
     }
     return NULL;

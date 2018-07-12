@@ -4,26 +4,26 @@
 #include <SDL2/SDL.h>
 #include <vector>
 
-class Timer {
+class timer {
 public:
-    Timer();
-    virtual ~Timer();
+    timer();
+    virtual ~timer();
 
-    void Start();
-    bool IsRunnig();
-    void Stop();
-    void Pause();
-    int GetTicks();
+    void start();
+    bool isRunnig();
+    void stop();
+    void pause();
+    int getTicks();
 
-    void Set( int time) {
-        TimeStart = SDL_GetTicks()-time;
+    void set( int time) {
+        p_start = SDL_GetTicks()-time;
     }
 protected:
 private:
-    int TimeStart;
-    int TimeEnd;
-    int TimePause;
-    bool Running;
+    int p_start;
+    int p_end;
+    int p_pause;
+    bool p_running;
 };
 
 class TimerList {
