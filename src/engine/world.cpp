@@ -49,6 +49,7 @@ world::world( block_list* block_list, std::string name, object_handle *objectHan
     p_object_id = 0;
     p_gravity = glm::vec3( 0, -150.0/1000., 0);
     p_player_world = player;
+    p_object_sync = 200; // ms
 
     // calls
     changeCall = NULL;
@@ -817,7 +818,7 @@ void world::process_object_handling() {
     bool p_sync = false;
 
     // check for next sync
-    if ( p_snyc_object_timer.getTicks() > WORLD_OBJECT_SYNC) {
+    if ( p_snyc_object_timer.getTicks() > WORLD_OBJECT_SYNC_MIN + p_object_sync) {
         p_sync = true;
         p_snyc_object_timer.start();
     }

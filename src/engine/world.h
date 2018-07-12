@@ -20,7 +20,7 @@
 
 #define WORLD_PHYSIC_FIXED_TIMESTEP ( 1.0f / 120.0f )
 
-#define WORLD_OBJECT_SYNC 16 // ms
+#define WORLD_OBJECT_SYNC_MIN 1
 
 Uint32 thrend_worldGenerator( Uint32 interval, void *Paramenter);
 
@@ -121,6 +121,9 @@ public:
     }
     std::string getName() { return p_name; }
     std::vector<object*> getObjects() { return p_objects; }
+
+    void setObjectSync( int value) { p_object_sync = value; }
+    int getObjectSync() { return p_object_sync; }
 protected:
 private:
     std::string p_name;
@@ -161,6 +164,7 @@ private:
     std::vector<object*> p_objects;
     int p_object_id;
     timer p_snyc_object_timer;
+    int p_object_sync;
 
     float p_time;
 

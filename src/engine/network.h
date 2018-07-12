@@ -78,6 +78,7 @@ class network
         world *(*getWorld)(std::string name);
         block_list *(*getBlocklist)(void);
         int getAveragePing( RakNet::RakNetGUID guid);
+        int getTotalAveragePing() { return p_average_ping; }
         RakNet::RakNetGUID getServerGUID() { return p_server_guid; }
     protected:
 
@@ -95,6 +96,7 @@ class network
 
         int p_port;
         int p_maxamountplayer;
+        int p_average_ping;
         std::string p_ip;
 };
 

@@ -12,6 +12,8 @@ network::network( config *config)
     //p_socketdescriptor->socketFamily=AF_UNSPEC;
 
     p_topology = NONE;
+
+    p_average_ping = 0;
 }
 
 network::~network()
@@ -481,6 +483,10 @@ bool network::process( std::vector<world*> *worlds, player_handle *players)
 
     for ( p_packet = p_rakPeerInterface->Receive(); p_packet; p_rakPeerInterface->DeallocatePacket(p_packet), p_packet = p_rakPeerInterface->Receive())
     {
+        // todo listing ...
+        p_average_ping = getAveragePing( p_packet->guid);
+
+        // packets
         switch ( p_packet->data[0])
         {
         case ID_CONNECTION_ATTEMPT_FAILED:

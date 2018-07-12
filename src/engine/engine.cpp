@@ -370,6 +370,9 @@ void engine::run() {
             lua_object_set_targets( l_world);
             l_world->process_object_handling();
             l_world->process_thrend_physic();
+            // set sync time
+            if( p_network)
+                l_world->setObjectSync( p_network->getTotalAveragePing());
         }
 
         if( p_player && p_player->getWorld()->getPhysicFlag()) {

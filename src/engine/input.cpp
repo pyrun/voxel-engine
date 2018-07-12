@@ -62,7 +62,7 @@ bool Input::Handle( int l_width, int l_height, SDL_Window* l_window) {
         Map.MousePos.y /= l_height;
         Map.MousePos.x -= 0.5;
         Map.MousePos.y -= 0.5;
-        if( fabs (Map.MousePos.x) < 0.001 && fabs(Map.MousePos.y) < 0.001 ) {// Rundungsfehler
+        if( fabs (Map.MousePos.x) < 0.0015f && fabs(Map.MousePos.y) < 0.0015f ) {// Rundungsfehler
             Map.MousePos.x = 0;
             Map.MousePos.y = 0;
         }
