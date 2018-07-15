@@ -19,7 +19,7 @@ void player::createObject() {
         p_object_id = p_target_world->createObject( "player", p_target_world->getSpawnPoint() );
 }
 
-void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, int forward) {
+void player::raycastView( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward) {
     glm::vec3 l_postion_ray = position;
     glm::vec3 l_postion_prev = position;
     glm::vec3 l_block = { 0, 0, 0};
@@ -72,7 +72,7 @@ void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, in
         l_block_prev.z--;
 
     // input handling
-    if( input->Map.Place && !input->MapOld.Place) {
+    if( input->mappping.place && !input->mappping_previously.place) {
         Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
             p_target_world->changeBlock( l_chunk, l_block_prev, 8);
@@ -80,14 +80,14 @@ void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, in
         }
     }
 
-    if( input->Map.Destory && !input->MapOld.Destory) {
+    if( input->mappping.destory && !input->mappping_previously.destory) {
         Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block);
         if( l_chunk)
             p_target_world->changeBlock( l_chunk, l_block, EMPTY_BLOCK_ID);
     }
 }
 
-void player::input( Input *input, Camera *camera, int delta) {
+void player::input( input::handle *input, Camera *camera, int delta) {
     object *l_player = p_target_world->getObject( p_object_id);
     if( !l_player ) {
         return;
@@ -96,23 +96,23 @@ void player::input( Input *input, Camera *camera, int delta) {
     if( !l_player->getScript())
         return;
 
-    if( input->Map.Jump) {
+    if( input->mappping.jump) {
         l_player->getScript()->call( "jump", l_player->getId(), delta);
     }
 
-    if( input->Map.Up) {
+    if( input->mappping.up) {
         l_player->getScript()->call( "up", l_player->getId(), delta);
     }
 
-    if( input->Map.Down) {
+    if( input->mappping.down) {
         l_player->getScript()->call( "down", l_player->getId(), delta);
     }
 
-    if( input->Map.Right) {
+    if( input->mappping.right) {
         l_player->getScript()->call( "right", l_player->getId(), delta);
     }
 
-    if( input->Map.Left) {
+    if( input->mappping.left) {
         l_player->getScript()->call( "left", l_player->getId(), delta);
     }
 }

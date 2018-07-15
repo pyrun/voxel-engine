@@ -5,49 +5,55 @@
 #include <glm/glm.hpp>
 #include "../graphic/graphic.h"
 
-class InputMap {
-public:
-    glm::vec2 MousePos;
+namespace input {
 
-    bool Up;
-    bool Down;
-    bool Right;
-    bool Left;
+    class mapping {
+    public:
+        glm::vec2 mouse_position;
 
-    bool Inventory;
-    bool Jump;
-    bool Shift;
+        bool up;
+        bool down;
+        bool right;
+        bool left;
 
-    bool Place;
-    bool Destory;
+        bool inventory;
+        bool jump;
+        bool shift;
 
-    bool MouseGrab;
+        bool place;
+        bool destory;
 
-    bool Refresh;
-protected:
-private:
-};
+        bool mouse_grab;
 
-class Input {
-public:
-    Input();
-    virtual ~Input();
+        bool refresh;
+    protected:
+    private:
+    };
 
-    void Reset();
-    bool Handle( int l_width, int l_height, SDL_Window* l_window);
+    class handle {
+    public:
+        handle();
+        virtual ~handle();
 
-    InputMap Map;
-    InputMap MapOld;
-    bool getResize() { return p_resize; }
-    int getResizeW() { return p_resize_w; }
-    int getResizeH() { return p_resize_h; }
-protected:
-private:
-    bool GrabMouse;
-    SDL_Event p_event;
-    bool p_resize;
-    int p_resize_w;
-    int p_resize_h;
+        void reset();
+        bool process( int l_width, int l_height, SDL_Window* l_window);
+        bool process();
+
+        mapping mappping;
+        mapping mappping_previously;
+
+        bool getResize() { return p_resize; }
+        int getResizeW() { return p_resize_w; }
+        int getResizeH() { return p_resize_h; }
+    protected:
+    private:
+        bool p_grab_mouse;
+        SDL_Event p_event;
+        bool p_resize;
+        int p_resize_w;
+        int p_resize_h;
+    };
+
 };
 
 #endif // INPUT_H

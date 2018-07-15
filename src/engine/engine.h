@@ -65,7 +65,7 @@ protected:
     void drawBox( glm::mat4 viewProjection, glm::vec3 pos);
 private:
     bool p_isRunnig;
-    Input p_input;
+    input::handle p_input;
     block_list* p_blocklist;
     graphic* p_graphic;
     config *p_config;

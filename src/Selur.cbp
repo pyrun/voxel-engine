@@ -69,7 +69,7 @@
 				<Option compiler="gcc" />
 				<Option parameters="-server" />
 				<Compiler>
-					<Add option="-g" />
+					<Add option="-O2" />
 					<Add option="-DNO_GRAPHICS" />
 					<Add directory="../../SDL2/include" />
 					<Add directory="../../OpenGL" />

@@ -14,7 +14,7 @@ class player
 
         void createObject();
 
-        void raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, int forward);
+        void raycastView( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward);
 
         void setPosition( glm::vec3 position);
         void setName( std::string name);
@@ -22,7 +22,7 @@ class player
         void setGUID( RakNet::RakNetGUID guid);
         void setWorld( world *world);
 
-        void input( Input *input, Camera *camera, int delta);
+        void input( input::handle *input, Camera *camera, int delta);
 
         void changeWorldTo( world *world);
 

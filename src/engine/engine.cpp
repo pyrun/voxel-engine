@@ -182,14 +182,17 @@ engine::engine() {
 }
 
 engine::~engine() {
-    delete p_players;
+    printf( "test\n");
+    if( p_players)
+        delete p_players;
     for( auto l_world:p_worlds)
         delete l_world;
     p_worlds.clear();
     if( p_openvr)
         delete p_openvr;
     delete p_blocklist;
-    delete p_graphic;
+    if( p_graphic)
+        delete p_graphic;
     delete p_landscape_generator;
     delete p_config;
     if( p_network)
@@ -252,7 +255,7 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
 }
 
 void engine::fly( int l_delta) {
-    float Speed = 0.005f;
+    /*float Speed = 0.005f;
     Camera *cam = p_graphic->getCamera();
     if( p_input.Map.Up )
         cam->MoveForwardCross( Speed*l_delta);
@@ -265,14 +268,14 @@ void engine::fly( int l_delta) {
     if( p_input.Map.Jump )
         cam->MoveUp( Speed*l_delta);
     if( p_input.Map.Shift )
-        cam->MoveUp( -Speed*l_delta);
+        cam->MoveUp( -Speed*l_delta);*/
 }
 
 void engine::walk( int l_delta) {
     if( p_player) {
         p_player->input( &p_input, p_graphic->getCamera(), l_delta);
 
-        if( p_input.Map.Inventory && !p_input.MapOld.Inventory) {
+        if( p_input.mappping.inventory && !p_input.mappping_previously.inventory) {
             /*if( p_player == p_players[1]) {
                 p_player = p_players[0];
             } else {
@@ -344,12 +347,14 @@ void engine::run() {
         loadWorld( "0", true);
         loadWorld( "1");
 
+        #ifndef NO_GRAPHICS
         // load player
         if( !p_player ) {
             p_players->load_player( p_player_file, p_worlds[0]);
             p_player = p_players->getPlayer()[0];
             p_player->createObject();
         }
+        #endif // NO_GRAPHICS
     } else { // client network
         p_players->load_player( p_player_file);
     }
@@ -382,12 +387,18 @@ void engine::run() {
     while( p_isRunnig) {
         l_timer.start();
 
-        p_input.Reset();
-        p_isRunnig = p_input.Handle( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
+        p_input.reset();
 
+        #ifndef NO_GRAPHICS
+        p_isRunnig = p_input.process( p_graphic->getWidth(), p_graphic->getHeight(), p_graphic->getWindow());
+        #else
+        p_isRunnig = p_input.process();
+        #endif
+
+        #ifndef NO_GRAPHICS
         Camera *l_cam = p_graphic->getCamera();
-        l_cam->horizontalAngle ( -p_input.Map.MousePos.x * 2);
-        l_cam->verticalAngle  ( p_input.Map.MousePos.y * 2);
+        l_cam->horizontalAngle ( -p_input.mappping.mouse_position.x * 2);
+        l_cam->verticalAngle  ( p_input.mappping.mouse_position.y * 2);
 
         /// process
         if( p_input.getResize()) {
@@ -395,6 +406,7 @@ void engine::run() {
             p_config->set( "width", std::to_string( p_input.getResizeW()), "graphic");
             p_config->set( "height", std::to_string( p_input.getResizeH()), "graphic");
         }
+        #endif // NO_GRAPHICS
 
         //network
         if( p_network) {
@@ -425,19 +437,22 @@ void engine::run() {
                 ;//l_world->setObjectSync( p_network->getTotalAveragePing());
         }
 
+        #ifndef NO_GRAPHICS
         if( p_player && p_player->getWorld() && p_player->getWorld()->getPhysicFlag()) {
             lua_object_set_targets(  p_player->getWorld());
             p_engine = this;
             walk( l_delta);
             p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
         }
+        #endif // NO_GRAPHICS
 
-        if( p_input.Map.Refresh && !p_input.MapOld.Refresh ) {
+        if( p_input.mappping.refresh && !p_input.mappping.refresh ) {
             for( world *l_world:p_worlds)
                 l_world->reloadScripts();
         }
 
         /// render #1 openVR
+        #ifndef NO_GRAPHICS
         if( p_openvr ) {
             l_cam->setPos( p_player->getPositonHead( false));
 
@@ -495,6 +510,7 @@ void engine::run() {
         if( l_error) {
             std::cout << "engine::run OpenGL error #" << l_error << std::endl;
         }
+        #endif // NO_GRAPHICS
 
         // framerate
         p_framerate.push_back( l_clock.delta);
@@ -505,6 +521,8 @@ void engine::run() {
             l_average_delta_time += (float)p_framerate[i];
         l_average_delta_time = l_average_delta_time/(float)p_framerate.size();
 
+
+        #ifndef NO_GRAPHICS
         double averageFrameTimeMilliseconds = 1000.0/(l_average_delta_time==0?0.001:l_average_delta_time);
         l_title = "FPS_" + NumberToString( averageFrameTimeMilliseconds );
         l_title = l_title + " " + NumberToString( (double)l_timer.getTicks()) + "ms";
@@ -518,6 +536,7 @@ void engine::run() {
         if( p_network != NULL && p_network->isClient())
             l_title = l_title + " Ping: \"" + NumberToString( (double)p_network->getAveragePing( p_network->getServerGUID() )) + "\"";
         p_graphic->getDisplay()->setTitle( l_title);
+        #endif // NO_GRAPHICS
 
         // one at evry frame
         l_clock.tick();
