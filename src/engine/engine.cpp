@@ -136,7 +136,30 @@ engine::engine() {
     p_timecap = 12; // ms -> 90hz
 
     p_config = new config();
-    p_graphic = new graphic( p_config);
+    #ifndef NO_GRAPHICS
+        p_graphic = new graphic( p_config);
+    #else
+        p_graphic = NULL;
+
+        // This line is only needed, if you want debug the program
+        SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
+
+        // minimum SDL init
+        if(SDL_Init( SDL_INIT_TIMER | SDL_INIT_EVENTS) < 0) {
+            printf( "engine::engine failed to start the SDL system\n");
+            return;
+        }
+
+        // initializing glew
+        glewExperimental = GL_TRUE;
+        GLenum res = glewInit();
+        if(res != GLEW_OK) {
+            printf( "engine::engine glew was failed to initialize\n" );
+        }
+    #endif
+
+    printf( "test\n");
+
     p_landscape_generator = new landscape( p_config);
     p_players = new player_handle();
 
@@ -201,7 +224,7 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
     p_graphic->getDisplay()->clear( false);
 
     // render voxel
-    if( p_player) {
+    if( p_player && p_player->getWorld()) {
         l_shader = p_graphic->getVoxelShader();
         l_shader->Bind();
         l_shader->update( MAT_PROJECTION, projection);
@@ -327,7 +350,11 @@ void engine::run() {
             p_player = p_players->getPlayer()[0];
             p_player->createObject();
         }
+    } else { // client network
+        p_players->load_player( p_player_file);
     }
+
+    #ifndef NO_GRAPHICS
 
     /*p_worlds[0]->createObject( "player", glm::vec3( 40.0f, 10.0f, -5.5f) );
     p_worlds[0]->createObject( "box", glm::vec3( 5.5f, 10.0f, 5.5f) );
@@ -345,6 +372,8 @@ void engine::run() {
     }
 
     p_graphic->getCamera()->addPos( glm::vec3( 0, 5, 0));
+
+    #endif // NO_GRAPHICS
 
     // set up clock
     l_clock.tick();
@@ -396,7 +425,7 @@ void engine::run() {
                 ;//l_world->setObjectSync( p_network->getTotalAveragePing());
         }
 
-        if( p_player && p_player->getWorld()->getPhysicFlag()) {
+        if( p_player && p_player->getWorld() && p_player->getWorld()->getPhysicFlag()) {
             lua_object_set_targets(  p_player->getWorld());
             p_engine = this;
             walk( l_delta);
@@ -438,7 +467,7 @@ void engine::run() {
 
             p_openvr->renderFrame();
         } else {
-            if( p_player) {
+            if( p_player && p_player->getWorld()) {
                 object *l_obj = p_player->getWorld()->getObject( p_player->getId());
                 if( l_obj) {
                     glm::vec3 l_body_rotation = glm::vec3( 0, l_cam->getHorizontalAngle(), 0);
@@ -481,7 +510,8 @@ void engine::run() {
         l_title = l_title + " " + NumberToString( (double)l_timer.getTicks()) + "ms";
         l_title = l_title + " X_" + NumberToString( l_cam->getPos().x) + " Y_" + NumberToString( l_cam->getPos().y) + " Z_" + NumberToString( l_cam->getPos().z );
         if( p_player) {
-            l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
+            if( p_player->getWorld())
+                l_title = l_title + " Chunks_" + NumberToString( (double) p_player->getWorld()->getAmountChunks()) + "/" + NumberToString( (double)p_player->getWorld()->getAmountChunksVisible() );
             l_title = l_title + " Name: \"" + p_player->getName() + "\"";
             l_title = l_title + " Id: \"" + NumberToString( (double)p_player->getId()) + "\"";
         }

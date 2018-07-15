@@ -104,14 +104,12 @@ void debug_draw::draw( Shader *shader) {
         return;
     // create vbo and vao if not set
     if( !p_vbo_vertex) {
-        printf( "p_vbo_vertex test\n");
         glGenBuffers( 1, &p_vbo_indices);
         glGenBuffers( 1, &p_vbo_vertex);
         glGenBuffers( 1, &p_vbo_normal);
         glGenBuffers( 1, &p_vbo_color);
     }
     if( !p_vao) {
-        printf( "glGenVertexArrays test\n");
         glGenVertexArrays(1, &p_vao);
 
         glBindVertexArray( p_vao);

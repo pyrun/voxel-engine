@@ -1,12 +1,8 @@
-# Blender MTL File: 'head.blend'
-# Material Count: 1
+# MagicaVoxel @ Ephtracy
 
-newmtl Material
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
+newmtl palette
+illum 1
+Ka 0.000 0.000 0.000
+Kd 1.000 1.000 1.000
+Ks 0.000 0.000 0.000
+map_Kd head.png

@@ -244,6 +244,11 @@ void graphic::draw( SDL_Surface* Image, double X, double Y, int W, int H, int Sp
 }
 
 void graphic::saveImageBMP( std::string File) {
+    // no save if no graphics
+    #ifdef NO_GRAPHICS
+    return;
+    #endif // NO_GRAPHICS
+
     // Save Image
     File = File + ".png";
     // Image save

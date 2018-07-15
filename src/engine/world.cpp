@@ -130,7 +130,7 @@ int world::createObject( std::string name, glm::vec3 position, unsigned int id, 
     p_objects.push_back( l_object);
 
     //
-    printf( "\"%s\" %d %.1f %.1f %.1f\n", name.c_str(), p_object_id, position.x, position.y, position.z);
+    printf( "world::createObject \"%s\" #%d %.1fx %.1fy %.1fz\n", name.c_str(), p_object_id, position.x, position.y, position.z);
 
     // set now type ( calls lua and install it)
     l_object->setType( l_type);

@@ -17,6 +17,7 @@ archiv/
 game/
 
 res/worldsave/*
+build/win_*
 
 # Folder config file
 Desktop.ini

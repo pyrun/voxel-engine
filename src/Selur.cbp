@@ -6,14 +6,14 @@
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="win_debug_32">
+			<Target title="windows_debug_32">
 				<Option platforms="Windows;" />
 				<Option output="../bin/win/debug32/Selur" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="../res" />
 				<Option object_output="../obj/windebug32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-client localhost" />
+				<Option parameters="-server" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DWIN32" />
@@ -60,23 +60,22 @@
 					<Add option="-lGL -lGLEW" />
 				</Linker>
 			</Target>
-			<Target title="win_debug_32_openvr">
+			<Target title="windows_server_nogui">
 				<Option platforms="Windows;" />
-				<Option output="../bin/win/debug32/Selur" prefix_auto="1" extension_auto="1" />
+				<Option output="../bin/win/server32/serverSelur" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="../res" />
-				<Option object_output="../obj/windebug32/" />
+				<Option object_output="../obj/winServer32/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-openvr -server" />
+				<Option parameters="-server" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DNO_GRAPHICS" />
 					<Add directory="../../SDL2/include" />
 					<Add directory="../../OpenGL" />
 					<Add directory="../../glm/" />
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
-					<Add directory="../../Miniupnpc/source/" />
-					<Add directory="../../bounce/include" />
 					<Add directory="../../lua/include" />
 				</Compiler>
 				<Linker>
@@ -95,7 +94,7 @@
 					<Add directory="../../lua/lib" />
 				</Linker>
 			</Target>
-			<Target title="win_release_32">
+			<Target title="windows_release_32">
 				<Option platforms="Windows;" />
 				<Option output="../bin/win/release32/Selur" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="../res" />

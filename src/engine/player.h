@@ -9,7 +9,7 @@
 class player
 {
     public:
-        player( world *world);
+        player( world *world = NULL);
         virtual ~player();
 
         void createObject();
@@ -20,6 +20,7 @@ class player
         void setName( std::string name);
         void setId( unsigned int id);
         void setGUID( RakNet::RakNetGUID guid);
+        void setWorld( world *world);
 
         void input( Input *input, Camera *camera, int delta);
 
@@ -53,8 +54,11 @@ class player_handle {
         bool fileExists(std::string filename);
         player *createPlayer( world *world);
         void load( std::string path);
-        void load_player( std::string folder_player, world *world);
+        void load_player( std::string folder_player, world *world = NULL);
 
+        void deletePlayerByGUID( RakNet::RakNetGUID guid);
+
+        player *getPlayerByName( std::string name);
         player *getPlayerByGUID( RakNet::RakNetGUID guid);
         player *getPlayerByObject( object *object);
         std::vector<player *> getPlayer() { return p_players; }

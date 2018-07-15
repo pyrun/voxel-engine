@@ -99,7 +99,7 @@ void block_list::init( graphic* graphic, config *config) {
     // draw every block into a image
     for( int i = 0; i < (int)p_blocks.size(); i++) {
         block *block = &p_blocks[i];
-        if( block->getLoadedImage() == false ) {
+        if( block->getLoadedImage() == false && graphic) {
             block->loadImage( graphic);
         }
 
@@ -112,18 +112,28 @@ void block_list::init( graphic* graphic, config *config) {
                 l_block_x = 0;
                 l_block_y++;
             }
-            graphic->draw( l_side->getSurface(), BLOCK_SIZE*l_block_x, BLOCK_SIZE*l_block_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
+
+            #ifndef NO_GRAPHICS
+                graphic->draw( l_side->getSurface(), BLOCK_SIZE*l_block_x, BLOCK_SIZE*l_block_y, BLOCK_SIZE, BLOCK_SIZE, 0, 0, false);
+            #endif // NO_GRAPHICS
+
             // save data to the block (for later use)
             l_side->setPosition( glm::vec2( l_block_x, l_block_y));
             l_block_x++;
         }
     }
 
+    p_tilemap = NULL;
+
+    #ifndef NO_GRAPHICS
+
     // save the image
     graphic->saveImageBMP( l_filename_tilemap.c_str());
 
     // now load it :)
     p_tilemap = new texture( l_filename_tilemap + ".png");
+
+    #endif // NO_GRAPHICS
 }
 
 glm::ivec2 block_list::getTexturByType( int Type, block_side side) {

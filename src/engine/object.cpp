@@ -120,8 +120,10 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
     XMLElement* l_xml_texture = l_object->FirstChildElement( "texture" );
     if( l_xml_texture)
         p_texture_file = l_xml_texture->GetText();
+    #ifndef NO_GRAPHICS
     if( p_texture_file.size() > 0)
         p_texture = new texture( l_path +  p_texture_file);
+    #endif // NO_GRAPHICS
 
     // size of hit box
     XMLElement* l_xml_hitbox = l_object->FirstChildElement( "hitbox" );

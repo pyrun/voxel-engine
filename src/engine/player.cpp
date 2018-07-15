@@ -15,7 +15,7 @@ player::~player()
 
 void player::createObject() {
     // create player
-    if( p_target_world->getSpawnPoint() != glm::vec3( 0, 0, 0) )
+    if( p_target_world && p_target_world->getSpawnPoint() != glm::vec3( 0, 0, 0) )
         p_object_id = p_target_world->createObject( "player", p_target_world->getSpawnPoint() );
 }
 
@@ -76,7 +76,7 @@ void player::raycastView( Input *input, glm::vec3 position, glm::vec3 lookat, in
         Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
             p_target_world->changeBlock( l_chunk, l_block_prev, 8);
-            printf( "%d %d %d\n", (int)l_block_prev.x, (int)l_block_prev.y, (int)l_block_prev.z);
+            printf( "player::raycastView %d %d %d\n", (int)l_block_prev.x, (int)l_block_prev.y, (int)l_block_prev.z);
         }
     }
 
@@ -130,6 +130,8 @@ void player::changeWorldTo( world *world) {
 }
 
 glm::vec3 player::getPositonHead( bool height) {
+    if( getWorld() == NULL)
+        return glm::vec3( 0, 0, 0);
     object *l_player = p_target_world->getObject( p_object_id);
     if( l_player == NULL)
         return glm::vec3( 0, 0, 0);
@@ -158,6 +160,10 @@ void player::setId( unsigned int id) {
 
 void player::setGUID( RakNet::RakNetGUID guid) {
     p_guid = guid;
+}
+
+void player::setWorld( world *world) {
+    p_target_world = world;
 }
 
 player_handle::player_handle()
@@ -230,6 +236,21 @@ void player_handle::load_player( std::string folder_player, world *world) {
     p_players.push_back( l_player);
     delete l_config;
     printf( "player_handle::load_player player \"%s\" loaded\n", l_player->getName().c_str());
+}
+
+void player_handle::deletePlayerByGUID( RakNet::RakNetGUID guid) {
+    for( player *l_player:p_players){
+        if( l_player->getGUID() == guid)
+            delete l_player;
+    }
+}
+
+player *player_handle::getPlayerByName( std::string name) {
+    for( player *l_player:p_players){
+        if( l_player->getName() == name)
+            return l_player;
+    }
+    return NULL;
 }
 
 player *player_handle::getPlayerByGUID( RakNet::RakNetGUID guid) {

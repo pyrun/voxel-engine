@@ -20,6 +20,8 @@
 #include "object.h"
 #include "player.h"
 
+#define NETWORK_WOLRD_NAME_LENGTH 32
+
 using namespace RakNet;
 
 enum network_topology
@@ -62,11 +64,17 @@ class network
         void receiveGetChunkData( BitStream *bitstream, RakNet::AddressOrGUID address);
         void sendGetChunkData( RakNet::AddressOrGUID address, Chunk *chunk, int start, int end);
 
-        void sendBindPlayer( player *player, RakNet::AddressOrGUID address);
-        void receiveBindPlayer( BitStream *bitstream, player_handle *players, world *world);
+        void sendLoginPlayer( player *player, RakNet::AddressOrGUID address);
+        void receiveLoginPlayer( BitStream *bitstream, RakNet::RakNetGUID guid, player_handle *players, world *world);
+
+        void sendBindPlayer( player *player, world *targetworld, RakNet::AddressOrGUID address);
+        void receiveBindPlayer( BitStream *bitstream, player_handle *players);
 
         void sendWorldFinish( std::string name, RakNet::AddressOrGUID address);
         void receiveWorldFinish( BitStream *bitstream);
+
+        void connection( RakNet::RakNetGUID guid, player_handle *players, std::vector<world*> *worlds);
+        void disconnection( RakNet::RakNetGUID guid, player_handle *players);
 
         bool process( std::vector<world *> *world, player_handle *player);
 
