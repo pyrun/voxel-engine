@@ -113,6 +113,19 @@ void extern_changeCall( world *world, Chunk *chunk, glm::ivec3 position, unsigne
     p_engine->getNetwork()->sendBlockChange( world, chunk, position, id);
 }
 
+static int engine_thread(void *data)
+{
+    for ( ;; ) {
+        engine *l_engine = (engine*)data;
+
+        l_engine->process_thread();
+
+        SDL_Delay(1);
+    }
+
+    return 0;
+}
+
 engine::engine() {
     // set values
     p_openvr = NULL;
@@ -137,6 +150,9 @@ engine::engine() {
     // set block list up
     p_blocklist = new block_list( p_config);
     p_blocklist->init( p_graphic, p_config);
+
+    // creating thread
+    p_thread = SDL_CreateThread( engine_thread, "eninge_thread", (void *)this);
 
     // get standard player
     p_player_file = p_config->get( "folder", "player", "players/") + p_config->get( "use", "player", "noname");
@@ -287,6 +303,10 @@ world *engine::getWorld( std::string name) {
     return NULL;
 }
 
+void engine::process_thread() {
+
+}
+
 void engine::run() {
     // set variables
     timer l_timer;
@@ -372,7 +392,8 @@ void engine::run() {
             l_world->process_thrend_physic();
             // set sync time
             if( p_network)
-                l_world->setObjectSync( p_network->getTotalAveragePing());
+                l_world->setObjectSync( 1);
+                ;//l_world->setObjectSync( p_network->getTotalAveragePing());
         }
 
         if( p_player && p_player->getWorld()->getPhysicFlag()) {
@@ -464,7 +485,7 @@ void engine::run() {
             l_title = l_title + " Name: \"" + p_player->getName() + "\"";
             l_title = l_title + " Id: \"" + NumberToString( (double)p_player->getId()) + "\"";
         }
-        if( p_network->isClient())
+        if( p_network != NULL && p_network->isClient())
             l_title = l_title + " Ping: \"" + NumberToString( (double)p_network->getAveragePing( p_network->getServerGUID() )) + "\"";
         p_graphic->getDisplay()->setTitle( l_title);
 

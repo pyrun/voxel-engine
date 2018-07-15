@@ -52,6 +52,7 @@ public:
     void loadWorld( std::string name, bool player = false);
     world *getWorld( std::string name);
 
+    void process_thread();
     void run();
 
     graphic *getGraphic() { return p_graphic; }
@@ -71,6 +72,7 @@ private:
     openvr *p_openvr;
     landscape *p_landscape_generator;
     network *p_network;
+    SDL_Thread *p_thread;
 
     // objects
     object_handle *p_object_handle;

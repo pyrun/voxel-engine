@@ -32,7 +32,7 @@ void Input::Reset() {
 
 bool Input::Handle( int l_width, int l_height, SDL_Window* l_window) {
     int X, Y;
-    Uint32 State = NULL;
+    Uint32 State = 0;
     p_resize = false;
     const Uint8* Keys = SDL_GetKeyboardState( NULL );
     // Pull all keys

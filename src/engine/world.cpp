@@ -815,7 +815,7 @@ void world::process_thrend_physic() {
 }
 
 void world::process_object_handling() {
-    bool p_sync = false;
+    bool p_sync = true;
 
     // check for next sync
     if ( p_snyc_object_timer.getTicks() > WORLD_OBJECT_SYNC_MIN + p_object_sync) {
@@ -825,9 +825,9 @@ void world::process_object_handling() {
 
     // each object call process
     for( object *l_object: p_objects) {
+        l_object->process();
         if( p_sync && objectSyncCall != NULL)
             objectSyncCall( this, l_object);
-        l_object->process();
     }
 }
 

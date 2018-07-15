@@ -167,7 +167,7 @@ void network::sendMatrixObject( RakNet::AddressOrGUID address, bool broadcast, w
     l_bitstream.Write( object->getVerlocity().x); // Verlocity
     l_bitstream.Write( object->getVerlocity().y);
     l_bitstream.Write( object->getVerlocity().z);
-    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, RELIABLE_ORDERED , 0, address, broadcast);
+    p_rakPeerInterface->Send( &l_bitstream, LOW_PRIORITY, UNRELIABLE, 0, address, broadcast);
 }
 
 void network::receiveMatrixObject( BitStream *bitstream) {
@@ -196,9 +196,11 @@ void network::receiveMatrixObject( BitStream *bitstream) {
         return;
 
     object *l_object = l_world->getObject( l_id);
-    l_object->setPosition( l_position);
-    l_object->setRotation( l_rotation);
-    l_object->setVelocity( l_verlocity);
+    if( l_object) {
+        l_object->setPosition( l_position);
+        l_object->setRotation( l_rotation);
+        l_object->setVelocity( l_verlocity);
+    }
 }
 
 void network::sendDeleteObject( RakNet::AddressOrGUID address, bool broadcast, world *targetworld, unsigned int id) {
