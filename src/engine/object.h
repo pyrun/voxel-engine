@@ -131,6 +131,9 @@ class object {
         float getGravityForce() { return p_gravity; }
 
         script::script *getScript() { return p_script; }
+
+        glm::mat4 getMatrixPosition() { return p_model_position; }
+        glm::mat4 getMatrix() { return p_model; }
     protected:
         void update_model();
     private:
@@ -139,7 +142,7 @@ class object {
         bool p_model_change;
 
         glm::mat4 p_model;
-        glm::mat4 p_model_debug;
+        glm::mat4 p_model_position;
         glm::vec3 p_position;
         glm::vec3 p_rotation;
         glm::vec3 p_scale;

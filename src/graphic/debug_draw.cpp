@@ -10,6 +10,10 @@ debug_draw::debug_draw() {
 }
 
 debug_draw::~debug_draw() {
+    // clearing the array
+    clear();
+
+    // deleting vbo
     if( p_vbo_vertex) {
         glDeleteVertexArrays(1, &p_vao );
         glDeleteBuffers( 1, &p_vbo_indices);
@@ -19,7 +23,7 @@ debug_draw::~debug_draw() {
     }
 }
 
-void debug_draw::drawCube( glm::vec3 positon, glm::vec3 size, glm::vec3 color) {
+void debug_draw::cube( glm::vec3 positon, glm::vec3 size, glm::vec3 color) {
     // add vertex
     int l_vertex_begin = p_vertex.size();
     p_vertex.push_back( positon + glm::vec3( size.x, size.y, size.z)); //0
@@ -99,6 +103,12 @@ void debug_draw::drawCube( glm::vec3 positon, glm::vec3 size, glm::vec3 color) {
     }
 }
 
+void debug_draw::clear() {
+    p_vertex.clear();
+    p_indices.clear();
+    p_normal.clear();
+}
+
 void debug_draw::draw( Shader *shader) {
     if( p_indices.size() == 0)
         return;
@@ -144,10 +154,10 @@ void debug_draw::draw( Shader *shader) {
         glBufferData( GL_ARRAY_BUFFER, p_vertex.size() * sizeof( glm::vec3 ), &p_vertex[0], GL_STATIC_DRAW);
 
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_normal);
-        glBufferData( GL_ARRAY_BUFFER, p_vertex.size() * sizeof( glm::vec3 ), &p_normal[0], GL_STATIC_DRAW);
+        glBufferData( GL_ARRAY_BUFFER, p_normal.size() * sizeof( glm::vec3 ), &p_normal[0], GL_STATIC_DRAW);
 
         glBindBuffer( GL_ARRAY_BUFFER, p_vbo_color);
-        glBufferData( GL_ARRAY_BUFFER, p_vertex.size() * sizeof( glm::vec3 ), &p_color[0], GL_STATIC_DRAW);
+        glBufferData( GL_ARRAY_BUFFER, p_color.size() * sizeof( glm::vec3 ), &p_color[0], GL_STATIC_DRAW);
     }
 
     glDrawElements( GL_TRIANGLES, p_indices.size(), GL_UNSIGNED_INT, 0);

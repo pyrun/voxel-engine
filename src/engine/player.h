@@ -15,6 +15,7 @@ class player
         void createObject();
 
         void raycastView( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward);
+        void drawTeleport( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward);
 
         void setPosition( glm::vec3 position);
         void setName( std::string name);
@@ -32,6 +33,7 @@ class player
         world* getWorld() { return p_target_world; }
         std::string getName() { return p_name; }
         RakNet::RakNetGUID getGUID() { return p_guid; }
+        debug_draw *getDebugDraw() { return &p_debug_draw; }
     protected:
 
     private:
@@ -43,6 +45,8 @@ class player
 
         int p_object_id;
         world *p_target_world;
+
+        debug_draw p_debug_draw;
 };
 
 

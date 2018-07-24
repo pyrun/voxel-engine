@@ -246,8 +246,10 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
         l_shader->Bind();
         l_shader->update( MAT_PROJECTION, projection);
         l_shader->update( MAT_VIEW, view);
-        l_shader->update( MAT_MODEL, glm::mat4( 1));
+        //l_shader->update( MAT_MODEL, glm::mat4( 1));
         p_player->getWorld()->drawObjectsDebug( p_graphic, l_shader);
+        l_shader->update( MAT_MODEL, p_player->getObject()->getMatrixPosition());
+        p_player->getDebugDraw()->draw( l_shader);
     }
 
     // we are done
@@ -443,6 +445,8 @@ void engine::run() {
             p_engine = this;
             walk( l_delta);
             p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
+
+            p_player->drawTeleport( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 3);
         }
         #endif // NO_GRAPHICS
 

@@ -12,9 +12,11 @@ class debug_draw {
         debug_draw();
         ~debug_draw();
 
-        void draw( Shader *shader);
+        void cube( glm::vec3 positon, glm::vec3 size, glm::vec3 color);
 
-        void drawCube( glm::vec3 positon, glm::vec3 size, glm::vec3 color);
+        void clear();
+
+        void draw( Shader *shader);
     private:
         bool p_change;
 

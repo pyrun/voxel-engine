@@ -75,7 +75,7 @@ void player::raycastView( input::handle *input, glm::vec3 position, glm::vec3 lo
     if( input->mappping.place && !input->mappping_previously.place) {
         Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block_prev);
         if( l_chunk) {
-            p_target_world->changeBlock( l_chunk, l_block_prev, 8);
+            p_target_world->changeBlock( l_chunk, l_block_prev, 1);
             printf( "player::raycastView %d %d %d\n", (int)l_block_prev.x, (int)l_block_prev.y, (int)l_block_prev.z);
         }
     }
@@ -85,6 +85,38 @@ void player::raycastView( input::handle *input, glm::vec3 position, glm::vec3 lo
         if( l_chunk)
             p_target_world->changeBlock( l_chunk, l_block, EMPTY_BLOCK_ID);
     }
+}
+
+void player::drawTeleport( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward) {
+    glm::vec3 l_postion_ray = getObject()->getType()->getHead();
+    glm::vec3 l_postion_prev = getObject()->getType()->getHead();
+
+    p_debug_draw.clear();
+
+    //p_debug_draw.cube( glm::vec3( 1), glm::vec3( 1), glm::vec3( 1, 0, 0));
+
+    for(int i = 0; i < forward; i++) {
+        l_postion_prev = l_postion_ray;
+        l_postion_ray += lookat * 0.1f;
+
+        /*l_block.x = floorf( l_postion_ray.x);
+        l_block.y = floorf( l_postion_ray.y);
+        l_block.z = floorf( l_postion_ray.z);*/
+
+        /*Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block);
+        if( l_chunk) {
+            glm::vec3 l_chunk_pos = l_chunk->getPos() * glm::ivec3( CHUNK_SIZE);
+            if( l_chunk->getTile( l_block - l_chunk_pos) != EMPTY_BLOCK_ID) { // check for block
+                l_found = true;
+                break;
+            }
+        } else {
+            p_target_world->addChunk( l_block / glm::vec3(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE), false );
+        }*/
+
+    }
+    p_debug_draw.cube( l_postion_ray, glm::vec3( 0.05), glm::vec3( 0, 1, 0));
+
 }
 
 void player::input( input::handle *input, Camera *camera, int delta) {

@@ -133,7 +133,7 @@ bool object_type::load_type( config *config, std::string l_path, std::string l_n
         p_hitbox_size.y = atof( l_xml_hitbox->Attribute( "height"));
         p_hitbox_size.z = atof( l_xml_hitbox->Attribute( "depth"));
 
-        p_debug_draw.drawCube( glm::vec3( 0), p_hitbox_size, glm::vec3( 1, 0, 0));
+        p_debug_draw.cube( glm::vec3( 0), p_hitbox_size, glm::vec3( 1, 0, 0));
     }
     return true;
 }
@@ -389,7 +389,7 @@ void object::draw( Shader* shader) {
 
 void object::draw_debug( Shader* shader) {
     if( p_type) {
-        p_type->draw_debug( p_model_debug, shader);
+        p_type->draw_debug( p_model_position, shader);
     }
 }
 
@@ -407,7 +407,7 @@ void object::update_model() {
     glm::mat4 l_rotZ = glm::rotate( p_rotation.z, glm::vec3(0.0, 0.0, 1.0));
     glm::mat4 l_rotMat = l_rotX * l_rotY * l_rotZ;
     p_model = l_posMat * l_rotMat * l_scaleMat;
-    p_model_debug = l_posMat_hitbox;
+    p_model_position = l_posMat_hitbox;
 }
 
 void object::setType( object_type *type)
