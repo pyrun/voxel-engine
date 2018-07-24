@@ -760,7 +760,7 @@ void Chunk::updateArray( block_list *List) {
 void Chunk::updateForm()
 {
     p_form.setPos( glm::vec3( p_pos.x*CHUNK_SIZE, p_pos.y*CHUNK_SIZE, p_pos.z*CHUNK_SIZE) );
-    //p_form.setScale( glm::vec3( CHUNK_SCALE));
+    p_form.setScale( glm::vec3( CHUNK_SCALE));
 }
 
 void Chunk::updateVbo() {
@@ -878,10 +878,6 @@ void Chunk::save( std::ofstream *stream) {
 }
 
 void Chunk::load( std::ifstream *stream) {
-    /*stream->write ((char*)&p_pos.x, sizeof ( int));
-    stream->write ((char*)&p_pos.y, sizeof ( int));
-    stream->write ((char*)&p_pos.z, sizeof ( int));*/
-
     for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)
         stream->read((char*)&p_tile[i], sizeof ( unsigned short));
     for( int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++)

@@ -815,7 +815,7 @@ void world::process_thrend_physic() {
 }
 
 void world::process_object_handling() {
-    bool p_sync = true;
+    bool p_sync = false;
 
     // check for next sync
     if ( p_snyc_object_timer.getTicks() > WORLD_OBJECT_SYNC_MIN + p_object_sync) {
