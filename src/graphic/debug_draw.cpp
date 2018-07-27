@@ -35,14 +35,8 @@ void debug_draw::cube( glm::vec3 positon, glm::vec3 size, glm::vec3 color) {
     p_vertex.push_back( positon + glm::vec3(   0.0f,   0.0f,   0.0f)); //6
     p_vertex.push_back( positon + glm::vec3( size.x,   0.0f,   0.0f)); //7
 
-    p_color.push_back( glm::vec3( size.x, size.y, size.z));
-    p_color.push_back( glm::vec3(   0.0f, size.y, size.z));
-    p_color.push_back( glm::vec3( size.x, size.y,   0.0f));
-    p_color.push_back( glm::vec3(   0.0f, size.y,   0.0f));
-    p_color.push_back( glm::vec3( size.x,   0.0f, size.z));
-    p_color.push_back( glm::vec3(   0.0f,   0.0f, size.z));
-    p_color.push_back( glm::vec3(   0.0f,   0.0f,   0.0f));
-    p_color.push_back( glm::vec3( size.x,   0.0f,   0.0f));
+    for( int i= 0; i < 8; i++)
+        p_color.push_back( color);
 
     // add indices
     int l_indices_begin = p_indices.size();
@@ -89,7 +83,7 @@ void debug_draw::cube( glm::vec3 positon, glm::vec3 size, glm::vec3 color) {
     p_indices.push_back( 4 + l_vertex_begin);
     p_indices.push_back( 1 + l_vertex_begin);
 
-    for( int i = l_indices_begin; i < p_indices.size(); i+=3) {
+    for( int i = l_indices_begin; i < p_vertex.size(); i+=3) {
         glm::vec3 a(p_vertex[ p_indices[i+0]].x, p_vertex[p_indices[i+0]].y, p_vertex[p_indices[i+0]].z);
         glm::vec3 b(p_vertex[ p_indices[i+1]].x, p_vertex[p_indices[i+1]].y, p_vertex[p_indices[i+1]].z);
         glm::vec3 c(p_vertex[ p_indices[i+2]].x, p_vertex[p_indices[i+2]].y, p_vertex[p_indices[i+2]].z);
@@ -105,8 +99,13 @@ void debug_draw::cube( glm::vec3 positon, glm::vec3 size, glm::vec3 color) {
 
 void debug_draw::clear() {
     p_vertex.clear();
+    p_color.clear();
     p_indices.clear();
     p_normal.clear();
+}
+
+void debug_draw::setChange() {
+    p_change = true;
 }
 
 void debug_draw::draw( Shader *shader) {

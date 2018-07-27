@@ -6,6 +6,10 @@
 #include "input.h"
 #include "config.h"
 
+struct player_teleport {
+    glm::vec3 position;
+};
+
 class player
 {
     public:
@@ -15,7 +19,7 @@ class player
         void createObject();
 
         void raycastView( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward);
-        void drawTeleport( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward);
+        player_teleport *handleTeleport( input::handle *input, glm::vec3 position, glm::vec3 lookat, int forward);
 
         void setPosition( glm::vec3 position);
         void setName( std::string name);

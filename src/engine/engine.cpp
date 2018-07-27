@@ -248,7 +248,7 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
         l_shader->update( MAT_VIEW, view);
         //l_shader->update( MAT_MODEL, glm::mat4( 1));
         p_player->getWorld()->drawObjectsDebug( p_graphic, l_shader);
-        l_shader->update( MAT_MODEL, p_player->getObject()->getMatrixPosition());
+        l_shader->update( MAT_MODEL, glm::mat4( 1));
         p_player->getDebugDraw()->draw( l_shader);
     }
 
@@ -287,7 +287,7 @@ void engine::walk( int l_delta) {
                 p_player->changeWorldTo( p_worlds[1]);
             else
                 p_player->changeWorldTo( p_worlds[0]);*/
-            p_player->getWorld()->createObject( "evil_bot", p_player->getObject()->getPosition() + glm::vec3( 0, 0, 1));
+            //p_player->getWorld()->createObject( "evil_bot", p_player->getObject()->getPosition() + glm::vec3( 0, 0, 1));
         }
     }
 }
@@ -446,7 +446,13 @@ void engine::run() {
             walk( l_delta);
             p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
 
-            p_player->drawTeleport( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 3);
+            player_teleport *l_port = p_player->handleTeleport( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 50);
+            if( l_port && p_input.mappping.shift && !p_input.mappping_previously.shift) {
+                object *l_player_object = p_player->getObject();
+                glm::vec3 l_vertex_object = glm::vec3( l_player_object->getType()->getHitbox().x/2, 1, l_player_object->getType()->getHitbox().z/2);
+                l_player_object->setPosition( l_port->position + l_vertex_object);
+                delete l_port;
+            }
         }
         #endif // NO_GRAPHICS
 

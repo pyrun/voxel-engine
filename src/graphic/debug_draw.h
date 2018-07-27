@@ -15,6 +15,7 @@ class debug_draw {
         void cube( glm::vec3 positon, glm::vec3 size, glm::vec3 color);
 
         void clear();
+        void setChange();
 
         void draw( Shader *shader);
     private:
