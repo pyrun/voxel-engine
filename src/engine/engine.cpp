@@ -352,7 +352,7 @@ void engine::run() {
         #ifndef NO_GRAPHICS
         // load player
         if( !p_player ) {
-            p_players->load_player( p_player_file, p_worlds[1]);
+            p_players->load_player( p_player_file, p_worlds[0]);
             p_player = p_players->getPlayer()[0];
             p_player->createObject();
         }
@@ -440,6 +440,8 @@ void engine::run() {
         }
 
         #ifndef NO_GRAPHICS
+        if( ((p_network && (p_network->isServer() || p_network->isNone())) || !p_network) && p_player && p_player->getObject() == NULL )
+            p_player->createObject();
         if( p_player && p_player->getWorld() && p_player->getWorld()->getPhysicFlag()) {
             lua_object_set_targets(  p_player->getWorld());
             p_engine = this;
