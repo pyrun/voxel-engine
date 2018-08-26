@@ -249,7 +249,7 @@ void engine::render( glm::mat4 view, glm::mat4 projection) {
         //l_shader->update( MAT_MODEL, glm::mat4( 1));
         p_player->getWorld()->drawObjectsDebug( p_graphic, l_shader);
         l_shader->update( MAT_MODEL, glm::mat4( 1));
-        p_player->getDebugDraw()->draw( l_shader);
+        p_player->getEntityDraw()->draw( l_shader);
     }
 
     // we are done
@@ -314,8 +314,8 @@ world *engine::createWorld( std::string name, bool player) {
 void engine::loadWorld( std::string name, bool player) {
     world *l_world = createWorld( name, player);
     if( !l_world->load()) {
-        int l_size = 3;
-        int l_end = -3;
+        int l_size = 1;
+        int l_end = -2;
         for( int x = -l_size; x <= l_size; x++)
             for( int z = -l_size; z <= l_size; z++)
                 for( int y = 1; y > l_end; y--)
@@ -352,7 +352,7 @@ void engine::run() {
         #ifndef NO_GRAPHICS
         // load player
         if( !p_player ) {
-            p_players->load_player( p_player_file, p_worlds[0]);
+            p_players->load_player( p_player_file, p_worlds[1]);
             p_player = p_players->getPlayer()[0];
             p_player->createObject();
         }
@@ -444,6 +444,7 @@ void engine::run() {
             lua_object_set_targets(  p_player->getWorld());
             p_engine = this;
             walk( l_delta);
+            p_player->getEntityDraw()->clear();
             p_player->raycastView( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 300);
 
             player_teleport *l_port = p_player->handleTeleport( &p_input, p_graphic->getCamera()->getPos(), p_graphic->getCamera()->getForward(), 50);

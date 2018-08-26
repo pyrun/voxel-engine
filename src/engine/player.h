@@ -5,6 +5,7 @@
 #include "world.h"
 #include "input.h"
 #include "config.h"
+#include "../graphic/entity_draw.h"
 
 struct player_teleport {
     glm::vec3 position;
@@ -37,7 +38,7 @@ class player
         world* getWorld() { return p_target_world; }
         std::string getName() { return p_name; }
         RakNet::RakNetGUID getGUID() { return p_guid; }
-        debug_draw *getDebugDraw() { return &p_debug_draw; }
+        entity_draw *getEntityDraw() { return &p_entity_draw; }
     protected:
 
     private:
@@ -50,7 +51,7 @@ class player
         int p_object_id;
         world *p_target_world;
 
-        debug_draw p_debug_draw;
+        entity_draw p_entity_draw;
 };
 
 

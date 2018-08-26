@@ -9,7 +9,7 @@
 
 #include "landscape_generator.h"
 #include "../graphic/graphic.h"
-#include "../graphic/debug_draw.h"
+#include "../graphic/entity_draw.h"
 #include "block.h"
 #include "input.h"
 #include "world.h"

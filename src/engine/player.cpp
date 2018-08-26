@@ -71,6 +71,8 @@ void player::raycastView( input::handle *input, glm::vec3 position, glm::vec3 lo
     else if( l_postion_floor_prev.z < l_block.z)
         l_block_prev.z--;
 
+    p_entity_draw.cube( l_block-(glm::vec3( 0.1)), glm::vec3( 1.2), glm::vec3( 1, 1, 1));
+
     // input handling
     if( input->mappping.place && !input->mappping_previously.place) {
         Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block_prev);
@@ -98,17 +100,16 @@ player_teleport *player::handleTeleport( input::handle *input, glm::vec3 positio
     glm::vec3 l_velocity = glm::vec3( 0, 0.1, 0);
     glm::vec3 l_color = glm::vec3( 0, 1, 0);
     glm::vec3 l_block = { 0, 0, 0};
+    int l_box = 0;
 
-    p_debug_draw.clear();
+    //p_entity_draw.cube( glm::vec3( 1), glm::vec3( 1), glm::vec3( 1, 0, 0));
 
-    //p_debug_draw.cube( glm::vec3( 1), glm::vec3( 1), glm::vec3( 1, 0, 0));
+    //p_entity_draw.clear();
 
     bool l_found = false;
     for(int i = 0; i < forward; i++) {
         l_postion_prev = l_postion_ray;
         l_postion_ray += lookat * 0.25f;
-
-
 
         l_block.x = floorf( l_postion_ray.x );
         l_block.y = floorf( l_postion_ray.y );
@@ -118,7 +119,7 @@ player_teleport *player::handleTeleport( input::handle *input, glm::vec3 positio
             Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block);
             if( l_chunk) {
                 glm::vec3 l_chunk_pos = l_chunk->getPos() * glm::ivec3( CHUNK_SIZE);
-                if( l_chunk->getTile( l_block - l_chunk_pos) != EMPTY_BLOCK_ID) { // check for block
+                if( l_chunk->getTile( l_block - l_chunk_pos) != EMPTY_BLOCK_ID ) { // check for block
                     l_found = true;
                     //l_color = glm::vec3( 1, 0, 0);
                     //printf( "%f %f %f\n", l_block.x, l_block.y, l_block.z);
@@ -129,14 +130,20 @@ player_teleport *player::handleTeleport( input::handle *input, glm::vec3 positio
         }
 
         if( !l_found) {
-            p_debug_draw.cube( l_postion_ray-(l_block_size/glm::vec3(2)), l_block_size, l_color);
+            p_entity_draw.cube( l_postion_ray-(l_block_size/glm::vec3(2)), l_block_size, l_color);
         } else {
+            Chunk *l_chunk = p_target_world->getChunkWithPosition( l_block);
+            glm::vec3 l_chunk_pos = l_chunk->getPos() * glm::ivec3( CHUNK_SIZE);
+            if( l_chunk->getTile( l_block - l_chunk_pos - glm::vec3( 0, -2, 0)) != EMPTY_BLOCK_ID || l_chunk->getTile( l_block - l_chunk_pos - glm::vec3( 0, -1, 0)) != EMPTY_BLOCK_ID) {
+                p_entity_draw.setChange();
+                return NULL;
+            }
             l_block.x = floorf( l_postion_ray.x);
             l_block.y = floorf( l_postion_ray.y);
             l_block.z = floorf( l_postion_ray.z);
 
-            p_debug_draw.cube( l_block-(glm::vec3( 0.1)), glm::vec3( 1.2), glm::vec3( 0, 0, 1));
-            p_debug_draw.setChange();
+            p_entity_draw.cube( l_block+(glm::vec3( 0.3)), glm::vec3( 0.4, 1.5, 0.4), glm::vec3( 1, 0, 0));
+            p_entity_draw.setChange();
 
             player_teleport *l_port = new player_teleport;
             l_port->position = l_block;
@@ -147,7 +154,9 @@ player_teleport *player::handleTeleport( input::handle *input, glm::vec3 positio
         l_postion_ray += l_velocity;
     }
 
-    p_debug_draw.setChange();
+    p_entity_draw.disable();
+
+    //p_entity_draw.setChange();
 
     return NULL;
 }

@@ -96,8 +96,10 @@ static int lua_setBlock (lua_State *state) {
     l_position.y = lua_tonumber( state, 4);
     l_position.z = lua_tonumber( state, 5);
 
-    if( public_chunk_list[ l_chunk_id])
-        public_chunk_list[ l_chunk_id]->set( l_position, l_block, false);
+    if( public_chunk_list[ l_chunk_id]) {
+        if( public_chunk_list[ l_chunk_id]->getTile( l_position) != public_blocklist->getByName( "portal")->getID() )
+            public_chunk_list[ l_chunk_id]->set( l_position, l_block, false);
+    }
     else
         printf( "lua_setBlock chunk #%d didnt found!\n", l_chunk_id);
     return 0;

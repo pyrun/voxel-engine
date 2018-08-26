@@ -23,6 +23,7 @@
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../lua/include" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../qu3e/src" />
@@ -77,6 +78,7 @@
 					<Add directory="../../openvr-mingw/headers" />
 					<Add directory="../../RakNet/Source" />
 					<Add directory="../../lua/include" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32  -lSDL2main -lSDL2  -lSDL2_image" />
@@ -115,6 +117,7 @@
 					<Add directory="../../bounce/include" />
 					<Add directory="../../lua/include" />
 					<Add directory="cpu/" />
+					<Add directory="graphic/" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../qu3e/src" />
@@ -188,6 +191,8 @@
 		<Unit filename="graphic/debug_draw.h" />
 		<Unit filename="graphic/display.cpp" />
 		<Unit filename="graphic/display.h" />
+		<Unit filename="graphic/entity_draw.cpp" />
+		<Unit filename="graphic/entity_draw.h" />
 		<Unit filename="graphic/glerror.cpp" />
 		<Unit filename="graphic/glerror.h" />
 		<Unit filename="graphic/graphic.cpp" />
