@@ -1,2 +1,2 @@
-# selur
-project selur/voxel engine
+# voxel
+project voxel engine
